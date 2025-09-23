@@ -403,6 +403,12 @@ main {
     scrollbar-width: none;
     -ms-overflow-style: none;
     position: relative;
+    /* Enhanced smooth scrolling */
+    scroll-behavior: smooth;
+    scroll-padding: 0;
+    /* Better momentum scrolling */
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: none;
   }
   
   .panels::-webkit-scrollbar {
@@ -442,6 +448,8 @@ main {
     padding: 16px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+    /* Better snap behavior */
+    scroll-margin: 0;
   }
   
   .panel h2 {
@@ -557,11 +565,16 @@ main {
   .panels {
     gap: 12px;
     padding-bottom: 6px;
+    /* Enhanced smooth scrolling for small mobile */
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: none;
   }
   
   .panel {
     flex: 0 0 calc(100vw - 16px); /* Full width minus padding for small screens */
     padding: 12px;
+    scroll-margin: 0;
   }
   
   .panel h2 {

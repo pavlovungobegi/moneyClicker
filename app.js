@@ -1722,38 +1722,12 @@
     const panelsContainer = document.querySelector('.panels');
     if (!panelsContainer) return;
 
-    let startX = 0;
-    let scrollLeft = 0;
-    let isScrolling = false;
-
-    // Touch event handlers for better mobile scrolling
-    panelsContainer.addEventListener('touchstart', (e) => {
-      startX = e.touches[0].pageX - panelsContainer.offsetLeft;
-      scrollLeft = panelsContainer.scrollLeft;
-      isScrolling = true;
-    });
-
-    panelsContainer.addEventListener('touchmove', (e) => {
-      if (!isScrolling) return;
-      e.preventDefault();
-      const x = e.touches[0].pageX - panelsContainer.offsetLeft;
-      const walk = (x - startX) * 2; // Multiply for faster scrolling
-      panelsContainer.scrollLeft = scrollLeft - walk;
-    });
-
-    panelsContainer.addEventListener('touchend', () => {
-      isScrolling = false;
-    });
-
     // Add visual feedback for scroll position
     function updateScrollIndicators() {
       const scrollLeft = panelsContainer.scrollLeft;
       const maxScroll = panelsContainer.scrollWidth - panelsContainer.clientWidth;
       
       // Update fade indicators based on scroll position
-      const leftFade = panelsContainer.querySelector('::before');
-      const rightFade = panelsContainer.querySelector('::after');
-      
       if (scrollLeft <= 10) {
         panelsContainer.style.setProperty('--left-fade-opacity', '0');
       } else {
@@ -1767,6 +1741,7 @@
       }
     }
 
+    // Only add scroll listener for visual indicators
     panelsContainer.addEventListener('scroll', updateScrollIndicators);
     updateScrollIndicators(); // Initial call
   })();
