@@ -277,34 +277,84 @@ main {
   margin-top: 16px;
 }
 
-/* Responsive behavior for mobile devices */
+/* Mobile-first responsive design */
 @media (max-width: 768px) {
-  .auto-features-container {
+  /* Header adjustments for mobile */
+  header {
+    height: 20vh; /* Increase header height on mobile */
+    padding: 8px 12px;
     flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    gap: 8px;
   }
   
   .header-left {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .header-left h1 {
+    font-size: 24px; /* Smaller title on mobile */
+    margin: 0;
   }
   
   .header-accounts {
-    gap: 6px;
+    flex-direction: row;
+    gap: 16px;
+    justify-content: center;
   }
   
+  .account-label {
+    font-size: 12px;
+  }
+  
+  .account-amount {
+    font-size: 14px;
+  }
+  
+  /* Main content adjustments */
+  main {
+    height: 75vh; /* Adjust main height for larger header */
+    padding: 12px;
+  }
+  
+  /* Single column layout for mobile */
   .panels {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
+    margin-top: 8px;
   }
   
   .panel {
-    height: 100%;
+    height: auto;
+    min-height: 200px;
+    padding: 12px;
+  }
+  
+  .panel h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  /* Settings panel adjustments */
+  .settings-panel {
+    position: static;
+    margin-top: 8px;
+  }
+  
+  .settings-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    margin: 0 12px;
   }
 }
 
-@media (max-width: 1024px) {
+/* Tablet breakpoint */
+@media (max-width: 1024px) and (min-width: 769px) {
   .panels {
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
@@ -312,6 +362,91 @@ main {
   
   .panel {
     height: 100%;
+  }
+  
+  .header-left h1 {
+    font-size: 28px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  header {
+    height: 25vh; /* Even more space for very small screens */
+    padding: 6px 8px;
+  }
+  
+  .header-left h1 {
+    font-size: 20px;
+  }
+  
+  .header-accounts {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .account-label {
+    font-size: 11px;
+  }
+  
+  .account-amount {
+    font-size: 13px;
+  }
+  
+  main {
+    height: 70vh;
+    padding: 8px;
+  }
+  
+  .panels {
+    gap: 8px;
+  }
+  
+  .panel {
+    min-height: 180px;
+    padding: 10px;
+  }
+  
+  .panel h2 {
+    font-size: 15px;
+  }
+  
+  /* Mobile-specific Earn panel improvements */
+  .earn-content {
+    gap: 12px;
+  }
+  
+  .earnings-metrics {
+    gap: 8px;
+  }
+  
+  .earn-content .controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .earn-content .controls button {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  .earn-click-section button {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+  }
+  
+  .auto-invest-controls .toggle-label {
+    font-size: 14px;
+  }
+  
+  .click-streak .streak-label {
+    font-size: 14px;
+  }
+  
+  .click-streak .streak-multiplier {
+    font-size: 16px;
   }
 }
 
