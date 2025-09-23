@@ -689,6 +689,30 @@
       return;
     }
     
+    // Mobile-specific scrolling for upgrade tour
+    if (window.innerWidth <= 768 && tourState.currentStep === 1) {
+      // Scroll to upgrades panel on mobile
+      const panelsContainer = document.querySelector('.panels');
+      if (panelsContainer) {
+        // Calculate scroll position to show upgrades panel (second panel)
+        const panelWidth = window.innerWidth - 32; // Account for padding
+        panelsContainer.scrollTo({
+          left: panelWidth,
+          behavior: 'smooth'
+        });
+        
+        // Wait for scroll to complete before showing tooltip
+        setTimeout(() => {
+          showTourTooltip(step, targetElement);
+        }, 500);
+        return;
+      }
+    }
+    
+    showTourTooltip(step, targetElement);
+  }
+  
+  function showTourTooltip(step, targetElement) {
     // Show overlay
     const overlay = document.getElementById('tourOverlay');
     const tooltip = document.getElementById('tourTooltip');
@@ -710,46 +734,64 @@
     const targetRect = targetElement.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
     const arrow = tooltip.querySelector('.tour-arrow');
+    const isMobile = window.innerWidth <= 768;
     
     // Remove existing arrow classes
     arrow.className = 'tour-arrow';
     
     let top, left;
     
-    switch (position) {
-      case 'bottom':
-        top = targetRect.bottom + 20;
-        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-        arrow.classList.add('top');
-        break;
-      case 'right':
-        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-        left = targetRect.right + 30;
-        arrow.classList.add('left');
-        break;
-      case 'left':
-        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-        left = targetRect.left - tooltipRect.width - 20;
-        arrow.classList.add('right');
-        break;
-      case 'top':
-        top = targetRect.top - tooltipRect.height - 20;
-        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-        arrow.classList.add('bottom');
-        break;
-    }
-    
-    // Ensure tooltip stays within viewport
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    if (left < 20) left = 20;
-    if (left + tooltipRect.width > viewportWidth - 20) {
-      left = viewportWidth - tooltipRect.width - 20;
-    }
-    if (top < 20) top = 20;
-    if (top + tooltipRect.height > viewportHeight - 20) {
-      top = viewportHeight - tooltipRect.height - 20;
+    // Mobile-specific positioning
+    if (isMobile) {
+      // For mobile, always position tooltip in center of screen
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      top = Math.max(20, (viewportHeight - tooltipRect.height) / 2);
+      left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
+      
+      // Hide arrow on mobile for cleaner look
+      arrow.style.display = 'none';
+    } else {
+      // Desktop positioning logic
+      switch (position) {
+        case 'bottom':
+          top = targetRect.bottom + 20;
+          left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+          arrow.classList.add('top');
+          break;
+        case 'right':
+          top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+          left = targetRect.right + 30;
+          arrow.classList.add('left');
+          break;
+        case 'left':
+          top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+          left = targetRect.left - tooltipRect.width - 20;
+          arrow.classList.add('right');
+          break;
+        case 'top':
+          top = targetRect.top - tooltipRect.height - 20;
+          left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+          arrow.classList.add('bottom');
+          break;
+      }
+      
+      // Show arrow on desktop
+      arrow.style.display = 'block';
+      
+      // Ensure tooltip stays within viewport
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      if (left < 20) left = 20;
+      if (left + tooltipRect.width > viewportWidth - 20) {
+        left = viewportWidth - tooltipRect.width - 20;
+      }
+      if (top < 20) top = 20;
+      if (top + tooltipRect.height > viewportHeight - 20) {
+        top = viewportHeight - tooltipRect.height - 20;
+      }
     }
     
     tooltip.style.position = 'fixed';
@@ -1615,6 +1657,60 @@
     update();
     // Recompute periodically to reflect upgrades
     setInterval(update, 500);
+  })();
+
+  // Mobile horizontal scrolling enhancements
+  (function initMobileScrolling() {
+    const panelsContainer = document.querySelector('.panels');
+    if (!panelsContainer) return;
+
+    let startX = 0;
+    let scrollLeft = 0;
+    let isScrolling = false;
+
+    // Touch event handlers for better mobile scrolling
+    panelsContainer.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].pageX - panelsContainer.offsetLeft;
+      scrollLeft = panelsContainer.scrollLeft;
+      isScrolling = true;
+    });
+
+    panelsContainer.addEventListener('touchmove', (e) => {
+      if (!isScrolling) return;
+      e.preventDefault();
+      const x = e.touches[0].pageX - panelsContainer.offsetLeft;
+      const walk = (x - startX) * 2; // Multiply for faster scrolling
+      panelsContainer.scrollLeft = scrollLeft - walk;
+    });
+
+    panelsContainer.addEventListener('touchend', () => {
+      isScrolling = false;
+    });
+
+    // Add visual feedback for scroll position
+    function updateScrollIndicators() {
+      const scrollLeft = panelsContainer.scrollLeft;
+      const maxScroll = panelsContainer.scrollWidth - panelsContainer.clientWidth;
+      
+      // Update fade indicators based on scroll position
+      const leftFade = panelsContainer.querySelector('::before');
+      const rightFade = panelsContainer.querySelector('::after');
+      
+      if (scrollLeft <= 10) {
+        panelsContainer.style.setProperty('--left-fade-opacity', '0');
+      } else {
+        panelsContainer.style.setProperty('--left-fade-opacity', '1');
+      }
+      
+      if (scrollLeft >= maxScroll - 10) {
+        panelsContainer.style.setProperty('--right-fade-opacity', '0');
+      } else {
+        panelsContainer.style.setProperty('--right-fade-opacity', '1');
+      }
+    }
+
+    panelsContainer.addEventListener('scroll', updateScrollIndicators);
+    updateScrollIndicators(); // Initial call
   })();
 })();
 
