@@ -321,6 +321,9 @@
     
     // Check achievements
     checkAchievements();
+    
+    // Save game state after significant changes
+    saveGameState();
   }
 
   function createFlyingMoney(amount, isCritical = false) {
@@ -391,6 +394,7 @@
     currentAccountBalance = 0;
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
+    saveGameState();
   }
 
   function withdrawAll() {
@@ -399,6 +403,7 @@
     investmentAccountBalance = 0;
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
+    saveGameState();
   }
 
   function updateClickStreak() {
@@ -542,6 +547,271 @@
     completed: false,
     portfolioTourShown: false
   };
+
+  // Tour persistence functions
+  function saveTourState() {
+    try {
+      localStorage.setItem('moneyClicker_tourState', JSON.stringify(tourState));
+    } catch (error) {
+      console.warn('Could not save tour state:', error);
+    }
+  }
+
+  function loadTourState() {
+    try {
+      const saved = localStorage.getItem('moneyClicker_tourState');
+      if (saved) {
+        const parsedState = JSON.parse(saved);
+        // Merge with default state to handle new properties
+        tourState = {
+          ...tourState,
+          ...parsedState
+        };
+      }
+    } catch (error) {
+      console.warn('Could not load tour state:', error);
+    }
+  }
+
+  // Function to reset tutorial (useful for testing or user request)
+  function resetTutorial() {
+    tourState = {
+      active: false,
+      currentStep: 0,
+      completed: false,
+      portfolioTourShown: false
+    };
+    saveTourState();
+    console.log('Tutorial has been reset. Refresh the page to see it again.');
+  }
+
+  // Make resetTutorial available globally for debugging
+  window.resetTutorial = resetTutorial;
+
+  // Game state persistence functions
+  function saveGameState() {
+    try {
+      const gameState = {
+        // Core balances
+        currentAccountBalance,
+        investmentAccountBalance,
+        
+        // Upgrades owned
+        owned: { ...owned },
+        
+        // Statistics
+        totalClicks,
+        totalCriticalHits,
+        totalUpgradesBought,
+        hasPerformedPrestige,
+        prestigeResets,
+        
+        // Click streak system
+        streakCount,
+        streakMultiplier,
+        
+        // Auto-invest settings
+        autoInvestEnabled,
+        
+        // Game timing
+        gameStartTime,
+        
+        // Audio settings
+        musicEnabled,
+        soundEffectsEnabled,
+        
+        // Save timestamp
+        lastSaved: Date.now()
+      };
+      
+      localStorage.setItem('moneyClicker_gameState', JSON.stringify(gameState));
+      console.log('Game state saved successfully');
+    } catch (error) {
+      console.warn('Could not save game state:', error);
+    }
+  }
+
+  function loadGameState() {
+    try {
+      const saved = localStorage.getItem('moneyClicker_gameState');
+      if (saved) {
+        const gameState = JSON.parse(saved);
+        
+        // Restore core balances
+        currentAccountBalance = gameState.currentAccountBalance || 0;
+        investmentAccountBalance = gameState.investmentAccountBalance || 0;
+        
+        // Restore upgrades
+        if (gameState.owned) {
+          Object.keys(gameState.owned).forEach(key => {
+            if (owned.hasOwnProperty(key)) {
+              owned[key] = gameState.owned[key];
+            }
+          });
+        }
+        
+        // Restore statistics
+        totalClicks = gameState.totalClicks || 0;
+        totalCriticalHits = gameState.totalCriticalHits || 0;
+        totalUpgradesBought = gameState.totalUpgradesBought || 0;
+        hasPerformedPrestige = gameState.hasPerformedPrestige || false;
+        prestigeResets = gameState.prestigeResets || 0;
+        
+        // Restore click streak
+        streakCount = gameState.streakCount || 0;
+        streakMultiplier = gameState.streakMultiplier || 1;
+        
+        // Restore auto-invest
+        autoInvestEnabled = gameState.autoInvestEnabled || false;
+        
+        // Restore game timing and calculate offline interest
+        if (gameState.gameStartTime && gameState.lastSaved) {
+          const offlineTime = Date.now() - gameState.lastSaved;
+          gameStartTime = gameState.gameStartTime + offlineTime;
+          
+          // Calculate offline interest if user was away for more than 1 second
+          if (offlineTime > 1000 && gameState.investmentAccountBalance > 0) {
+            const offlineSeconds = Math.floor(offlineTime / 1000);
+            const maxOfflineSeconds = 3600; // Cap at 1 hour of offline interest
+            
+            // Apply capped offline time
+            const cappedOfflineSeconds = Math.min(offlineSeconds, maxOfflineSeconds);
+            
+            // Calculate compound interest for offline time
+            const compoundMultiplier = getCompoundMultiplierPerTick();
+            const ticksPerSecond = 1000 / 50; // Assuming 50ms tick rate
+            const totalTicks = cappedOfflineSeconds * ticksPerSecond;
+            
+            // Apply compound growth
+            const offlineGrowth = gameState.investmentAccountBalance * Math.pow(compoundMultiplier, totalTicks) - gameState.investmentAccountBalance;
+            const cappedOfflineGrowth = applyMoneyCap(offlineGrowth);
+            
+            investmentAccountBalance += cappedOfflineGrowth;
+            
+            console.log(`Applied ${cappedOfflineSeconds}s of offline interest: +$${formatNumber(cappedOfflineGrowth)}`);
+          }
+        } else {
+          gameStartTime = gameState.gameStartTime || Date.now();
+        }
+        
+        // Restore audio settings
+        musicEnabled = gameState.musicEnabled !== undefined ? gameState.musicEnabled : true;
+        soundEffectsEnabled = gameState.soundEffectsEnabled !== undefined ? gameState.soundEffectsEnabled : true;
+        
+        console.log('Game state loaded successfully');
+        
+        // Update UI after loading state
+        renderBalances();
+        renderUpgradesOwned();
+        renderUpgradePrices();
+        sortUpgradesByCost();
+        renderInvestmentUnlocked();
+        renderInterestPerSecond();
+        renderAutoInvestSection();
+        renderStatistics();
+        
+        // Apply audio settings after loading game state
+        applyAudioSettings();
+        
+        return true;
+      }
+    } catch (error) {
+      console.warn('Could not load game state:', error);
+    }
+    return false;
+  }
+
+  // Function to reset all game data
+  function resetGameState() {
+    try {
+      localStorage.removeItem('moneyClicker_gameState');
+      localStorage.removeItem('moneyClicker_tourState');
+      console.log('All game data has been reset. Refresh the page to start fresh.');
+    } catch (error) {
+      console.warn('Could not reset game state:', error);
+    }
+  }
+
+  // Make functions available globally for debugging
+  window.saveGameState = saveGameState;
+  window.loadGameState = loadGameState;
+  window.resetGameState = resetGameState;
+
+  // Hard Reset functionality
+  function performHardReset() {
+    // Show confirmation dialog
+    const confirmed = confirm(
+      "⚠️ HARD RESET WARNING ⚠️\n\n" +
+      "This will permanently delete ALL your progress:\n" +
+      "• All money and investments\n" +
+      "• All upgrades purchased\n" +
+      "• All statistics and achievements\n" +
+      "• All settings and preferences\n\n" +
+      "This action CANNOT be undone!\n\n" +
+      "Are you absolutely sure you want to reset everything?"
+    );
+    
+    if (confirmed) {
+      // Second confirmation for extra safety
+      const doubleConfirmed = confirm(
+        "🚨 FINAL WARNING 🚨\n\n" +
+        "You are about to PERMANENTLY DELETE all your progress.\n" +
+        "This will reset the game to the very beginning.\n\n" +
+        "Click OK to proceed with the hard reset, or Cancel to keep your progress."
+      );
+      
+      if (doubleConfirmed) {
+        // Perform the reset
+        resetGameState();
+        
+        // Reset all game variables to initial state
+        currentAccountBalance = 0;
+        investmentAccountBalance = 0;
+        totalClicks = 0;
+        totalCriticalHits = 0;
+        totalUpgradesBought = 0;
+        hasPerformedPrestige = false;
+        prestigeResets = 0;
+        streakCount = 0;
+        streakMultiplier = 1;
+        autoInvestEnabled = false;
+        gameStartTime = Date.now();
+        
+        // Reset all upgrades
+        Object.keys(owned).forEach(upgradeKey => {
+          owned[upgradeKey] = false;
+        });
+        
+        // Reset audio settings to defaults
+        musicEnabled = true;
+        soundEffectsEnabled = true;
+        
+        // Reset tour state
+        tourState = {
+          active: false,
+          currentStep: 0,
+          completed: false,
+          portfolioTourShown: false
+        };
+        
+        // Update UI
+        renderBalances();
+        renderUpgradesOwned();
+        renderUpgradePrices();
+        sortUpgradesByCost();
+        renderInvestmentUnlocked();
+        renderInterestPerSecond();
+        renderAutoInvestSection();
+        renderStatistics();
+        applyAudioSettings();
+        
+        // Show success message
+        alert("✅ Hard reset completed!\n\nThe game has been reset to the beginning. Refresh the page to start fresh.");
+        
+        console.log("Hard reset completed - all data cleared");
+      }
+    }
+  }
   
   const tourSteps = [
     {
@@ -834,6 +1104,9 @@
     tourState.active = false;
     tourState.completed = true;
     
+    // Save tour state
+    saveTourState();
+    
     // Hide overlay
     const overlay = document.getElementById('tourOverlay');
     overlay.classList.add('hidden');
@@ -870,6 +1143,7 @@
     // Check if user just upgraded to secondary school
     if (owned.u2 && !tourState.portfolioTourShown) {
       tourState.portfolioTourShown = true;
+      saveTourState(); // Save that portfolio tour was shown
       showPortfolioTour();
     }
   }
@@ -1241,6 +1515,9 @@
     
     // Check achievements
     checkAchievements();
+    
+    // Save game state after upgrade purchase
+    saveGameState();
   }
 
   if (buyU1Btn) buyU1Btn.addEventListener("click", () => tryBuyUpgrade("u1"));
@@ -1515,6 +1792,7 @@
   function handleAutoInvestToggle() {
     if (!autoInvestToggle) return;
     autoInvestEnabled = autoInvestToggle.checked;
+    saveGameState();
   }
 
   // Leaderboard model
@@ -1631,6 +1909,21 @@
     localStorage.setItem('soundEffectsEnabled', soundEffectsEnabled.toString());
   }
 
+  // Apply audio settings to UI and audio
+  function applyAudioSettings() {
+    // Update toggle UI
+    if (musicToggle) musicToggle.checked = musicEnabled;
+    if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
+    
+    // Apply music setting
+    if (!musicEnabled && backgroundMusic) {
+      backgroundMusic.pause();
+    } else if (musicEnabled && backgroundMusic) {
+      // Try to start music if it should be enabled
+      startBackgroundMusic();
+    }
+  }
+
   // Toggle settings menu
   if (settingsToggle && settingsMenu) {
     settingsToggle.addEventListener('click', (e) => {
@@ -1663,6 +1956,69 @@
       saveAudioSettings();
     });
   }
+
+  // Hard Reset button functionality
+  const hardResetBtn = document.getElementById('hardResetBtn');
+  if (hardResetBtn) {
+    hardResetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      performHardReset();
+    });
+  }
+
+  // Mobile Navigation functionality
+  function initMobileNavigation() {
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const panelsContainer = document.querySelector('.panels');
+    
+    if (!navButtons.length || !panelsContainer) return;
+    
+    // Panel mapping
+    const panelMap = {
+      'earn': 0,
+      'upgrades': 1,
+      'portfolio': 2,
+      'achievements': 3,
+      'stats': 4
+    };
+    
+    navButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const panelName = button.getAttribute('data-panel');
+        const panelIndex = panelMap[panelName];
+        
+        if (panelIndex !== undefined) {
+          // Update active button
+          navButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          
+          // Scroll to panel
+          const panelWidth = window.innerWidth - 32; // Account for padding
+          panelsContainer.scrollTo({
+            left: panelWidth * panelIndex,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // Update active button based on scroll position
+    panelsContainer.addEventListener('scroll', () => {
+      const scrollLeft = panelsContainer.scrollLeft;
+      const panelWidth = window.innerWidth - 32;
+      const currentPanel = Math.round(scrollLeft / panelWidth);
+      
+      // Update active button
+      navButtons.forEach(btn => btn.classList.remove('active'));
+      if (navButtons[currentPanel]) {
+        navButtons[currentPanel].classList.add('active');
+      }
+    });
+  }
+  
+  // Initialize mobile navigation
+  initMobileNavigation();
 
   // Auto Invest Help Modal functionality
   if (autoInvestHelpBtn && autoInvestModal) {
@@ -1702,6 +2058,26 @@
   
   // Load saved audio settings
   loadAudioSettings();
+  
+  // Load saved tour state
+  loadTourState();
+  
+  // Load saved game state
+  const gameStateLoaded = loadGameState();
+  
+  // Try to start music after a short delay if it was enabled (fallback for autoplay restrictions)
+  if (gameStateLoaded && musicEnabled) {
+    setTimeout(() => {
+      if (backgroundMusic && musicEnabled) {
+        startBackgroundMusic();
+      }
+    }, 1000);
+  }
+  
+  // Periodic saving every 10 seconds
+  setInterval(() => {
+    saveGameState();
+  }, 10000);
 
   // Render interest per second from per-tick multiplier (dynamic)
   (function renderInterestPerSecond() {

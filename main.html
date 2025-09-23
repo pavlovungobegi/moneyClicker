@@ -45,6 +45,14 @@
             </label>
           </div>
         </div>
+        
+        <div class="settings-section">
+          <h3>Game Data</h3>
+          <div class="setting-item">
+            <button id="hardResetBtn" class="hard-reset-btn">Hard Reset</button>
+            <p class="reset-description">Reset all progress and start fresh</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -921,7 +929,27 @@
       </div>
     </main>
 
-    <footer>
+    <!-- Mobile Navigation Bar -->
+    <nav class="mobile-nav">
+      <button class="nav-btn active" data-panel="earn" aria-label="Earn Panel">
+        <span class="nav-icon">💰</span>
+      </button>
+      <button class="nav-btn" data-panel="upgrades" aria-label="Upgrades Panel">
+        <span class="nav-icon">⬆️</span>
+      </button>
+      <button class="nav-btn" data-panel="portfolio" aria-label="Portfolio Panel">
+        <span class="nav-icon">📊</span>
+      </button>
+      <button class="nav-btn" data-panel="achievements" aria-label="Achievements Panel">
+        <span class="nav-icon">🏆</span>
+      </button>
+      <button class="nav-btn" data-panel="stats" aria-label="Statistics Panel">
+        <span class="nav-icon">📈</span>
+      </button>
+    </nav>
+
+    <!-- Desktop Footer (hidden on mobile) -->
+    <footer class="desktop-footer">
       <small>&copy; Orkun Orbay 2025</small>
     </footer>
 

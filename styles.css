@@ -70,6 +70,89 @@ header {
   box-sizing: border-box;
 }
 
+/* Desktop Footer */
+.desktop-footer {
+  height: 5vh;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Mobile Navigation Bar */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid #e2e8f0;
+  padding: 8px 0;
+  z-index: 1000;
+  height: 5vh;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+.mobile-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 50px;
+  height: 44px;
+  position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.nav-btn.active {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.nav-btn.active:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+}
+
+.nav-icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.nav-btn.active .nav-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Legacy footer for backward compatibility */
 footer {
   height: 5vh;
   padding: 8px 16px;
@@ -495,6 +578,25 @@ main {
     margin-top: 8px;
     margin-right: 0;
     z-index: 1000;
+  }
+  
+  /* Show mobile navigation and hide desktop footer */
+  .mobile-nav {
+    display: flex;
+  }
+  
+  .desktop-footer {
+    display: none;
+  }
+  
+  /* Adjust navigation for very small screens */
+  .nav-btn {
+    min-width: 45px;
+    padding: 6px 8px;
+  }
+  
+  .nav-icon {
+    font-size: 18px;
   }
 }
 
@@ -1503,6 +1605,40 @@ input#amountInput:focus {
   font-size: 15px;
   font-weight: 600;
   color: #1e293b;
+}
+
+/* Hard Reset Button */
+.hard-reset-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.hard-reset-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+}
+
+.hard-reset-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.reset-description {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* Earn Panel Styling */
