@@ -1061,7 +1061,7 @@
     try {
       backgroundMusic = new Audio('backround.mp3');
       backgroundMusic.loop = true;
-      backgroundMusic.volume = 0.15; // Set volume to 30% so it doesn't overpower sound effects
+      backgroundMusic.volume = 0.1; // Set volume to 30% so it doesn't overpower sound effects
       backgroundMusic.preload = 'auto';
       
       // Handle audio loading errors
