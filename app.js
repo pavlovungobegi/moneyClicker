@@ -743,12 +743,39 @@
     
     // Mobile-specific positioning
     if (isMobile) {
-      // For mobile, always position tooltip in center of screen
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       
-      top = Math.max(20, (viewportHeight - tooltipRect.height) / 2);
-      left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
+      // Check if this is the portfolio tour (step 2)
+      const isPortfolioTour = tourState.currentStep === 2;
+      
+      if (isPortfolioTour) {
+        // For portfolio tour, position near bottom but with more space
+        top = viewportHeight - tooltipRect.height - 80; // More space from bottom
+        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
+        
+        // Ensure it doesn't go off screen horizontally
+        if (left + tooltipRect.width > viewportWidth - 20) {
+          left = viewportWidth - tooltipRect.width - 20;
+        }
+        
+        // Ensure it doesn't go too high
+        if (top < 20) {
+          top = 20;
+        }
+      } else {
+        // For other tours, center the modal
+        top = Math.max(20, (viewportHeight - tooltipRect.height) / 2);
+        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
+        
+        // Ensure tooltip doesn't go off screen
+        if (left + tooltipRect.width > viewportWidth - 20) {
+          left = viewportWidth - tooltipRect.width - 20;
+        }
+        if (top + tooltipRect.height > viewportHeight - 20) {
+          top = viewportHeight - tooltipRect.height - 20;
+        }
+      }
       
       // Hide arrow on mobile for cleaner look
       arrow.style.display = 'none';
@@ -794,9 +821,12 @@
       }
     }
     
-    tooltip.style.position = 'fixed';
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
+    // Use requestAnimationFrame to ensure proper rendering
+    requestAnimationFrame(() => {
+      tooltip.style.position = 'fixed';
+      tooltip.style.top = top + 'px';
+      tooltip.style.left = left + 'px';
+    });
   }
   
   
@@ -850,6 +880,33 @@
     
     if (!targetElement) return;
     
+    // Set the current step for positioning logic
+    tourState.currentStep = 2;
+    
+    // Mobile-specific scrolling for portfolio tour
+    if (window.innerWidth <= 768) {
+      // Scroll to portfolio panel on mobile (third panel)
+      const panelsContainer = document.querySelector('.panels');
+      if (panelsContainer) {
+        // Calculate scroll position to show portfolio panel (third panel)
+        const panelWidth = window.innerWidth - 32; // Account for padding
+        panelsContainer.scrollTo({
+          left: panelWidth * 2, // Third panel (index 2)
+          behavior: 'smooth'
+        });
+        
+        // Wait for scroll to complete before showing tooltip
+        setTimeout(() => {
+          showPortfolioTooltip(step, targetElement);
+        }, 600);
+        return;
+      }
+    }
+    
+    showPortfolioTooltip(step, targetElement);
+  }
+  
+  function showPortfolioTooltip(step, targetElement) {
     // Show overlay
     const overlay = document.getElementById('tourOverlay');
     const tooltip = document.getElementById('tourTooltip');
@@ -860,7 +917,8 @@
     title.textContent = step.title;
     message.textContent = step.message;
     
-    // Position tooltip near target element
+    // Use the same positioning logic as other tours
+    // This will now use the mobile-specific bottom positioning for portfolio tour
     positionTooltip(targetElement, tooltip, step.position);
     
     // Highlight target element

@@ -571,6 +571,9 @@ main {
   /* Mobile-specific Earn panel improvements */
   .earn-content {
     gap: 12px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   
   .earnings-metrics {
@@ -578,14 +581,18 @@ main {
   }
   
   .earn-content .controls {
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
   }
   
   .earn-content .controls button {
-    width: 100%;
+    flex: 1;
     padding: 12px;
     font-size: 14px;
+  }
+  
+  .earn-click-section {
+    margin-top: auto;
   }
   
   .earn-click-section button {
@@ -1224,6 +1231,7 @@ input#amountInput:focus {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   animation: tourPulse 2s ease-in-out infinite;
   pointer-events: auto;
+  z-index: 10002;
 }
 
 /* Mobile tour modal adjustments */
@@ -1297,7 +1305,7 @@ input#amountInput:focus {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  z-index: 10001;
+  z-index: 10003;
 }
 
 .tour-close-btn:hover {
