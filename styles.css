@@ -1,44 +1,107 @@
 /* Basic layout */
 html, body {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
+  display: flex;
+  flex-direction: column;
 }
 
-header, footer {
+header {
+  height: 15vh;
   padding: 12px 16px;
   background: #f6f7f9;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+footer {
+  height: 5vh;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.header-accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header-account {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.account-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.account-amount {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  font-family: 'Courier New', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
 
 main {
+  height: 80vh;
   padding: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .panels {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   gap: 24px;
   margin-top: 16px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .panel {
   border: 2px solid #d1d5db;
   border-radius: 10px;
   padding: 16px;
-  min-height: 120px;
-  max-height: 360px;
+  height: 100%;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .panel:hover {
   box-shadow: 0 4px 12px rgba(107, 114, 128, 0.1);
-  transform: translateY(-2px);
 }
 
 .panel h2 {
@@ -207,8 +270,64 @@ main {
   display: none;
 }
 
-.auto-invest {
+/* Container for auto-invest and click streak sections */
+.auto-features-container {
+  display: flex;
+  gap: 16px;
   margin-top: 16px;
+}
+
+/* Responsive behavior for mobile devices */
+@media (max-width: 768px) {
+  .auto-features-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .header-accounts {
+    gap: 6px;
+  }
+  
+  .panels {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .panel {
+    height: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .panels {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .panel {
+    height: 100%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .panels {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .panel {
+    height: 100%;
+  }
+}
+
+.auto-invest {
+  flex: 1;
   padding: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -226,7 +345,7 @@ main {
 }
 
 .click-streak {
-  margin-top: 16px;
+  flex: 1;
   padding: 12px;
   border: 1px solid #fbbf24;
   border-radius: 8px;
@@ -728,24 +847,6 @@ input#amountInput:focus {
 }
 
 /* Footer */
-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  padding: 8px 16px;
-  text-align: center;
-  font-size: 12px;
-  color: #6b7280;
-  z-index: 1000;
-}
-
-/* Add bottom padding to main content to account for fixed footer */
-main {
-  padding-bottom: 40px;
-}
 
 /* Statistics */
 .stats-section {
@@ -980,6 +1081,316 @@ main {
     box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.6) !important;
     border-color: #1d4ed8 !important;
   }
+}
+
+/* Settings Panel */
+.settings-panel {
+  position: relative;
+}
+
+.settings-toggle {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
+.settings-toggle:hover {
+  background: #e2e8f0;
+  transform: rotate(90deg);
+}
+
+.settings-toggle:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+.settings-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  min-width: 200px;
+  z-index: 1000;
+  margin-top: 8px;
+  animation: settingsSlideIn 0.2s ease-out;
+}
+
+@keyframes settingsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settings-menu.hidden {
+  display: none;
+}
+
+.settings-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+}
+
+.setting-item {
+  margin-bottom: 12px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-item .toggle-label {
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.setting-item .toggle-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Earn Panel Styling */
+.earn-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.earn-click-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.earnings-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.earn-content .rate {
+  text-align: left;
+  font-size: 14px;
+  color: #475569;
+  margin: 0;
+}
+
+.earn-content .dividends {
+  text-align: left;
+  font-size: 13px;
+  color: #475569;
+  margin: 0;
+}
+
+.earn-content .invest {
+  margin: 0;
+}
+
+.earn-content .controls {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.earn-content .controls button {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+.earn-content .prestige {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.earn-content .auto-invest {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.earn-content .auto-invest-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.earn-content .auto-invest-controls .toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.help-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.help-btn:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #475569;
+  transform: scale(1.1);
+}
+
+.help-btn:active {
+  transform: scale(0.95);
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.modal-close-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #475569;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  padding: 20px 24px 24px 24px;
+}
+
+.modal-body p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+.modal-body ul {
+  margin: 8px 0 12px 0;
+  padding-left: 20px;
+}
+
+.modal-body li {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.modal-body strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.earn-content .click-streak {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+  background: #fffbeb;
 }
 
 

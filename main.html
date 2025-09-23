@@ -9,73 +9,111 @@
   </head>
   <body>
     <header>
-      <h1>Interest Inc.</h1>
+      <div class="header-left">
+        <h1>Interest Inc.</h1>
+        <div class="header-accounts">
+          <div class="header-account">
+            <span class="account-label">Current</span>
+            <span id="headerCurrentDisplay" class="account-amount">€0.00</span>
+          </div>
+          <div class="header-account">
+            <span class="account-label">Investment</span>
+            <span id="headerInvestmentDisplay" class="account-amount">€0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <button id="settingsToggle" class="settings-toggle" aria-label="Toggle settings">⚙️</button>
+        <div id="settingsMenu" class="settings-menu hidden">
+          <div class="settings-section">
+            <h3>Audio Settings</h3>
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="musicToggle" checked />
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Background Music</span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="soundEffectsToggle" checked />
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Sound Effects</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main>
-      <div class="game">
-        <div class="left">
-          <button id="clickBtn" aria-label="Click to earn money">Click</button>
-          <div id="interestContainer" class="rate" aria-live="polite">Interest (% per second): <span id="interestPerSec">0.00%</span></div>
-        <div id="dividendInfo" class="dividends hidden" aria-live="polite">
-          <span id="dividendRate">Dividends: 1.00%/10s</span>
-          <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
-            <circle class="bg" cx="18" cy="18" r="16" />
-            <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
-          </svg>
-        </div>
-        <div id="prestigeMultipliers" class="prestige hidden" aria-live="polite">
-          <span id="prestigeClickMultiplier">Click Multiplier: 1.00x</span>
-          <span id="prestigeInterestMultiplier">Interest Multiplier: 1.00x</span>
-        </div>
-        </div>
-        <div class="money" aria-live="polite">
-          <div class="label">Current</div>
-          <span id="currentDisplay">€0.00</span>
-        </div>
-      </div>
-
-    <div class="invest hidden" id="investSection">
-      <div class="controls">
-        <label for="amountInput" class="visually-hidden">Amount</label>
-        <input id="amountInput" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount" />
-        <button id="depositBtn">Deposit</button>
-        <button id="withdrawBtn">Withdraw</button>
-        <button id="depositAllBtn">Deposit All</button>
-        <button id="withdrawAllBtn">Withdraw All</button>
-      </div>
-      <div class="money" aria-live="polite">
-        <div class="label">Investment</div>
-        <span id="investmentDisplay">€0.00</span>
-      </div>
-    </div>
-    
-    <div class="auto-invest hidden" id="autoInvestSection">
-      <div class="auto-invest-controls">
-        <label class="toggle-label">
-          <input type="checkbox" id="autoInvestToggle" />
-          <span class="toggle-slider"></span>
-          <span class="toggle-text">Automatic Investments</span>
-        </label>
-        <div class="auto-invest-desc">When enabled, dividends are automatically invested instead of going to current account.</div>
-      </div>
-    </div>
-
-    <div class="click-streak hidden" id="clickStreakSection">
-      <div class="streak-info">
-        <div class="streak-label">Click Streak</div>
-        <div class="streak-multiplier" id="streakMultiplier">1.0x</div>
-      </div>
-      <div class="streak-progress-container">
-        <div class="streak-progress-bar">
-          <div class="streak-progress-fill" id="streakProgressFill"></div>
-        </div>
-        <div class="streak-progress-text" id="streakProgressText">1.0x - 3.0x</div>
-      </div>
-    </div>
 
 
       <div class="panels">
+        <section class="panel" aria-labelledby="earnTitle" id="earnSection">
+          <h2 id="earnTitle">Earn</h2>
+          <div class="earn-content">
+            <!-- Interest Rate and Dividends Group -->
+            <div class="earnings-metrics">
+              <div id="interestContainer" class="rate" aria-live="polite">
+                Interest: <span id="interestPerSec">0.00%</span>
+              </div>
+              <div id="dividendInfo" class="dividends hidden" aria-live="polite">
+                <span id="dividendRate">Dividends: 1.00%/10s</span>
+                <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
+                  <circle class="bg" cx="18" cy="18" r="16" />
+                  <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Investment Controls -->
+            <div class="invest" id="investSection">
+              <div class="controls">
+                <button id="depositAllBtn">Deposit</button>
+                <button id="withdrawAllBtn">Withdraw</button>
+              </div>
+            </div>
+
+            <!-- Auto Invest Section -->
+            <div class="auto-invest hidden" id="autoInvestSection">
+              <div class="auto-invest-controls">
+                <label class="toggle-label">
+                  <input type="checkbox" id="autoInvestToggle" />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-text">Automatic Investments</span>
+                  <button id="autoInvestHelpBtn" class="help-btn" aria-label="Learn about automatic investments">?</button>
+                </label>
+              </div>
+            </div>
+
+            <!-- Click Streak Section -->
+            <div class="click-streak hidden" id="clickStreakSection">
+              <div class="streak-info">
+                <div class="streak-label">Click Streak</div>
+                <div class="streak-multiplier" id="streakMultiplier">1.0x</div>
+              </div>
+              <div class="streak-progress-container">
+                <div class="streak-progress-bar">
+                  <div class="streak-progress-fill" id="streakProgressFill"></div>
+                </div>
+                <div class="streak-progress-text" id="streakProgressText">1.0x - 3.0x</div>
+              </div>
+            </div>
+
+            <!-- Prestige Multipliers -->
+            <div id="prestigeMultipliers" class="prestige hidden" aria-live="polite">
+              <span id="prestigeClickMultiplier">Click Multiplier: 1.00x</span>
+              <span id="prestigeInterestMultiplier">Interest Multiplier: 1.00x</span>
+            </div>
+
+            <!-- Click Button at Bottom -->
+            <div class="earn-click-section">
+              <button id="clickBtn" aria-label="Click to earn money">Click</button>
+            </div>
+          </div>
+        </section>
+
         <section class="panel" aria-labelledby="upgradesTitle" id="upgradesSection">
           <div class="panel-header">
             <h2 id="upgradesTitle">Upgrades</h2>
@@ -894,6 +932,26 @@
           <p id="tourMessage">Click the button to start earning money!</p>
         </div>
         <div class="tour-arrow"></div>
+      </div>
+    </div>
+
+    <!-- Auto Invest Help Modal -->
+    <div id="autoInvestModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Automatic Investments</h3>
+          <button id="autoInvestModalClose" class="modal-close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <p>When enabled, dividends are automatically invested instead of going to your current account.</p>
+          <p>This means:</p>
+          <ul>
+            <li>Dividends will be added directly to your investment account</li>
+            <li>Your investment will grow faster through compound interest</li>
+            <li>You don't need to manually deposit dividends</li>
+          </ul>
+          <p><strong>Tip:</strong> This is especially useful for maximizing long-term growth!</p>
+        </div>
       </div>
     </div>
 

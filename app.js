@@ -4,6 +4,8 @@
 
   const currentDisplay = document.getElementById("currentDisplay");
   const investmentDisplay = document.getElementById("investmentDisplay");
+  const headerCurrentDisplay = document.getElementById("headerCurrentDisplay");
+  const headerInvestmentDisplay = document.getElementById("headerInvestmentDisplay");
   const clickBtn = document.getElementById("clickBtn");
   const amountInput = document.getElementById("amountInput");
   const depositBtn = document.getElementById("depositBtn");
@@ -179,6 +181,18 @@
       // Add update animation
       investmentDisplay.classList.add('updating');
       setTimeout(() => investmentDisplay.classList.remove('updating'), 400);
+    }
+    
+    // Update header displays
+    if (headerCurrentDisplay) {
+      headerCurrentDisplay.textContent = euroFormatter.format(currentAccountBalance);
+      headerCurrentDisplay.classList.add('updating');
+      setTimeout(() => headerCurrentDisplay.classList.remove('updating'), 400);
+    }
+    if (headerInvestmentDisplay) {
+      headerInvestmentDisplay.textContent = euroFormatter.format(investmentAccountBalance);
+      headerInvestmentDisplay.classList.add('updating');
+      setTimeout(() => headerInvestmentDisplay.classList.remove('updating'), 400);
     }
   }
 
@@ -362,23 +376,13 @@
   }
 
   function deposit() {
-    const amount = parseAmountInput();
-    if (amount <= 0) return;
-    if (amount > currentAccountBalance) return; // insufficient funds
-    currentAccountBalance -= amount;
-    investmentAccountBalance += amount;
-    renderBalances();
-    if (amountInput) amountInput.value = "";
+    // This function is no longer used since we removed the amount input
+    // Keeping it for compatibility but it won't be called
   }
 
   function withdraw() {
-    const amount = parseAmountInput();
-    if (amount <= 0) return;
-    if (amount > investmentAccountBalance) return; // insufficient in investment
-    investmentAccountBalance -= amount;
-    currentAccountBalance += amount;
-    renderBalances();
-    if (amountInput) amountInput.value = "";
+    // This function is no longer used since we removed the amount input
+    // Keeping it for compatibility but it won't be called
   }
 
   function depositAll() {
@@ -871,8 +875,6 @@
     }
   }
 
-  if (depositBtn) depositBtn.addEventListener("click", deposit);
-  if (withdrawBtn) withdrawBtn.addEventListener("click", withdraw);
   if (depositAllBtn) depositAllBtn.addEventListener("click", depositAll);
   if (withdrawAllBtn) withdrawAllBtn.addEventListener("click", withdrawAll);
 
@@ -943,6 +945,8 @@
   let audioContext = null;
   let soundEnabled = true;
   let backgroundMusic = null;
+  let musicEnabled = true;
+  let soundEffectsEnabled = true;
 
   function initAudio() {
     try {
@@ -957,7 +961,7 @@
     try {
       backgroundMusic = new Audio('backround.mp3');
       backgroundMusic.loop = true;
-      backgroundMusic.volume = 0.22; // Set volume to 30% so it doesn't overpower sound effects
+      backgroundMusic.volume = 0.15; // Set volume to 30% so it doesn't overpower sound effects
       backgroundMusic.preload = 'auto';
       
       // Handle audio loading errors
@@ -979,7 +983,7 @@
   }
 
   function startBackgroundMusic() {
-    if (!backgroundMusic) return;
+    if (!backgroundMusic || !musicEnabled) return;
     
     try {
       backgroundMusic.currentTime = 0; // Start from beginning
@@ -992,8 +996,23 @@
     }
   }
 
+  function toggleBackgroundMusic() {
+    if (!backgroundMusic) {
+      console.log('Background music not initialized yet');
+      return;
+    }
+    
+    if (musicEnabled) {
+      console.log('Starting background music');
+      startBackgroundMusic();
+    } else {
+      console.log('Pausing background music');
+      backgroundMusic.pause();
+    }
+  }
+
   function playClickSound() {
-    if (!soundEnabled || !audioContext) return;
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
     
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -1012,7 +1031,7 @@
   }
 
   function playBuySound() {
-    if (!soundEnabled || !audioContext) return;
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
     
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -1031,7 +1050,7 @@
   }
 
   function playErrorSound() {
-    if (!soundEnabled || !audioContext) return;
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
     
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -1471,11 +1490,118 @@
   renderStatistics();
   renderStickFigure();
   
+  // Settings panel functionality
+  const settingsToggle = document.getElementById('settingsToggle');
+  const settingsMenu = document.getElementById('settingsMenu');
+  const musicToggle = document.getElementById('musicToggle');
+  const soundEffectsToggle = document.getElementById('soundEffectsToggle');
+
+  // Auto Invest Help Modal functionality
+  const autoInvestHelpBtn = document.getElementById('autoInvestHelpBtn');
+  const autoInvestModal = document.getElementById('autoInvestModal');
+  const autoInvestModalClose = document.getElementById('autoInvestModalClose');
+
+  // Load audio settings from localStorage
+  function loadAudioSettings() {
+    const savedMusicEnabled = localStorage.getItem('musicEnabled');
+    const savedSoundEffectsEnabled = localStorage.getItem('soundEffectsEnabled');
+    
+    if (savedMusicEnabled !== null) {
+      musicEnabled = savedMusicEnabled === 'true';
+      if (musicToggle) musicToggle.checked = musicEnabled;
+    }
+    
+    if (savedSoundEffectsEnabled !== null) {
+      soundEffectsEnabled = savedSoundEffectsEnabled === 'true';
+      if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
+    }
+    
+    // Apply music setting on load
+    if (!musicEnabled && backgroundMusic) {
+      backgroundMusic.pause();
+    } else if (musicEnabled && backgroundMusic) {
+      // If music should be enabled, try to start it
+      startBackgroundMusic();
+    }
+  }
+
+  // Save audio settings to localStorage
+  function saveAudioSettings() {
+    localStorage.setItem('musicEnabled', musicEnabled.toString());
+    localStorage.setItem('soundEffectsEnabled', soundEffectsEnabled.toString());
+  }
+
+  // Toggle settings menu
+  if (settingsToggle && settingsMenu) {
+    settingsToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      settingsMenu.classList.toggle('hidden');
+    });
+
+    // Close settings menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!settingsMenu.contains(e.target) && !settingsToggle.contains(e.target)) {
+        settingsMenu.classList.add('hidden');
+      }
+    });
+  }
+
+  // Music toggle functionality
+  if (musicToggle) {
+    musicToggle.addEventListener('change', (e) => {
+      musicEnabled = e.target.checked;
+      console.log('Music toggle changed to:', musicEnabled);
+      saveAudioSettings();
+      toggleBackgroundMusic();
+    });
+  }
+
+  // Sound effects toggle functionality
+  if (soundEffectsToggle) {
+    soundEffectsToggle.addEventListener('change', (e) => {
+      soundEffectsEnabled = e.target.checked;
+      saveAudioSettings();
+    });
+  }
+
+  // Auto Invest Help Modal functionality
+  if (autoInvestHelpBtn && autoInvestModal) {
+    autoInvestHelpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      autoInvestModal.classList.remove('hidden');
+    });
+  }
+
+  if (autoInvestModalClose && autoInvestModal) {
+    autoInvestModalClose.addEventListener('click', () => {
+      autoInvestModal.classList.add('hidden');
+    });
+  }
+
+  // Close modal when clicking outside
+  if (autoInvestModal) {
+    autoInvestModal.addEventListener('click', (e) => {
+      if (e.target === autoInvestModal) {
+        autoInvestModal.classList.add('hidden');
+      }
+    });
+  }
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && autoInvestModal && !autoInvestModal.classList.contains('hidden')) {
+      autoInvestModal.classList.add('hidden');
+    }
+  });
+
   // Initialize audio on first user interaction
   initAudio();
   
   // Initialize background music immediately when page loads
   initBackgroundMusic();
+  
+  // Load saved audio settings
+  loadAudioSettings();
 
   // Render interest per second from per-tick multiplier (dynamic)
   (function renderInterestPerSecond() {
