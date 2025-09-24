@@ -20,6 +20,97 @@
   font-weight: 600;
 }
 
+/* Market Event Styles */
+.market-event-notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 10005;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+  transition: all 0.3s ease-out;
+  max-width: 90%;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.market-event-notification.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.market-event-notification.boom {
+  background: linear-gradient(135deg, #00C851 0%, #00A041 100%);
+  border-color: rgba(0, 200, 81, 0.3);
+}
+
+.market-event-notification.crash {
+  background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%);
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
+.market-event-notification.boom-end,
+.market-event-notification.crash-end {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  border-color: rgba(108, 117, 125, 0.3);
+}
+
+.market-event-notification .event-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.market-event-notification .event-message {
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* Interest Rate Color Changes */
+#interestPerSec.market-boom {
+  color: #00C851 !important;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 200, 81, 0.5);
+  animation: boomPulse 1s ease-in-out infinite alternate;
+}
+
+#interestPerSec.market-crash {
+  color: #FF4444 !important;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+  animation: crashPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes boomPulse {
+  0% { 
+    color: #00C851;
+    text-shadow: 0 0 8px rgba(0, 200, 81, 0.5);
+  }
+  100% { 
+    color: #00FF00;
+    text-shadow: 0 0 12px rgba(0, 255, 0, 0.8);
+  }
+}
+
+@keyframes crashPulse {
+  0% { 
+    color: #FF4444;
+    text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+  }
+  100% { 
+    color: #FF0000;
+    text-shadow: 0 0 12px rgba(255, 0, 0, 0.8);
+  }
+}
+
 /* Basic layout */
 html, body {
   height: 100%;
