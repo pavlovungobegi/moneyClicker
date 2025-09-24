@@ -355,9 +355,8 @@
     clickBtn.addEventListener("click", handleClick);
     // Initialize audio on first click
     clickBtn.addEventListener("click", () => {
-      if (audioContext && audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
+      // Resume audio context for iOS PWA compatibility
+      resumeAudioContext();
       // Start background music on first user interaction (browser requirement)
       if (backgroundMusic) {
         startBackgroundMusic();
@@ -1335,9 +1334,26 @@
   function initAudio() {
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      console.log('Audio context initialized, state:', audioContext.state);
+      
+      // iOS PWA specific: Resume audio context on first user interaction
+      if (audioContext.state === 'suspended') {
+        console.log('Audio context suspended, will resume on user interaction');
+      }
     } catch (e) {
-      console.log('Audio not supported');
+      console.log('Audio not supported:', e);
       soundEnabled = false;
+    }
+  }
+
+  // Resume audio context for iOS PWA compatibility
+  function resumeAudioContext() {
+    if (audioContext && audioContext.state === 'suspended') {
+      audioContext.resume().then(() => {
+        console.log('Audio context resumed for iOS PWA');
+      }).catch(e => {
+        console.log('Failed to resume audio context:', e);
+      });
     }
   }
 
@@ -1370,6 +1386,9 @@
     if (!backgroundMusic || !musicEnabled) return;
     
     try {
+      // Ensure audio context is resumed for iOS PWA
+      resumeAudioContext();
+      
       backgroundMusic.currentTime = 0; // Start from beginning
       backgroundMusic.play().catch(e => {
         console.log('Background music play failed:', e);
@@ -1398,6 +1417,9 @@
   function playClickSound() {
     if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
     
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -1417,6 +1439,9 @@
   function playBuySound() {
     if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
     
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -1435,6 +1460,9 @@
 
   function playErrorSound() {
     if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
     
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
