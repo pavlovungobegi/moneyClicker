@@ -123,9 +123,9 @@ header {
   
   .mobile-nav {
     /* Add more spacing from bottom to prevent accidental swipe-up */
-    bottom: 12px;
+    bottom: 20px;
     /* Add safe area padding plus extra spacing */
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
     /* Make background opaque */
     background: rgba(255, 255, 255, 1);
     /* Add border radius for better visual separation */
@@ -142,7 +142,7 @@ header {
   
   .panels {
     /* Adjust panels padding for standalone mode */
-    padding-bottom: calc(6vh + 24px + env(safe-area-inset-bottom));
+    padding-bottom: calc(6vh + 32px + env(safe-area-inset-bottom));
   }
   
   /* Hide the home indicator line */
@@ -676,7 +676,7 @@ main {
   .mobile-nav {
     display: flex;
     /* Add more spacing from bottom to prevent accidental swipe-up */
-    bottom: 12px;
+    bottom: 20px;
     /* Add border radius for better visual separation */
     border-radius: 16px 16px 0 0;
     /* Add shadow for depth */
@@ -695,7 +695,7 @@ main {
   
   /* Ensure panels don't extend under navigation */
   .panels {
-    padding-bottom: calc(6vh + 24px); /* Add padding to prevent panels from going under nav + spacing */
+    padding-bottom: calc(6vh + 32px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
   }
   
@@ -781,7 +781,7 @@ main {
   
   .panels {
     gap: 12px;
-    padding-bottom: calc(6vh + 24px); /* Add padding to prevent panels from going under nav + spacing */
+    padding-bottom: calc(6vh + 32px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
     /* Enhanced smooth scrolling for small mobile */
     scroll-behavior: smooth;
