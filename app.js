@@ -353,6 +353,16 @@
 
   if (clickBtn) {
     clickBtn.addEventListener("click", handleClick);
+    
+    // Add touch-specific animation handling
+    clickBtn.addEventListener("touchstart", (e) => {
+      clickBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    clickBtn.addEventListener("touchend", (e) => {
+      clickBtn.classList.remove("touch-active");
+    }, { passive: true });
+    
     // Initialize audio on first click
     clickBtn.addEventListener("click", () => {
       // Resume audio context for iOS PWA compatibility

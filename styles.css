@@ -1142,6 +1142,38 @@ main {
   animation: clickPulse 0.3s ease;
 }
 
+/* Touch-specific animations for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  #clickBtn:active {
+    transform: translateY(2px) scale(0.98);
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: touchClickPulse 0.2s ease;
+  }
+  
+  @keyframes touchClickPulse {
+    0% {
+      transform: translateY(2px) scale(0.98);
+    }
+    50% {
+      transform: translateY(2px) scale(1.02);
+    }
+    100% {
+      transform: translateY(2px) scale(0.98);
+    }
+  }
+}
+
+/* JavaScript-triggered touch animation */
+#clickBtn.touch-active {
+  transform: translateY(2px) scale(0.98);
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s ease;
+}
+
 @keyframes clickPulse {
   0% {
     transform: translateY(1px) scale(1);
