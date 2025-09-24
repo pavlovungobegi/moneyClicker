@@ -209,6 +209,22 @@
       }
     }
     
+    createFlashSaleParticles(x, y, count = 20) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('flash-sale', x, y, {
+          vx: (Math.random() - 0.5) * 8,
+          vy: -Math.random() * 6 - 2,
+          size: 3 + Math.random() * 4,
+          color: '#FF6B35',
+          life: 2.0,
+          decay: 0.015,
+          gravity: 0.08,
+          bounce: 0.4,
+          rotationSpeed: (Math.random() - 0.5) * 0.3
+        });
+      }
+    }
+    
     updateParticles() {
       for (let i = this.particles.length - 1; i >= 0; i--) {
         const particle = this.particles[i];
@@ -374,6 +390,23 @@
           this.ctx.moveTo(particle.size, -particle.size);
           this.ctx.lineTo(-particle.size, particle.size);
           this.ctx.stroke();
+        } else if (particle.type === 'flash-sale') {
+          // Draw flash sale particle (orange tag shape)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.moveTo(-particle.size, -particle.size * 0.5);
+          this.ctx.lineTo(particle.size * 0.7, -particle.size * 0.5);
+          this.ctx.lineTo(particle.size, 0);
+          this.ctx.lineTo(particle.size * 0.7, particle.size * 0.5);
+          this.ctx.lineTo(-particle.size, particle.size * 0.5);
+          this.ctx.closePath();
+          this.ctx.fill();
+          
+          // Add a small circle for the tag hole
+          this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+          this.ctx.beginPath();
+          this.ctx.arc(-particle.size * 0.3, 0, particle.size * 0.2, 0, Math.PI * 2);
+          this.ctx.fill();
         }
         
         this.ctx.restore();
@@ -537,23 +570,56 @@
   // Initialize number animator
   let numberAnimator;
   
-  // Market Events System
+  // Event System
   let marketBoomActive = false;
   let marketCrashActive = false;
+  let flashSaleActive = false;
   let marketBoomEndTime = 0;
   let marketCrashEndTime = 0;
-  let marketEventCooldown = 0;
+  let flashSaleEndTime = 0;
+  let eventCooldown = 0;
   
-  // Market Event Functions
+  // Event system configuration
+  const EVENT_CONFIG = {
+    // Event probabilities (per check)
+    probabilities: {
+      marketBoom: 0.015,    // 1.5% chance
+      marketCrash: 0.015,   // 1.5% chance  
+      flashSale: 0.01       // 1% chance
+    },
+    
+    // Event durations (milliseconds)
+    durations: {
+      marketBoom: 30000,    // 30 seconds
+      marketCrash: 30000,   // 30 seconds
+      flashSale: 120000     // 2 minutes
+    },
+    
+    // Event cooldowns (milliseconds)
+    cooldowns: {
+      marketBoom: 60000,    // 1 minute
+      marketCrash: 60000,   // 1 minute
+      flashSale: 180000     // 3 minutes
+    },
+    
+    // Event-specific cooldowns
+    eventCooldowns: {
+      marketBoom: 0,
+      marketCrash: 0,
+      flashSale: 0
+    }
+  };
+  
+  // Event Functions
   function triggerMarketBoom() {
-    if (marketBoomActive || marketCrashActive) return; // Don't overlap events
+    if (marketBoomActive) return; // Don't trigger if already active
     
     marketBoomActive = true;
-    marketBoomEndTime = Date.now() + 30000; // 30 seconds
-    marketEventCooldown = Date.now() + 60000; // 1 minute cooldown
+    marketBoomEndTime = Date.now() + EVENT_CONFIG.durations.marketBoom;
+    EVENT_CONFIG.eventCooldowns.marketBoom = Date.now() + EVENT_CONFIG.cooldowns.marketBoom;
     
     // Show notification
-    showMarketEventNotification("📈 Market Boom!", "Interest rates increased by 50%!", "boom");
+    showEventNotification("📈 Market Boom!", "Interest rates increased by 50%!", "boom");
     
     // Visual effects
     screenFlash('#00FF00', 500); // Green flash
@@ -567,18 +633,18 @@
   }
   
   function triggerMarketCrash() {
-    if (marketBoomActive || marketCrashActive) return; // Don't overlap events
+    if (marketCrashActive) return; // Don't trigger if already active
     
     marketCrashActive = true;
-    marketCrashEndTime = Date.now() + 30000; // 30 seconds
-    marketEventCooldown = Date.now() + 60000; // 1 minute cooldown
+    marketCrashEndTime = Date.now() + EVENT_CONFIG.durations.marketCrash;
+    EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + EVENT_CONFIG.cooldowns.marketCrash;
     
     // Calculate 10% loss
     const lossAmount = investmentAccountBalance * 0.1;
     investmentAccountBalance -= lossAmount;
     
     // Show notification
-    showMarketEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest rates reduced by 50%!`, "crash");
+    showEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest rates reduced by 50%!`, "crash");
     
     // Visual effects
     screenFlash('#FF0000', 500); // Red flash
@@ -601,32 +667,87 @@
     renderBalances();
   }
   
-  function checkMarketEvents() {
+  function triggerFlashSale() {
+    if (flashSaleActive) return; // Don't trigger if already active
+    
+    flashSaleActive = true;
+    flashSaleEndTime = Date.now() + EVENT_CONFIG.durations.flashSale;
+    EVENT_CONFIG.eventCooldowns.flashSale = Date.now() + EVENT_CONFIG.cooldowns.flashSale;
+    
+    // Show notification
+    showEventNotification("🏷️ Flash Sale!", "25% off all upgrades for 2 minutes!", "flash-sale");
+    
+    // Visual effects
+    screenFlash('#FF6B35', 500); // Orange flash
+    screenShake(4, 300); // Medium shake
+    
+    // Sound effect
+    playFlashSaleSound();
+    
+    // Create sale particles
+    if (particleSystem) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      particleSystem.createFlashSaleParticles(centerX, centerY, 20);
+    }
+    
+    // Update upgrade prices to show discount
+    renderUpgradePrices();
+    
+    // Add visual styling to upgrades section
+    const upgradesSection = document.getElementById('upgradesSection');
+    if (upgradesSection) {
+      upgradesSection.classList.add('flash-sale-active');
+    }
+  }
+  
+  function checkEvents() {
     const now = Date.now();
     
     // Check if events should end
     if (marketBoomActive && now >= marketBoomEndTime) {
       marketBoomActive = false;
       updateInterestRateColor();
-      showMarketEventNotification("📈 Boom Ended", "Interest rates returned to normal", "boom-end");
+      showEventNotification("📈 Boom Ended", "Interest rates returned to normal", "boom-end");
     }
     
     if (marketCrashActive && now >= marketCrashEndTime) {
       marketCrashActive = false;
       updateInterestRateColor();
-      showMarketEventNotification("📉 Crash Ended", "Interest rates returned to normal", "crash-end");
+      showEventNotification("📉 Crash Ended", "Interest rates returned to normal", "crash-end");
     }
     
-    // Check for new events (only if no cooldown and no active events)
-    if (now >= marketEventCooldown && !marketBoomActive && !marketCrashActive) {
-      // 3% chance per check (every 5 seconds)
-      if (Math.random() < 0.03) {
-        // 60% chance for boom, 40% chance for crash
-        if (Math.random() < 0.5) {
-          triggerMarketBoom();
-        } else {
-          triggerMarketCrash();
-        }
+    if (flashSaleActive && now >= flashSaleEndTime) {
+      flashSaleActive = false;
+      showEventNotification("🏷️ Sale Ended", "Upgrade prices returned to normal", "flash-sale-end");
+      renderUpgradePrices(); // Update prices back to normal
+      
+      // Remove visual styling from upgrades section
+      const upgradesSection = document.getElementById('upgradesSection');
+      if (upgradesSection) {
+        upgradesSection.classList.remove('flash-sale-active');
+      }
+    }
+    
+    // Check for new events (independent probability for each event)
+    // Market Boom
+    if (!marketBoomActive && now >= EVENT_CONFIG.eventCooldowns.marketBoom) {
+      if (Math.random() < EVENT_CONFIG.probabilities.marketBoom) {
+        triggerMarketBoom();
+      }
+    }
+    
+    // Market Crash
+    if (!marketCrashActive && now >= EVENT_CONFIG.eventCooldowns.marketCrash) {
+      if (Math.random() < EVENT_CONFIG.probabilities.marketCrash) {
+        triggerMarketCrash();
+      }
+    }
+    
+    // Flash Sale
+    if (!flashSaleActive && now >= EVENT_CONFIG.eventCooldowns.flashSale) {
+      if (Math.random() < EVENT_CONFIG.probabilities.flashSale) {
+        triggerFlashSale();
       }
     }
   }
@@ -646,7 +767,7 @@
     }
   }
   
-  function showMarketEventNotification(title, message, type) {
+  function showEventNotification(title, message, type) {
     const notification = document.createElement('div');
     notification.className = `market-event-notification ${type}`;
     notification.innerHTML = `
@@ -712,6 +833,35 @@
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.8);
+    } catch (error) {
+      console.log('Audio not available');
+    }
+  }
+  
+  function playFlashSaleSound() {
+    if (!audioContext || !soundEffectsEnabled) return;
+    
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Cash register sound for sale
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(400, audioContext.currentTime + 0.2);
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.3);
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.2);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
       console.log('Audio not available');
     }
@@ -945,7 +1095,12 @@
     };
     Object.entries(map).forEach(([key, el]) => {
       if (!el) return;
-      const cost = UPGRADE_COSTS[key];
+      let cost = UPGRADE_COSTS[key];
+      
+      // Apply Flash Sale discount
+      if (flashSaleActive) {
+        cost = cost * 0.75; // 25% off
+      }
       
       if (numberAnimator) {
         // Parse current value from element text
@@ -1650,9 +1805,12 @@
         // Market events
         marketBoomActive,
         marketCrashActive,
+        flashSaleActive,
         marketBoomEndTime,
         marketCrashEndTime,
-        marketEventCooldown,
+        flashSaleEndTime,
+        eventCooldown,
+        eventConfig: EVENT_CONFIG,
         
         // Save timestamp
         lastSaved: Date.now()
@@ -1744,12 +1902,27 @@
         // Restore market events
         marketBoomActive = gameState.marketBoomActive || false;
         marketCrashActive = gameState.marketCrashActive || false;
+        flashSaleActive = gameState.flashSaleActive || false;
         marketBoomEndTime = gameState.marketBoomEndTime || 0;
         marketCrashEndTime = gameState.marketCrashEndTime || 0;
-        marketEventCooldown = gameState.marketEventCooldown || 0;
+        flashSaleEndTime = gameState.flashSaleEndTime || 0;
+        eventCooldown = gameState.eventCooldown || 0;
+        
+        // Restore event configuration
+        if (gameState.eventConfig) {
+          Object.assign(EVENT_CONFIG.eventCooldowns, gameState.eventConfig.eventCooldowns || {});
+        }
         
         // Update interest rate color if market event is active
         updateInterestRateColor();
+        
+        // Update Flash Sale styling if active
+        if (flashSaleActive) {
+          const upgradesSection = document.getElementById('upgradesSection');
+          if (upgradesSection) {
+            upgradesSection.classList.add('flash-sale-active');
+          }
+        }
         
         console.log('Game state loaded successfully');
         
@@ -1802,9 +1975,16 @@
       // Reset market events
       marketBoomActive = false;
       marketCrashActive = false;
+      flashSaleActive = false;
       marketBoomEndTime = 0;
       marketCrashEndTime = 0;
-      marketEventCooldown = 0;
+      flashSaleEndTime = 0;
+      eventCooldown = 0;
+      
+      // Reset event cooldowns
+      EVENT_CONFIG.eventCooldowns.marketBoom = 0;
+      EVENT_CONFIG.eventCooldowns.marketCrash = 0;
+      EVENT_CONFIG.eventCooldowns.flashSale = 0;
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
@@ -2682,7 +2862,13 @@
 
   function tryBuyUpgrade(key) {
     if (owned[key]) return;
-    const cost = UPGRADE_COSTS[key];
+    let cost = UPGRADE_COSTS[key];
+    
+    // Apply Flash Sale discount
+    if (flashSaleActive) {
+      cost = cost * 0.75; // 25% off
+    }
+    
     if (currentAccountBalance < cost) {
       playErrorSound();
       return;
@@ -3186,9 +3372,9 @@
     checkPortfolioTour();
   }, TICK_MS);
   
-  // Market events check every 5 seconds
+  // Events check every 5 seconds
   setInterval(() => {
-    checkMarketEvents();
+    checkEvents();
   }, 5000);
 
   // Initialize upgrade visibility state before rendering

@@ -56,9 +56,15 @@
 }
 
 .market-event-notification.boom-end,
-.market-event-notification.crash-end {
+.market-event-notification.crash-end,
+.market-event-notification.flash-sale-end {
   background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
   border-color: rgba(108, 117, 125, 0.3);
+}
+
+.market-event-notification.flash-sale {
+  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  border-color: rgba(255, 107, 53, 0.3);
 }
 
 .market-event-notification .event-title {
@@ -108,6 +114,25 @@
   100% { 
     color: #FF0000;
     text-shadow: 0 0 12px rgba(255, 0, 0, 0.8);
+  }
+}
+
+/* Flash Sale Styles */
+.flash-sale-active .upgrade-price {
+  color: #FF6B35 !important;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+  animation: flashSalePulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes flashSalePulse {
+  0% { 
+    color: #FF6B35;
+    text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+  }
+  100% { 
+    color: #FF8C42;
+    text-shadow: 0 0 12px rgba(255, 140, 66, 0.8);
   }
 }
 
