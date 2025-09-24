@@ -114,9 +114,11 @@
     maximumFractionDigits: 2,
   });
 
-  // Format numbers with k/m/b suffixes for better readability
+  // Format numbers with k/m/b/t suffixes for better readability
   function formatNumberShort(num) {
-    if (num >= 1000000000) {
+    if (num >= 1000000000000) {
+      return (num / 1000000000000).toFixed(2) + 't';
+    } else if (num >= 1000000000) {
       return (num / 1000000000).toFixed(2) + 'b';
     } else if (num >= 1000000) {
       return (num / 1000000).toFixed(2) + 'm';
@@ -837,6 +839,7 @@
     
     // Define wealth objects and their values
     const wealthObjects = [
+      { value: 10000000000000, id: 'galaxy', emoji: '🌌' },
       { value: 1000000000000, id: 'trillionStar', emoji: '⭐' },
       { value: 100000000000, id: 'globe', emoji: '🌍' },
       { value: 10000000000, id: 'crown', emoji: '👑' },
@@ -1302,7 +1305,7 @@
   };
 
   // Money cap system
-  const MAX_TOTAL_MONEY = 1000000000000; // 1 trillion euros
+  const MAX_TOTAL_MONEY = 100000000000000; // 100 trillion euros
 
   function getTotalMoney() {
     return currentAccountBalance + investmentAccountBalance;
@@ -1815,7 +1818,7 @@
   // Leaderboard model
   const WORLD_POPULATION = 8200000000; // 8.2B starting rank
   const RICH_LIST_TOP = 1; // rank upper bound
-  const WEALTH_FOR_TOP_100 = 1000000000000; // 1T ~ top rank scale
+  const WEALTH_FOR_TOP_100 = 10000000000000; // 10T ~ top rank scale
 
   function computeRank(totalWealth) {
     // Simple model: map wealth logarithmically to rank improvement
