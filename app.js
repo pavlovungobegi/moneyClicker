@@ -1571,7 +1571,7 @@
     if (!toggleCompletedBtn || !upgradesSection) return;
     const hidden = upgradesSection.classList.contains('hide-completed');
     toggleCompletedBtn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
-    toggleCompletedBtn.textContent = hidden ? 'Show completed' : 'Hide completed';
+    toggleCompletedBtn.textContent = hidden ? 'Show completed' : 'Show next 3';
   }
 
   if (toggleCompletedBtn && upgradesSection) {
@@ -1620,13 +1620,40 @@
 
     const hideCompleted = container.classList.contains('hide-completed');
     if (hideCompleted) {
-      // Only show the next unowned upgrade
-      const nextUnowned = rows.find((row) => {
+      // Show the next 3 unowned upgrades, but only one education upgrade at a time
+      const unownedUpgrades = rows.filter((row) => {
         const id = row.getAttribute('data-upgrade-id');
         return !owned[id];
       });
+      
+      // Define education upgrade IDs
+      const educationUpgrades = ['u1', 'u2', 'u3', 'u5', 'u6', 'u7'];
+      
+      // Separate education and non-education upgrades
+      const unownedEducation = unownedUpgrades.filter((row) => {
+        const id = row.getAttribute('data-upgrade-id');
+        return educationUpgrades.includes(id);
+      });
+      
+      const unownedNonEducation = unownedUpgrades.filter((row) => {
+        const id = row.getAttribute('data-upgrade-id');
+        return !educationUpgrades.includes(id);
+      });
+      
+      // Take the first education upgrade (if any) and first 2 non-education upgrades
+      const nextThreeUpgrades = [];
+      
+      // Add the first education upgrade if available
+      if (unownedEducation.length > 0) {
+        nextThreeUpgrades.push(unownedEducation[0]);
+      }
+      
+      // Add up to 2 non-education upgrades to fill remaining slots
+      const remainingSlots = 3 - nextThreeUpgrades.length;
+      nextThreeUpgrades.push(...unownedNonEducation.slice(0, remainingSlots));
+      
       rows.forEach((row) => {
-        if (row === nextUnowned) {
+        if (nextThreeUpgrades.includes(row)) {
           row.style.display = '';
         } else {
           row.style.display = 'none';
