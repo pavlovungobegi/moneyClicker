@@ -328,13 +328,13 @@
     const formattedAmount = formatNumberShort(amount);
     flyingMoney.textContent = isCritical ? `CRITICAL! +${formattedAmount}` : `+${formattedAmount}`;
     
-    // Position it randomly around the click button
+    // Position it from the center top of the click button
     const buttonRect = clickBtn.getBoundingClientRect();
-    const randomX = (Math.random() - 0.5) * 60; // Random horizontal offset
-    const randomY = (Math.random() - 0.5) * 20; // Random vertical offset
+    const randomX = (Math.random() - 2.5) * 20; // Small random variation (-10 to +10)
+    const randomY = (Math.random() - 2) * 10; // Small random variation (-5 to +5)
     
     flyingMoney.style.left = `${buttonRect.width / 2 + randomX}px`;
-    flyingMoney.style.top = `${buttonRect.height / 2 + randomY}px`;
+    flyingMoney.style.top = `${buttonRect.height * 0.1 + randomY}px`; // Start from top 10% of button (center top)
     
     // Add to button
     clickBtn.appendChild(flyingMoney);
