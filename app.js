@@ -163,7 +163,7 @@
     Object.entries(map).forEach(([key, el]) => {
       if (!el) return;
       const cost = UPGRADE_COSTS[key];
-      el.textContent = euroFormatter.format(cost);
+      el.textContent = '€' + formatNumberShort(cost);
     });
   }
 
@@ -330,8 +330,8 @@
     
     // Position it from the center top of the click button
     const buttonRect = clickBtn.getBoundingClientRect();
-    const randomX = (Math.random() - 3) * 20; // Small random variation (-10 to +10)
-    const randomY = (Math.random() - 2.6) * 10; // Small random variation (-5 to +5)
+    const randomX = (Math.random() - 1.5) * 60; // Small random variation (-10 to +10)
+    const randomY = (Math.random() - 1.5) * 40; // Small random variation (-5 to +5)
     
     flyingMoney.style.left = `${buttonRect.width / 2 + randomX}px`;
     flyingMoney.style.top = `${buttonRect.height * 0.1 + randomY}px`; // Start from top 10% of button (center top)
@@ -468,6 +468,13 @@
   }
 
   function renderAchievements() {
+    const achievementsSection = document.getElementById('achievementsSection');
+    if (!achievementsSection) return;
+    
+    // Separate achievements into unlocked and locked
+    const unlockedAchievements = [];
+    const lockedAchievements = [];
+    
     for (const [achievementId, achievement] of Object.entries(achievements)) {
       const achievementEl = document.querySelector(`[data-achievement-id="${achievementId}"]`);
       const statusEl = document.getElementById(`${achievementId}Status`);
@@ -476,12 +483,23 @@
         if (achievement.unlocked) {
           achievementEl.classList.add('unlocked');
           statusEl.textContent = '✅';
+          unlockedAchievements.push(achievementEl);
         } else {
           achievementEl.classList.remove('unlocked');
           statusEl.textContent = '🔒';
+          lockedAchievements.push(achievementEl);
         }
       }
     }
+    
+    // Reorder: locked achievements first, then unlocked achievements
+    const reorderedAchievements = [...lockedAchievements, ...unlockedAchievements];
+    
+    // Clear the section and append in new order
+    achievementsSection.innerHTML = '';
+    reorderedAchievements.forEach(achievementEl => {
+      achievementsSection.appendChild(achievementEl);
+    });
   }
 
   function renderStickFigure() {
