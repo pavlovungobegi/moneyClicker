@@ -117,11 +117,11 @@
   // Format numbers with k/m/b suffixes for better readability
   function formatNumberShort(num) {
     if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1) + 'b';
+      return (num / 1000000000).toFixed(2) + 'b';
     } else if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'm';
+      return (num / 1000000).toFixed(2) + 'm';
     } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
+      return (num / 1000).toFixed(2) + 'k';
     } else {
       return num.toFixed(0);
     }
@@ -169,13 +169,13 @@
 
   function renderBalances() {
     if (currentDisplay) {
-      currentDisplay.textContent = euroFormatter.format(currentAccountBalance);
+      currentDisplay.textContent = '€' + formatNumberShort(currentAccountBalance);
       // Add update animation
       currentDisplay.classList.add('updating');
       setTimeout(() => currentDisplay.classList.remove('updating'), 400);
     }
     if (investmentDisplay) {
-      investmentDisplay.textContent = euroFormatter.format(investmentAccountBalance);
+      investmentDisplay.textContent = '€' + formatNumberShort(investmentAccountBalance);
       // Add update animation
       investmentDisplay.classList.add('updating');
       setTimeout(() => investmentDisplay.classList.remove('updating'), 400);
@@ -183,12 +183,12 @@
     
     // Update header displays
     if (headerCurrentDisplay) {
-      headerCurrentDisplay.textContent = euroFormatter.format(currentAccountBalance);
+      headerCurrentDisplay.textContent = '€' + formatNumberShort(currentAccountBalance);
       headerCurrentDisplay.classList.add('updating');
       setTimeout(() => headerCurrentDisplay.classList.remove('updating'), 400);
     }
     if (headerInvestmentDisplay) {
-      headerInvestmentDisplay.textContent = euroFormatter.format(investmentAccountBalance);
+      headerInvestmentDisplay.textContent = '€' + formatNumberShort(investmentAccountBalance);
       headerInvestmentDisplay.classList.add('updating');
       setTimeout(() => headerInvestmentDisplay.classList.remove('updating'), 400);
     }
@@ -330,8 +330,8 @@
     
     // Position it from the center top of the click button
     const buttonRect = clickBtn.getBoundingClientRect();
-    const randomX = (Math.random() - 2.5) * 20; // Small random variation (-10 to +10)
-    const randomY = (Math.random() - 2) * 10; // Small random variation (-5 to +5)
+    const randomX = (Math.random() - 3) * 20; // Small random variation (-10 to +10)
+    const randomY = (Math.random() - 2.6) * 10; // Small random variation (-5 to +5)
     
     flyingMoney.style.left = `${buttonRect.width / 2 + randomX}px`;
     flyingMoney.style.top = `${buttonRect.height * 0.1 + randomY}px`; // Start from top 10% of button (center top)

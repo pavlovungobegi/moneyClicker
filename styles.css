@@ -276,6 +276,7 @@ footer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .account-label {
@@ -283,6 +284,8 @@ footer {
   font-weight: 500;
   color: #64748b;
   margin-bottom: 2px;
+  width: 80px;
+  text-align: left;
 }
 
 .account-amount {
@@ -531,8 +534,8 @@ main {
   .header-accounts {
     flex-direction: column;
     gap: 8px;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
     width: 100%;
     padding-top: 8px; /* Extra padding for accounts */
   }
@@ -541,7 +544,7 @@ main {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 12px;
     width: 100%;
   }
@@ -550,8 +553,8 @@ main {
     font-size: 16px;
     font-weight: 600;
     color: #64748b;
-    min-width: 80px;
-    text-align: right;
+    width: 80px;
+    text-align: left;
   }
   
   .account-amount {
@@ -752,16 +755,19 @@ main {
     flex-direction: column;
     gap: 6px;
     padding-top: 6px; /* Extra padding for accounts */
+    align-items: flex-start;
   }
   
   .account-label {
     font-size: 14px;
-    min-width: 70px;
+    width: 70px;
+    text-align: left;
   }
   
   .account-amount {
     font-size: 16px;
     min-width: 90px;
+    text-align: left;
   }
   
   .settings-panel {
