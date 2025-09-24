@@ -75,6 +75,53 @@
       }
     }
     
+    createUpgradeParticles(x, y, count = 10) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('upgrade', x, y, {
+          vx: (Math.random() - 0.5) * 10,
+          vy: -Math.random() * 6 - 2,
+          size: 4 + Math.random() * 4,
+          color: `hsl(${Math.random() * 120 + 200}, 80%, 60%)`,
+          life: 1.2,
+          decay: 0.02,
+          gravity: 0.08,
+          bounce: 0.4
+        });
+      }
+    }
+    
+    createConfettiParticles(x, y, count = 15) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('confetti', x, y, {
+          vx: (Math.random() - 0.5) * 12,
+          vy: -Math.random() * 8 - 3,
+          size: 3 + Math.random() * 3,
+          color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+          life: 2.0,
+          decay: 0.015,
+          gravity: 0.12,
+          bounce: 0.3,
+          rotationSpeed: (Math.random() - 0.5) * 0.3
+        });
+      }
+    }
+    
+    createMoneyGainParticles(x, y, amount) {
+      const count = Math.min(20, Math.max(5, Math.floor(amount / 1000)));
+      for (let i = 0; i < count; i++) {
+        this.createParticle('money', x, y, {
+          vx: (Math.random() - 0.5) * 6,
+          vy: -Math.random() * 4 - 1,
+          size: 5 + Math.random() * 3,
+          color: '#00C851',
+          life: 1.5,
+          decay: 0.02,
+          gravity: 0.1,
+          bounce: 0.5
+        });
+      }
+    }
+    
     updateParticles() {
       for (let i = this.particles.length - 1; i >= 0; i--) {
         const particle = this.particles[i];
@@ -136,6 +183,43 @@
           this.ctx.lineTo(-particle.size * 0.3, -particle.size * 0.3);
           this.ctx.closePath();
           this.ctx.fill();
+        } else if (particle.type === 'upgrade') {
+          // Draw upgrade particle (diamond shape)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, -particle.size);
+          this.ctx.lineTo(particle.size * 0.5, 0);
+          this.ctx.lineTo(0, particle.size);
+          this.ctx.lineTo(-particle.size * 0.5, 0);
+          this.ctx.closePath();
+          this.ctx.fill();
+          
+          // Upgrade highlight
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, -particle.size * 0.6);
+          this.ctx.lineTo(particle.size * 0.3, 0);
+          this.ctx.lineTo(0, particle.size * 0.6);
+          this.ctx.lineTo(-particle.size * 0.3, 0);
+          this.ctx.closePath();
+          this.ctx.fill();
+        } else if (particle.type === 'confetti') {
+          // Draw confetti (rectangle)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.fillRect(-particle.size * 0.3, -particle.size * 0.8, particle.size * 0.6, particle.size * 1.6);
+        } else if (particle.type === 'money') {
+          // Draw money particle (dollar sign)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          
+          // Dollar sign
+          this.ctx.fillStyle = 'white';
+          this.ctx.font = `bold ${particle.size}px Arial`;
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText('$', 0, 0);
         }
         
         this.ctx.restore();
@@ -613,6 +697,8 @@
   function depositAll() {
     if (currentAccountBalance <= 0) return;
     
+    const depositAmount = currentAccountBalance;
+    
     // Track first investment for achievement
     if (!hasMadeFirstInvestment && currentAccountBalance > 0) {
       hasMadeFirstInvestment = true;
@@ -620,6 +706,23 @@
     
     investmentAccountBalance += currentAccountBalance;
     currentAccountBalance = 0;
+    
+    // Create deposit particle effects
+    if (particleSystem) {
+      const depositBtn = document.getElementById('depositAllBtn');
+      if (depositBtn) {
+        const rect = depositBtn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create money particles flowing to investment
+        particleSystem.createMoneyGainParticles(centerX, centerY, depositAmount);
+        
+        // Create upgrade particles for investment
+        particleSystem.createUpgradeParticles(centerX, centerY, 8);
+      }
+    }
+    
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
     playDepositSound(); // Play deposit sound effect
@@ -628,8 +731,27 @@
 
   function withdrawAll() {
     if (investmentAccountBalance <= 0) return;
+    
+    const withdrawAmount = investmentAccountBalance;
     currentAccountBalance += investmentAccountBalance;
     investmentAccountBalance = 0;
+    
+    // Create withdraw particle effects
+    if (particleSystem) {
+      const withdrawBtn = document.getElementById('withdrawAllBtn');
+      if (withdrawBtn) {
+        const rect = withdrawBtn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create money particles flowing to current account
+        particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
+        
+        // Create sparkle particles for withdrawal
+        particleSystem.createSparkleParticles(centerX, centerY, 6);
+      }
+    }
+    
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
     playWithdrawSound(); // Play withdraw sound effect
@@ -750,6 +872,22 @@
     // Show the banner
     banner.classList.remove('hidden');
     banner.classList.add('show');
+    
+    // Create achievement particle effects
+    if (particleSystem) {
+      const rect = banner.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      // Create confetti particles for achievement
+      particleSystem.createConfettiParticles(centerX, centerY, 20);
+      
+      // Create sparkle particles
+      particleSystem.createSparkleParticles(centerX, centerY, 15);
+      
+      // Create upgrade particles
+      particleSystem.createUpgradeParticles(centerX, centerY, 12);
+    }
     
     // Play achievement sound
     playAchievementSound();
@@ -1982,6 +2120,26 @@
     owned[key] = true;
     totalUpgradesBought++;
     
+    // Create upgrade particle effects
+    if (particleSystem) {
+      const buyButton = document.getElementById(`buy${key.charAt(0).toUpperCase() + key.slice(1)}Btn`);
+      if (buyButton) {
+        const rect = buyButton.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create upgrade particles
+        particleSystem.createUpgradeParticles(centerX, centerY, 10);
+        
+        // Create confetti for expensive upgrades
+        if (cost >= 10000) {
+          particleSystem.createConfettiParticles(centerX, centerY, 15);
+        }
+        
+        // Create money gain particles
+        particleSystem.createMoneyGainParticles(centerX, centerY, cost);
+      }
+    }
     
     renderBalances();
     renderUpgradesOwned();
