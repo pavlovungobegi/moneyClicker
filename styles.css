@@ -1789,6 +1789,30 @@ input#amountInput:focus {
   line-height: 1.4;
 }
 
+/* Version Info */
+.version-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 8px;
+}
+
+.version-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.version-number {
+  font-size: 12px;
+  color: #3b82f6;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
 
 /* Earn Panel Styling */
 .earn-content {
