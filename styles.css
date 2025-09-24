@@ -122,12 +122,16 @@ header {
   }
   
   .mobile-nav {
-    /* In standalone mode, we can use the full bottom area */
-    bottom: 0;
-    /* Hide home indicator by extending to bottom */
-    padding-bottom: env(safe-area-inset-bottom);
-    /* Make background opaque to hide home indicator */
+    /* Add spacing from bottom to prevent accidental swipe-up */
+    bottom: 8px;
+    /* Add safe area padding plus extra spacing */
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    /* Make background opaque */
     background: rgba(255, 255, 255, 1);
+    /* Add border radius for better visual separation */
+    border-radius: 16px 16px 0 0;
+    /* Add shadow for depth */
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   }
   
   /* Adjust main content for standalone mode */
@@ -138,7 +142,7 @@ header {
   
   .panels {
     /* Adjust panels padding for standalone mode */
-    padding-bottom: calc(5vh + env(safe-area-inset-bottom));
+    padding-bottom: calc(5vh + 16px + env(safe-area-inset-bottom));
   }
   
   /* Hide the home indicator line */
@@ -635,6 +639,12 @@ main {
   /* Show mobile navigation and hide desktop footer */
   .mobile-nav {
     display: flex;
+    /* Add spacing from bottom to prevent accidental swipe-up */
+    bottom: 8px;
+    /* Add border radius for better visual separation */
+    border-radius: 16px 16px 0 0;
+    /* Add shadow for depth */
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   }
   
   .desktop-footer {
@@ -649,7 +659,7 @@ main {
   
   /* Ensure panels don't extend under navigation */
   .panels {
-    padding-bottom: 5vh; /* Add padding to prevent panels from going under nav */
+    padding-bottom: calc(5vh + 16px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
   }
   
@@ -735,7 +745,7 @@ main {
   
   .panels {
     gap: 12px;
-    padding-bottom: 5vh; /* Add padding to prevent panels from going under nav */
+    padding-bottom: calc(5vh + 16px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
     /* Enhanced smooth scrolling for small mobile */
     scroll-behavior: smooth;
