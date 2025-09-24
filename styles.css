@@ -591,13 +591,14 @@ main {
   
   /* Add bottom padding to main content to account for fixed navigation */
   main {
-    padding-bottom: 5vh; /* Same height as navigation bar */
-    min-height: calc(80vh - 5vh); /* Adjust min-height to account for nav */
+    padding-bottom: 0; /* Let panels handle their own padding */
+    min-height: 80vh; /* Keep original height */
   }
   
   /* Ensure panels don't extend under navigation */
   .panels {
-    padding-bottom: 0;
+    padding-bottom: 5vh; /* Add padding to prevent panels from going under nav */
+    margin-bottom: 0;
   }
   
   /* Add extra padding to panel content to prevent overlap */
@@ -682,7 +683,8 @@ main {
   
   .panels {
     gap: 12px;
-    padding-bottom: 6px;
+    padding-bottom: 5vh; /* Add padding to prevent panels from going under nav */
+    margin-bottom: 0;
     /* Enhanced smooth scrolling for small mobile */
     scroll-behavior: smooth;
     overscroll-behavior-x: contain;
@@ -747,8 +749,8 @@ main {
   
   /* Add bottom padding to main content to account for fixed navigation */
   main {
-    padding-bottom: 5vh; /* Same height as navigation bar */
-    min-height: calc(83vh - 5vh); /* Adjust min-height to account for nav */
+    padding-bottom: 0; /* Let panels handle their own padding */
+    min-height: 83vh; /* Keep original height */
   }
   
   /* Add extra padding to panel content to prevent overlap */
