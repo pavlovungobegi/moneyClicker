@@ -2056,6 +2056,20 @@
   function renderInvestmentUnlocked() {
     if (!investSection) return;
     investSection.classList.toggle('hidden', !owned.u11);
+    
+    // Show/hide the entire earnings metrics container when investment is unlocked
+    const earningsMetricsContainer = document.querySelector('.earnings-metrics-container');
+    if (earningsMetricsContainer) {
+      earningsMetricsContainer.classList.toggle('hidden', !owned.u11);
+    }
+    
+    // Show/hide the investment amount in the header when investment is unlocked
+    const headerInvestmentDisplay = document.getElementById('headerInvestmentDisplay');
+    if (headerInvestmentDisplay) {
+      headerInvestmentDisplay.classList.toggle('hidden', !owned.u11);
+    }
+    
+    // Individual element visibility within the container
     if (interestContainer) interestContainer.classList.toggle('hidden', !owned.u11);
     if (dividendInfo) dividendInfo.classList.toggle('hidden', !owned.u11 || !owned.u10);
   }
