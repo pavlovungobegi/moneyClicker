@@ -397,6 +397,7 @@
     currentAccountBalance = 0;
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
+    playDepositSound(); // Play deposit sound effect
     saveGameState();
   }
 
@@ -406,6 +407,7 @@
     investmentAccountBalance = 0;
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
+    playWithdrawSound(); // Play withdraw sound effect
     saveGameState();
   }
 
@@ -1515,6 +1517,52 @@
     
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.3);
+  }
+
+  function playDepositSound() {
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Ascending tone for deposit (money going in)
+    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.15);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.03, audioContext.currentTime + 0.15);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
+  }
+
+  function playWithdrawSound() {
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Descending tone for withdraw (money coming out)
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.15);
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.03, audioContext.currentTime + 0.15);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
   }
 
   // Upgrades state
