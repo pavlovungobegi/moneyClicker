@@ -589,6 +589,22 @@ main {
     display: none;
   }
   
+  /* Add bottom padding to main content to account for fixed navigation */
+  main {
+    padding-bottom: 5vh; /* Same height as navigation bar */
+    min-height: calc(80vh - 5vh); /* Adjust min-height to account for nav */
+  }
+  
+  /* Ensure panels don't extend under navigation */
+  .panels {
+    padding-bottom: 0;
+  }
+  
+  /* Add extra padding to panel content to prevent overlap */
+  .panel {
+    padding-bottom: 20px;
+  }
+  
   /* Adjust navigation for very small screens */
   .nav-btn {
     min-width: 45px;
@@ -708,6 +724,7 @@ main {
   
   .earn-click-section {
     margin-top: auto;
+    margin-bottom: 20px; /* Extra space to prevent overlap with navigation */
   }
   
   .earn-click-section button {
@@ -726,6 +743,22 @@ main {
   
   .click-streak .streak-multiplier {
     font-size: 16px;
+  }
+  
+  /* Add bottom padding to main content to account for fixed navigation */
+  main {
+    padding-bottom: 5vh; /* Same height as navigation bar */
+    min-height: calc(83vh - 5vh); /* Adjust min-height to account for nav */
+  }
+  
+  /* Add extra padding to panel content to prevent overlap */
+  .panel {
+    padding-bottom: 20px;
+  }
+  
+  /* Extra space for click button to prevent overlap */
+  .earn-click-section {
+    margin-bottom: 20px;
   }
 }
 
