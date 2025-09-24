@@ -478,16 +478,21 @@
     if (newAchievements.length > 0) {
       renderAchievements();
       
-      // Show notification for the first new achievement
-      if (newAchievements.length > 0) {
-        showAchievementBanner(newAchievements[0]);
+      // Show banner only for achievements that haven't shown their banner yet
+      for (const achievementId of newAchievements) {
+        if (!achievementsBannerShown[achievementId]) {
+          showAchievementBanner(achievementId);
+          achievementsBannerShown[achievementId] = true; // Mark as shown
+          break; // Only show one banner at a time
+        }
       }
     }
   }
 
   // Performance-optimized achievement checking
   let lastAchievementCheck = 0;
-  const ACHIEVEMENT_CHECK_INTERVAL = 5000; // Check every 5 seconds
+  const ACHIEVEMENT_CHECK_INTERVAL = 4000; // Check every 4 seconds
+  let achievementsBannerShown = {}; // Track which achievements have shown banners
 
   function checkAchievementsOptimized() {
     const now = Date.now();
@@ -696,6 +701,9 @@
         musicEnabled,
         soundEffectsEnabled,
         
+        // Achievement banner tracking
+        achievementsBannerShown: { ...achievementsBannerShown },
+        
         // Save timestamp
         lastSaved: Date.now()
       };
@@ -775,6 +783,9 @@
         musicEnabled = gameState.musicEnabled !== undefined ? gameState.musicEnabled : true;
         soundEffectsEnabled = gameState.soundEffectsEnabled !== undefined ? gameState.soundEffectsEnabled : true;
         
+        // Restore achievement banner tracking
+        achievementsBannerShown = gameState.achievementsBannerShown || {};
+        
         console.log('Game state loaded successfully');
         
         // Update UI after loading state
@@ -808,6 +819,10 @@
     try {
       localStorage.removeItem('moneyClicker_gameState');
       localStorage.removeItem('moneyClicker_tourState');
+      
+      // Reset achievement banner tracking
+      achievementsBannerShown = {};
+      
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
       console.warn('Could not reset game state:', error);
@@ -2075,7 +2090,6 @@
 
     // Dividends
     tickDividends(TICK_MS);
-
 
     renderBalances();
     renderUpgradesOwned();

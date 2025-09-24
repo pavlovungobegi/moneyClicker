@@ -1366,7 +1366,7 @@ button#withdrawAllBtn:focus-visible {
   top: -100px;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 10004;
   background: linear-gradient(135deg, #10b981, #059669);
   border-bottom: 3px solid #047857;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
