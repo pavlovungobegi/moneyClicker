@@ -2023,14 +2023,18 @@
   // Register Service Worker for PWA functionality
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
+      console.log('Attempting to register service worker...');
+      navigator.serviceWorker.register('./sw.js')
         .then((registration) => {
-          console.log('SW registered: ', registration);
+          console.log('SW registered successfully: ', registration);
+          console.log('Scope: ', registration.scope);
         })
         .catch((registrationError) => {
           console.log('SW registration failed: ', registrationError);
         });
     });
+  } else {
+    console.log('Service Worker not supported');
   }
 
   // Auto Invest Help Modal functionality
