@@ -376,6 +376,140 @@
   // Initialize particle system
   let particleSystem;
   
+  // Number Animation System
+  class NumberAnimator {
+    constructor() {
+      this.animations = new Map();
+      this.animationId = null;
+      this.lastValues = new Map(); // Track last animated values
+      this.startAnimation();
+    }
+    
+    animateValue(element, startValue, endValue, duration = 1000, formatter = null, minChange = 0.01) {
+      if (!element) return;
+      
+      const key = element.id || element;
+      
+      // Check if there's already an animation running for this element
+      if (this.animations.has(key)) {
+        const currentAnimation = this.animations.get(key);
+        // If the change is too small, don't interrupt the current animation
+        if (Math.abs(endValue - currentAnimation.endValue) < minChange) {
+          return;
+        }
+        // Update the target value of the current animation
+        currentAnimation.endValue = endValue;
+        currentAnimation.startValue = currentAnimation.startValue; // Keep current start
+        return;
+      }
+      
+      // Check if the change is significant enough to animate
+      const lastValue = this.lastValues.get(key) || startValue;
+      if (Math.abs(endValue - lastValue) < minChange) {
+        return;
+      }
+      
+      const startTime = Date.now();
+      
+      // Add visual feedback during animation
+      element.classList.add('animating');
+      
+      // Store animation data
+      this.animations.set(key, {
+        element,
+        startValue,
+        endValue,
+        startTime,
+        duration,
+        formatter: formatter || this.defaultFormatter
+      });
+      
+      // Update last animated value
+      this.lastValues.set(key, endValue);
+    }
+    
+    defaultFormatter(value) {
+      return formatNumberShort(value);
+    }
+    
+    // Force immediate animation for important events (bypasses minChange)
+    forceAnimateValue(element, startValue, endValue, duration = 1000, formatter = null) {
+      if (!element) return;
+      
+      const key = element.id || element;
+      const startTime = Date.now();
+      
+      // Cancel any existing animation
+      this.animations.delete(key);
+      
+      // Add visual feedback during animation
+      element.classList.add('animating');
+      
+      // Store animation data
+      this.animations.set(key, {
+        element,
+        startValue,
+        endValue,
+        startTime,
+        duration,
+        formatter: formatter || this.defaultFormatter
+      });
+      
+      // Update last animated value
+      this.lastValues.set(key, endValue);
+    }
+    
+    updateAnimations() {
+      const now = Date.now();
+      
+      for (const [key, animation] of this.animations.entries()) {
+        const elapsed = now - animation.startTime;
+        const progress = Math.min(elapsed / animation.duration, 1);
+        
+        // Use easing function for smooth animation
+        const easedProgress = this.easeOutCubic(progress);
+        const currentValue = animation.startValue + (animation.endValue - animation.startValue) * easedProgress;
+        
+        // Update element text
+        if (animation.element && animation.element.textContent !== undefined) {
+          animation.element.textContent = animation.formatter(currentValue);
+        }
+        
+        // Remove completed animations
+        if (progress >= 1) {
+          // Remove visual feedback
+          animation.element.classList.remove('animating');
+          this.animations.delete(key);
+        }
+      }
+    }
+    
+    easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+    
+    animate() {
+      this.updateAnimations();
+      this.animationId = requestAnimationFrame(() => this.animate());
+    }
+    
+    startAnimation() {
+      if (!this.animationId) {
+        this.animate();
+      }
+    }
+    
+    stopAnimation() {
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    }
+  }
+  
+  // Initialize number animator
+  let numberAnimator;
+  
   // Screen shake functionality
   function screenShake(intensity = 5, duration = 200) {
     const body = document.body;
@@ -605,34 +739,72 @@
     Object.entries(map).forEach(([key, el]) => {
       if (!el) return;
       const cost = UPGRADE_COSTS[key];
-      el.textContent = '€' + formatNumberShort(cost);
+      
+      if (numberAnimator) {
+        // Parse current value from element text
+        const currentValue = parseDisplayedValue(el.textContent);
+        
+        // Animate to new cost
+        numberAnimator.animateValue(el, currentValue, cost, 300, (value) => '€' + formatNumberShort(value));
+      } else {
+        // Fallback to instant update
+        el.textContent = '€' + formatNumberShort(cost);
+      }
     });
   }
 
-  function renderBalances() {
-    if (currentDisplay) {
-      currentDisplay.textContent = '€' + formatNumberShort(currentAccountBalance);
-      // Add update animation
-      currentDisplay.classList.add('updating');
-      setTimeout(() => currentDisplay.classList.remove('updating'), 400);
+  // Helper function to parse displayed value back to actual number
+  function parseDisplayedValue(text) {
+    if (!text) return 0;
+    
+    // Remove € symbol
+    let cleanText = text.replace('€', '');
+    
+    // Handle suffixes (k, m, b, t)
+    let multiplier = 1;
+    if (cleanText.includes('k')) {
+      multiplier = 1000;
+      cleanText = cleanText.replace('k', '');
+    } else if (cleanText.includes('m')) {
+      multiplier = 1000000;
+      cleanText = cleanText.replace('m', '');
+    } else if (cleanText.includes('b')) {
+      multiplier = 1000000000;
+      cleanText = cleanText.replace('b', '');
+    } else if (cleanText.includes('t')) {
+      multiplier = 1000000000000;
+      cleanText = cleanText.replace('t', '');
     }
-    if (investmentDisplay) {
-      investmentDisplay.textContent = '€' + formatNumberShort(investmentAccountBalance);
-      // Add update animation
-      investmentDisplay.classList.add('updating');
-      setTimeout(() => investmentDisplay.classList.remove('updating'), 400);
+    
+    // Parse the number and apply multiplier
+    const number = parseFloat(cleanText) || 0;
+    return number * multiplier;
+  }
+
+  function renderBalances() {
+    if (currentDisplay && numberAnimator) {
+      const currentValue = parseDisplayedValue(currentDisplay.textContent);
+      // Only animate for significant changes (1% or more)
+      const minChange = Math.max(currentAccountBalance * 0.01, 1);
+      numberAnimator.animateValue(currentDisplay, currentValue, currentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
+    }
+    if (investmentDisplay && numberAnimator) {
+      const investmentValue = parseDisplayedValue(investmentDisplay.textContent);
+      // Only animate for significant changes (1% or more)
+      const minChange = Math.max(investmentAccountBalance * 0.01, 1);
+      numberAnimator.animateValue(investmentDisplay, investmentValue, investmentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
     }
     
     // Update header displays
-    if (headerCurrentDisplay) {
-      headerCurrentDisplay.textContent = '€' + formatNumberShort(currentAccountBalance);
-      headerCurrentDisplay.classList.add('updating');
-      setTimeout(() => headerCurrentDisplay.classList.remove('updating'), 400);
+    if (headerCurrentDisplay && numberAnimator) {
+      const headerCurrentValue = parseDisplayedValue(headerCurrentDisplay.textContent);
+      const minChange = Math.max(currentAccountBalance * 0.01, 1);
+      numberAnimator.animateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
     }
-    if (headerInvestmentDisplay) {
-      headerInvestmentDisplay.textContent = '€' + formatNumberShort(investmentAccountBalance);
-      headerInvestmentDisplay.classList.add('updating');
-      setTimeout(() => headerInvestmentDisplay.classList.remove('updating'), 400);
+    if (headerInvestmentDisplay && numberAnimator) {
+      const headerInvestmentValue = parseDisplayedValue(headerInvestmentDisplay.textContent);
+      const minChange = Math.max(investmentAccountBalance * 0.01, 1);
+      numberAnimator.animateValue(headerInvestmentDisplay, headerInvestmentValue, investmentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
     }
   }
 
@@ -758,6 +930,18 @@
       // Screen shake for critical hits
       if (isCritical) {
         screenShake(8, 300);
+      }
+    }
+    
+    // Force immediate balance animation for click feedback
+    if (numberAnimator) {
+      if (currentDisplay) {
+        const currentValue = parseDisplayedValue(currentDisplay.textContent);
+        numberAnimator.forceAnimateValue(currentDisplay, currentValue, currentAccountBalance, 300, (value) => '€' + formatNumberShort(value));
+      }
+      if (headerCurrentDisplay) {
+        const headerCurrentValue = parseDisplayedValue(headerCurrentDisplay.textContent);
+        numberAnimator.forceAnimateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 300, (value) => '€' + formatNumberShort(value));
       }
     }
     
@@ -1874,35 +2058,49 @@
 
     // Total clicks
     const totalClicksEl = document.getElementById('totalClicksDisplay');
-    if (totalClicksEl) {
+    if (totalClicksEl && numberAnimator) {
+      const currentClicks = parseInt(totalClicksEl.textContent.replace(/,/g, '')) || 0;
+      numberAnimator.animateValue(totalClicksEl, currentClicks, totalClicks, 600, (value) => new Intl.NumberFormat("en-US").format(Math.floor(value)));
+    } else if (totalClicksEl) {
       totalClicksEl.textContent = new Intl.NumberFormat("en-US").format(totalClicks);
     }
 
-
     // Total critical hits
     const totalCriticalHitsEl = document.getElementById('totalCriticalHitsDisplay');
-    if (totalCriticalHitsEl) {
+    if (totalCriticalHitsEl && numberAnimator) {
+      const currentHits = parseInt(totalCriticalHitsEl.textContent.replace(/,/g, '')) || 0;
+      numberAnimator.animateValue(totalCriticalHitsEl, currentHits, totalCriticalHits, 600, (value) => new Intl.NumberFormat("en-US").format(Math.floor(value)));
+    } else if (totalCriticalHitsEl) {
       totalCriticalHitsEl.textContent = new Intl.NumberFormat("en-US").format(totalCriticalHits);
     }
 
     // Upgrades bought
     const upgradesBoughtEl = document.getElementById('upgradesBoughtDisplay');
-    if (upgradesBoughtEl) {
+    if (upgradesBoughtEl && numberAnimator) {
+      const totalUpgrades = Object.keys(UPGRADE_COSTS).length;
+      const currentBought = parseInt(upgradesBoughtEl.textContent.split('/')[0]) || 0;
+      numberAnimator.animateValue(upgradesBoughtEl, currentBought, totalUpgradesBought, 600, (value) => `${Math.floor(value)}/${totalUpgrades}`);
+    } else if (upgradesBoughtEl) {
       const totalUpgrades = Object.keys(UPGRADE_COSTS).length;
       upgradesBoughtEl.textContent = `${totalUpgradesBought}/${totalUpgrades}`;
     }
 
-
-
     // Prestige resets
     const prestigeResetsEl = document.getElementById('prestigeResetsDisplay');
-    if (prestigeResetsEl) {
+    if (prestigeResetsEl && numberAnimator) {
+      const currentResets = parseInt(prestigeResetsEl.textContent.replace(/,/g, '')) || 0;
+      numberAnimator.animateValue(prestigeResetsEl, currentResets, prestigeResets, 600, (value) => new Intl.NumberFormat("en-US").format(Math.floor(value)));
+    } else if (prestigeResetsEl) {
       prestigeResetsEl.textContent = new Intl.NumberFormat("en-US").format(prestigeResets);
     }
 
     // Achievements unlocked
     const achievementsUnlockedEl = document.getElementById('achievementsUnlockedDisplay');
-    if (achievementsUnlockedEl) {
+    if (achievementsUnlockedEl && numberAnimator) {
+      const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
+      const currentUnlocked = parseInt(achievementsUnlockedEl.textContent.split('/')[0]) || 0;
+      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/13`);
+    } else if (achievementsUnlockedEl) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
       achievementsUnlockedEl.textContent = `${unlockedCount}/13`;
     }
@@ -2338,6 +2536,18 @@
         
         // Create money gain particles
         particleSystem.createMoneyGainParticles(centerX, centerY, cost);
+      }
+    }
+    
+    // Force immediate balance animation for purchase feedback
+    if (numberAnimator) {
+      if (currentDisplay) {
+        const currentValue = parseDisplayedValue(currentDisplay.textContent);
+        numberAnimator.forceAnimateValue(currentDisplay, currentValue, currentAccountBalance, 250, (value) => '€' + formatNumberShort(value));
+      }
+      if (headerCurrentDisplay) {
+        const headerCurrentValue = parseDisplayedValue(headerCurrentDisplay.textContent);
+        numberAnimator.forceAnimateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 250, (value) => '€' + formatNumberShort(value));
       }
     }
     
@@ -3132,6 +3342,9 @@ if ('serviceWorker' in navigator) {
   // Initialize particle system
   particleSystem = new ParticleSystem();
   
+  // Initialize number animator
+  numberAnimator = new NumberAnimator();
+  
   // Initialize upgrade visibility state (will be called after DOM is ready)
   function initUpgradeVisibility() {
     const upgradesSection = document.getElementById('upgradesSection');
@@ -3170,7 +3383,19 @@ if ('serviceWorker' in navigator) {
     const m = getCompoundMultiplierPerTick();
     const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
     const percent = (perSecondMultiplier - 1) * 100;
-    interestPerSecEl.textContent = percent.toFixed(2) + "%";
+    
+    if (numberAnimator) {
+      // Parse current percentage from element text
+      const currentText = interestPerSecEl.textContent.replace('%', '');
+      const currentValue = parseFloat(currentText) || 0;
+      
+      // Only animate for significant changes (0.1% or more)
+      const minChange = 0.1;
+      numberAnimator.animateValue(interestPerSecEl, currentValue, percent, 250, (value) => value.toFixed(2) + "%", minChange);
+    } else {
+      // Fallback to instant update
+      interestPerSecEl.textContent = percent.toFixed(2) + "%";
+    }
   }
 
   // Initialize interest per second display and set up periodic updates

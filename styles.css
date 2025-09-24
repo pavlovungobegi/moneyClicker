@@ -10,6 +10,16 @@
   background: transparent;
 }
 
+/* Number Animation Styles */
+.account-amount, .upgrade-price, #interestPerSec {
+  transition: color 0.2s ease-out;
+}
+
+.account-amount.animating, .upgrade-price.animating, #interestPerSec.animating {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
 /* Basic layout */
 html, body {
   height: 100%;
