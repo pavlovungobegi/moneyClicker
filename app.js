@@ -531,12 +531,12 @@
   // Track last object counts to avoid unnecessary re-renders
   let lastObjectCounts = null;
   
-  // Tour system
+  // Tour system (disabled - keeping for future use)
   let tourState = {
     active: false,
     currentStep: 0,
-    completed: false,
-    portfolioTourShown: false
+    completed: true, // Set to true to prevent any tour triggering
+    portfolioTourShown: true // Set to true to prevent portfolio tour
   };
 
   // Tour persistence functions
@@ -1110,6 +1110,9 @@
   }
   
   function checkTourTriggers() {
+    // Tour triggering disabled - keeping logic for future use
+    return;
+    
     if (tourState.completed) return;
     
     // Start tour if user hasn't clicked yet and has no money
@@ -1132,6 +1135,9 @@
   
   // Separate function for portfolio tour
   function checkPortfolioTour() {
+    // Portfolio tour triggering disabled - keeping logic for future use
+    return;
+    
     // Check if user just upgraded to secondary school
     if (owned.u2 && !tourState.portfolioTourShown) {
       tourState.portfolioTourShown = true;
@@ -1982,6 +1988,9 @@
       'stats': 4
     };
     
+    let isScrolling = false;
+    let scrollTimeout = null;
+    
     navButtons.forEach(button => {
       button.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1989,9 +1998,12 @@
         const panelIndex = panelMap[panelName];
         
         if (panelIndex !== undefined) {
-          // Update active button
+          // Immediately update active button to prevent jittering
           navButtons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
+          
+          // Set scrolling flag to prevent scroll event from overriding
+          isScrolling = true;
           
           // Scroll to panel
           const panelWidth = window.innerWidth - 32; // Account for padding
@@ -1999,21 +2011,42 @@
             left: panelWidth * panelIndex,
             behavior: 'smooth'
           });
+          
+          // Clear scrolling flag after animation completes
+          setTimeout(() => {
+            isScrolling = false;
+          }, 500); // Match the smooth scroll duration
         }
       });
     });
     
-    // Update active button based on scroll position
+    // Update active button based on scroll position (debounced)
     panelsContainer.addEventListener('scroll', () => {
-      const scrollLeft = panelsContainer.scrollLeft;
-      const panelWidth = window.innerWidth - 32;
-      const currentPanel = Math.round(scrollLeft / panelWidth);
+      // Don't update if we're programmatically scrolling
+      if (isScrolling) return;
       
-      // Update active button
-      navButtons.forEach(btn => btn.classList.remove('active'));
-      if (navButtons[currentPanel]) {
-        navButtons[currentPanel].classList.add('active');
+      // Clear existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
       }
+      
+      // Debounce scroll updates to prevent rapid changes
+      scrollTimeout = setTimeout(() => {
+        const scrollLeft = panelsContainer.scrollLeft;
+        const panelWidth = window.innerWidth - 32;
+        const currentPanel = Math.round(scrollLeft / panelWidth);
+        
+        // Only update if the panel actually changed
+        const currentActive = document.querySelector('.nav-btn.active');
+        const currentActiveIndex = Array.from(navButtons).indexOf(currentActive);
+        
+        if (currentActiveIndex !== currentPanel) {
+          navButtons.forEach(btn => btn.classList.remove('active'));
+          if (navButtons[currentPanel]) {
+            navButtons[currentPanel].classList.add('active');
+          }
+        }
+      }, 100); // Small delay to debounce rapid scroll events
     });
   }
   
@@ -2193,8 +2226,8 @@ if ('serviceWorker' in navigator) {
   // Load saved audio settings
   loadAudioSettings();
   
-  // Load saved tour state
-  loadTourState();
+  // Load saved tour state (disabled - keeping for future use)
+  // loadTourState();
   
   // Load saved game state
   const gameStateLoaded = loadGameState();

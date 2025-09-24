@@ -380,6 +380,11 @@ main {
   margin-top: 4px;
 }
 
+/* Hide progress bars for completed upgrades */
+.upgrade.owned .progress-container {
+  display: none;
+}
+
 .progress-bar {
   flex: 1;
   height: 6px;
