@@ -732,78 +732,63 @@
 
   // Hard Reset functionality
   function performHardReset() {
-    // Show confirmation dialog
-    const confirmed = confirm(
-      "⚠️ HARD RESET WARNING ⚠️\n\n" +
-      "This will permanently delete ALL your progress:\n" +
-      "• All money and investments\n" +
-      "• All upgrades purchased\n" +
-      "• All statistics and achievements\n" +
-      "• All settings and preferences\n\n" +
-      "This action CANNOT be undone!\n\n" +
-      "Are you absolutely sure you want to reset everything?"
-    );
+    // Show custom modal
+    const modal = document.getElementById('hardResetModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+    }
+  }
+
+  function executeHardReset() {
+    // Hide modal
+    const modal = document.getElementById('hardResetModal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
     
-    if (confirmed) {
-      // Second confirmation for extra safety
-      const doubleConfirmed = confirm(
-        "🚨 FINAL WARNING 🚨\n\n" +
-        "You are about to PERMANENTLY DELETE all your progress.\n" +
-        "This will reset the game to the very beginning.\n\n" +
-        "Click OK to proceed with the hard reset, or Cancel to keep your progress."
-      );
-      
-      if (doubleConfirmed) {
-        // Perform the reset
-        resetGameState();
-        
-        // Reset all game variables to initial state
-        currentAccountBalance = 0;
-        investmentAccountBalance = 0;
-        totalClicks = 0;
-        totalCriticalHits = 0;
-        totalUpgradesBought = 0;
-        hasPerformedPrestige = false;
-        prestigeResets = 0;
-        totalDividendsReceived = 0;
-        streakCount = 0;
-        streakMultiplier = 1;
-        autoInvestEnabled = false;
-        gameStartTime = Date.now();
-        
-        // Reset all upgrades
-        Object.keys(owned).forEach(upgradeKey => {
-          owned[upgradeKey] = false;
-        });
-        
-        // Reset audio settings to defaults
-        musicEnabled = true;
-        soundEffectsEnabled = true;
-        
-        // Reset tour state
-        tourState = {
-          active: false,
-          currentStep: 0,
-          completed: false,
-          portfolioTourShown: false
-        };
-        
-        // Update UI
-        renderBalances();
-        renderUpgradesOwned();
-        renderUpgradePrices();
-        sortUpgradesByCost();
-        renderInvestmentUnlocked();
-        renderInterestPerSecond();
-        renderAutoInvestSection();
-        renderStatistics();
-        applyAudioSettings();
-        
-        // Show success message
-        alert("✅ Hard reset completed!\n\nThe game has been reset to the beginning. Refresh the page to start fresh.");
-        
-        console.log("Hard reset completed - all data cleared");
-      }
+    // Perform the reset
+    resetGameState();
+    
+    // Reset all game variables to initial state
+    currentAccountBalance = 0;
+    investmentAccountBalance = 0;
+    totalClicks = 0;
+    totalCriticalHits = 0;
+    totalUpgradesBought = 0;
+    hasPerformedPrestige = false;
+    prestigeResets = 0;
+    totalDividendsReceived = 0;
+    streakCount = 0;
+    streakMultiplier = 1;
+    autoInvestEnabled = false;
+    gameStartTime = Date.now();
+    
+    // Reset all upgrades
+    Object.keys(owned).forEach(upgradeKey => {
+      owned[upgradeKey] = false;
+    });
+    
+    // Reset audio settings to defaults
+    musicEnabled = true;
+    soundEffectsEnabled = true;
+    
+    // Reset tour state
+    tourState = {
+      active: false,
+      currentStep: 0,
+      completed: false,
+      portfolioTourShown: false
+    };
+    
+    // Refresh the page to start fresh
+    window.location.reload();
+  }
+
+  function cancelHardReset() {
+    // Hide modal
+    const modal = document.getElementById('hardResetModal');
+    if (modal) {
+      modal.classList.add('hidden');
     }
   }
   
@@ -1969,14 +1954,19 @@
     });
   }
 
-  // Hard Reset button functionality
-  const hardResetBtn = document.getElementById('hardResetBtn');
-  if (hardResetBtn) {
-    hardResetBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
+  // Simple event listeners for hard reset
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'hardResetBtn') {
       performHardReset();
-    });
-  }
+    } else if (e.target && e.target.id === 'hardResetCancel') {
+      cancelHardReset();
+    } else if (e.target && e.target.id === 'hardResetConfirm') {
+      executeHardReset();
+    } else if (e.target && e.target.id === 'hardResetModal') {
+      // Close modal when clicking outside
+      cancelHardReset();
+    }
+  });
   
 
   // Mobile Navigation functionality
@@ -2254,13 +2244,19 @@ if ('serviceWorker' in navigator) {
   }, 10000);
 
   // Render interest per second from per-tick multiplier (dynamic)
-  (function renderInterestPerSecond() {
+  function renderInterestPerSecond() {
+    if (!interestPerSecEl) return;
+    const m = getCompoundMultiplierPerTick();
+    const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
+    const percent = (perSecondMultiplier - 1) * 100;
+    interestPerSecEl.textContent = percent.toFixed(2) + "%";
+  }
+
+  // Initialize interest per second display and set up periodic updates
+  (function initInterestPerSecond() {
     if (!interestPerSecEl) return;
     const update = () => {
-      const m = getCompoundMultiplierPerTick();
-      const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
-      const percent = (perSecondMultiplier - 1) * 100;
-      interestPerSecEl.textContent = percent.toFixed(2) + "%";
+      renderInterestPerSecond();
     };
     update();
     // Recompute periodically to reflect upgrades
