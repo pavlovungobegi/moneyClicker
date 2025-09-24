@@ -821,12 +821,16 @@
         // Update UI after loading state
     // Initialize upgrade visibility state before rendering
     initUpgradeVisibility();
+    updateToggleCompletedUI();
     
     renderBalances();
     renderUpgradesOwned();
     renderUpgradePrices();
     // Apply upgrade visibility rules now that hide-completed class is set
-    sortUpgradesByCost();
+    // Use requestAnimationFrame to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+      sortUpgradesByCost();
+    });
     renderInvestmentUnlocked();
     renderInterestPerSecond();
     renderAutoInvestSection();
@@ -1903,6 +1907,7 @@
     rows.forEach((row) => scrollableContent.appendChild(row));
 
     const hideCompleted = container.classList.contains('hide-completed');
+    
     if (hideCompleted) {
       // Show the next 3 unowned upgrades, but only one education upgrade at a time
       const unownedUpgrades = rows.filter((row) => {
@@ -2157,13 +2162,17 @@
 
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
+  updateToggleCompletedUI();
   
   renderBalances();
   renderUpgradesOwned();
   renderRank();
   renderUpgradePrices();
   // Apply upgrade visibility rules now that hide-completed class is set
-  sortUpgradesByCost();
+  // Use requestAnimationFrame to ensure DOM is fully rendered
+  requestAnimationFrame(() => {
+    sortUpgradesByCost();
+  });
   renderInvestmentUnlocked();
   renderPrestigeMultipliers();
   renderAutoInvestSection();
@@ -2547,7 +2556,7 @@ if ('serviceWorker' in navigator) {
   function initUpgradeVisibility() {
     const upgradesSection = document.getElementById('upgradesSection');
     if (upgradesSection) {
-      // Default: hide completed upgrades
+      // Default: hide completed upgrades to show next available ones
       upgradesSection.classList.add('hide-completed');
     }
   }
