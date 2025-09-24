@@ -104,22 +104,53 @@ header {
 
 /* PWA Standalone Mode Adjustments */
 @media (display-mode: standalone) {
+  /* Hide the home indicator by using the full screen */
+  body {
+    /* Extend to full screen including safe areas */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Adjust header for translucent status bar */
+  header {
+    /* Add padding to account for status bar */
+    padding-top: calc(20px + env(safe-area-inset-top));
+    /* Make header background extend to status bar */
+    background: linear-gradient(to bottom, #f8fafc 0%, #f8fafc env(safe-area-inset-top), #f8fafc 100%);
+  }
+  
   .mobile-nav {
     /* In standalone mode, we can use the full bottom area */
     bottom: 0;
-    /* Add safe area padding for devices with home indicator */
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    /* Hide home indicator by extending to bottom */
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Make background opaque to hide home indicator */
+    background: rgba(255, 255, 255, 1);
   }
   
   /* Adjust main content for standalone mode */
   main {
     /* Account for safe area in standalone mode */
-    padding-bottom: max(0px, env(safe-area-inset-bottom));
+    padding-bottom: 0;
   }
   
   .panels {
     /* Adjust panels padding for standalone mode */
-    padding-bottom: calc(5vh + max(0px, env(safe-area-inset-bottom)));
+    padding-bottom: calc(5vh + env(safe-area-inset-bottom));
+  }
+  
+  /* Hide the home indicator line */
+  .mobile-nav::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-bottom);
+    background: rgba(255, 255, 255, 1);
+    z-index: 1001;
   }
 }
 
