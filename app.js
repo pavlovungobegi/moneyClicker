@@ -1704,7 +1704,7 @@
   }
 
   // Upgrades state
-  const UPGRADE_COSTS = { u1: 15, u2: 30, u3: 50, u4: 7500, u5: 100, u6: 250, u7: 500, u8: 20000, u9: 250000, u10: 10000, u11: 2000, u12: 25000, u13: 30000, u14: 300000, u15: 400000, u16: 1000000, u17: 2000000, u18: 5000000, u19: 10000000, u20: 25000000, u21: 40000000, u22: 75000000, u23: 150000000, u24: 500000000, u25: 1000000000, u26: 1000000000000, u27: 750000000, u29: 1250, u30: 50000, u31: 75000 };
+  const UPGRADE_COSTS = { u1: 10, u2: 20, u3: 50, u4: 6000, u5: 100, u6: 250, u7: 500, u8: 20000, u9: 250000, u10: 10000, u11: 20, u12: 25000, u13: 30000, u14: 300000, u15: 400000, u16: 1000000, u17: 2000000, u18: 5000000, u19: 10000000, u20: 25000000, u21: 40000000, u22: 75000000, u23: 150000000, u24: 500000000, u25: 1000000000, u26: 1000000000000, u27: 750000000, u29: 1250, u30: 50000, u31: 75000 };
   const owned = { u1: false, u2: false, u3: false, u4: false, u5: false, u6: false, u7: false, u8: false, u9: false, u10: false, u11: false, u12: false, u13: false, u14: false, u15: false, u16: false, u17: false, u18: false, u19: false, u20: false, u21: false, u22: false, u23: false, u24: false, u25: false, u26: false, u27: false, u29: false, u30: false, u31: false };
 
   function tryBuyUpgrade(key) {
@@ -2044,7 +2044,8 @@
 
   function renderPrestigeMultipliers() {
     if (!prestigeMultipliers) return;
-    prestigeMultipliers.classList.toggle('hidden', prestigeClickMultiplier === 1 && prestigeInterestMultiplier === 1);
+    // Always show multiplier in settings (never hide it)
+    prestigeMultipliers.classList.remove('hidden');
     if (prestigeMultiplierEl) {
       // Use the higher of the two multipliers for display
       const displayMultiplier = Math.max(prestigeClickMultiplier, prestigeInterestMultiplier);
