@@ -156,11 +156,9 @@
       u25: document.getElementById('u25Price'),
       u26: document.getElementById('u26Price'),
       u27: document.getElementById('u27Price'),
-      u28: document.getElementById('u28Price'),
       u29: document.getElementById('u29Price'),
       u30: document.getElementById('u30Price'),
       u31: document.getElementById('u31Price'),
-      u32: document.getElementById('u32Price'),
     };
     Object.entries(map).forEach(([key, el]) => {
       if (!el) return;
@@ -255,13 +253,10 @@
     if (u25) u25.classList.toggle('owned', !!owned.u25);
     if (u26) u26.classList.toggle('owned', !!owned.u26);
     if (u27) u27.classList.toggle('owned', !!owned.u27);
-    if (u28) u28.classList.toggle('owned', !!owned.u28);
     if (u29) u29.classList.toggle('owned', !!owned.u29);
     if (u30) u30.classList.toggle('owned', !!owned.u30);
     const u31 = document.querySelector('.upgrade[data-upgrade-id="u31"]');
     if (u31) u31.classList.toggle('owned', !!owned.u31);
-    const u32 = document.querySelector('.upgrade[data-upgrade-id="u32"]');
-    if (u32) u32.classList.toggle('owned', !!owned.u32);
   }
 
   function getPerClickIncome() {
@@ -274,10 +269,6 @@
     if (owned.u6) bonus += 20;     // master's
     if (owned.u7) bonus += 40;     // PhD
     
-    // Wealth Multiplier: adds 1% of current money per click
-    if (owned.u28) {
-      bonus += Math.floor(currentAccountBalance * 0.01);
-    }
     
     let totalIncome = (base + bonus) * prestigeClickMultiplier;
     
@@ -1444,8 +1435,8 @@
   }
 
   // Upgrades state
-  const UPGRADE_COSTS = { u1: 15, u2: 30, u3: 50, u4: 7500, u5: 100, u6: 300, u7: 600, u8: 20000, u9: 250000, u10: 10000, u11: 4000, u12: 25000, u13: 30000, u14: 300000, u15: 400000, u16: 1000000, u17: 2000000, u18: 5000000, u19: 10000000, u20: 25000000, u21: 40000000, u22: 75000000, u23: 150000000, u24: 500000000, u25: 1000000000, u26: 1000000000000, u27: 750000000, u28: 5000, u29: 1250, u30: 50000, u31: 75000, u32: 2000 };
-  const owned = { u1: false, u2: false, u3: false, u4: false, u5: false, u6: false, u7: false, u8: false, u9: false, u10: false, u11: false, u12: false, u13: false, u14: false, u15: false, u16: false, u17: false, u18: false, u19: false, u20: false, u21: false, u22: false, u23: false, u24: false, u25: false, u26: false, u27: false, u28: false, u29: false, u30: false, u31: false, u32: false };
+  const UPGRADE_COSTS = { u1: 15, u2: 30, u3: 50, u4: 7500, u5: 100, u6: 250, u7: 500, u8: 20000, u9: 250000, u10: 10000, u11: 2000, u12: 25000, u13: 30000, u14: 300000, u15: 400000, u16: 1000000, u17: 2000000, u18: 5000000, u19: 10000000, u20: 25000000, u21: 40000000, u22: 75000000, u23: 150000000, u24: 500000000, u25: 1000000000, u26: 1000000000000, u27: 750000000, u29: 1250, u30: 50000, u31: 75000 };
+  const owned = { u1: false, u2: false, u3: false, u4: false, u5: false, u6: false, u7: false, u8: false, u9: false, u10: false, u11: false, u12: false, u13: false, u14: false, u15: false, u16: false, u17: false, u18: false, u19: false, u20: false, u21: false, u22: false, u23: false, u24: false, u25: false, u26: false, u27: false, u29: false, u30: false, u31: false };
 
   function tryBuyUpgrade(key) {
     if (owned[key]) return;
@@ -1500,10 +1491,6 @@
     owned[key] = true;
     totalUpgradesBought++;
     
-    // Reset auto-click timer when auto clicker is purchased
-    if (key === "u32") {
-      autoClickTimer = 0;
-    }
     
     renderBalances();
     renderUpgradesOwned();
@@ -1548,11 +1535,9 @@
   if (buyU25Btn) buyU25Btn.addEventListener("click", () => tryBuyUpgrade("u25"));
   if (buyU26Btn) buyU26Btn.addEventListener("click", () => tryBuyUpgrade("u26"));
   if (buyU27Btn) buyU27Btn.addEventListener("click", () => tryBuyUpgrade("u27"));
-  if (buyU28Btn) buyU28Btn.addEventListener("click", () => tryBuyUpgrade("u28"));
   if (buyU29Btn) buyU29Btn.addEventListener("click", () => tryBuyUpgrade("u29"));
   if (buyU30Btn) buyU30Btn.addEventListener("click", () => tryBuyUpgrade("u30"));
   if (buyU31Btn) buyU31Btn.addEventListener("click", () => tryBuyUpgrade("u31"));
-  if (buyU32Btn) buyU32Btn.addEventListener("click", () => tryBuyUpgrade("u32"));
 
   // Auto-invest toggle event listener
   if (autoInvestToggle) {
@@ -1571,7 +1556,7 @@
     if (!toggleCompletedBtn || !upgradesSection) return;
     const hidden = upgradesSection.classList.contains('hide-completed');
     toggleCompletedBtn.setAttribute('aria-pressed', hidden ? 'true' : 'false');
-    toggleCompletedBtn.textContent = hidden ? 'Show completed' : 'Show next 3';
+    toggleCompletedBtn.textContent = hidden ? 'Show completed' : 'Hide completed';
   }
 
   if (toggleCompletedBtn && upgradesSection) {
@@ -1714,18 +1699,6 @@
     }
   }
 
-  function tickAutoClicker(deltaMs) {
-    if (!owned.u32) return; // Only run if auto clicker is owned
-    
-    autoClickTimer += deltaMs;
-    
-    if (autoClickTimer >= AUTO_CLICK_INTERVAL_MS) {
-      autoClickTimer -= AUTO_CLICK_INTERVAL_MS;
-      
-      // Trigger an automatic click
-      handleClick();
-    }
-  }
 
   function renderDividendUI(deltaMs) {
     if (!dividendInfo) return;
@@ -1855,8 +1828,6 @@
     // Dividends
     tickDividends(TICK_MS);
 
-    // Auto clicker
-    tickAutoClicker(TICK_MS);
 
     renderBalances();
     renderUpgradesOwned();

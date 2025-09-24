@@ -699,9 +699,9 @@ main {
     margin-bottom: 0;
   }
   
-  /* Add extra padding to panel content to prevent overlap */
+  /* Reduced padding to allow button expansion */
   .panel {
-    padding-bottom: 20px;
+    padding-bottom: 12px;
   }
   
   /* Adjust navigation for very small screens */
@@ -824,7 +824,7 @@ main {
   
   .earn-click-section {
     margin-top: auto;
-    margin-bottom: 20px; /* Extra space to prevent overlap with navigation */
+    margin-bottom: 8px; /* Reduced space to allow button to expand downward */
   }
   
   .earn-click-section button {
@@ -851,14 +851,21 @@ main {
     min-height: 83vh; /* Keep original height */
   }
   
-  /* Add extra padding to panel content to prevent overlap */
+  /* Reduced padding to allow button expansion */
   .panel {
-    padding-bottom: 20px;
+    padding-bottom: 12px;
   }
   
-  /* Extra space for click button to prevent overlap */
+  /* Reduced space for click button to allow expansion */
   .earn-click-section {
-    margin-bottom: 20px;
+    margin-bottom: 8px;
+  }
+  
+  /* Make click button taller on mobile */
+  #clickBtn {
+    padding: 24px 16px;
+    font-size: 20px;
+    min-height: 70px;
   }
 }
 
@@ -1038,8 +1045,8 @@ main {
 }
 
 #clickBtn {
-  padding: 10px 16px;
-  font-size: 16px;
+  padding: 20px 16px;
+  font-size: 18px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: white;
@@ -1051,6 +1058,8 @@ main {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  min-height: 60px;
+  width: 100%;
 }
 
 #clickBtn:hover {
@@ -1785,7 +1794,7 @@ input#amountInput:focus {
 .earn-click-section {
   display: flex;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .earnings-metrics {
