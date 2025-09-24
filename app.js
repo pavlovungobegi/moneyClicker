@@ -314,7 +314,7 @@
     playClickSound();
     
     // Check achievements
-    checkAchievements();
+    checkAchievementsOptimized();
     
     // Save game state after significant changes
     saveGameState();
@@ -477,8 +477,60 @@
     
     if (newAchievements.length > 0) {
       renderAchievements();
-      // Could add notification system here for new achievements
+      
+      // Show notification for the first new achievement
+      if (newAchievements.length > 0) {
+        showAchievementBanner(newAchievements[0]);
+      }
     }
+  }
+
+  // Performance-optimized achievement checking
+  let lastAchievementCheck = 0;
+  const ACHIEVEMENT_CHECK_INTERVAL = 5000; // Check every 5 seconds
+
+  function checkAchievementsOptimized() {
+    const now = Date.now();
+    if (now - lastAchievementCheck < ACHIEVEMENT_CHECK_INTERVAL) {
+      return; // Skip if called too frequently
+    }
+    lastAchievementCheck = now;
+    checkAchievements();
+  }
+
+  // Simple achievement banner system
+  function showAchievementBanner(achievementId) {
+    const banner = document.getElementById('achievementBanner');
+    const bannerName = document.getElementById('achievementBannerName');
+    const bannerIcon = banner?.querySelector('.achievement-icon');
+    
+    if (!banner || !bannerName || !bannerIcon) return;
+    
+    // Get achievement data from HTML
+    const achievementElement = document.querySelector(`[data-achievement-id="${achievementId}"]`);
+    if (!achievementElement) return;
+    
+    const achievementIcon = achievementElement.querySelector('.achievement-icon').textContent;
+    const achievementName = achievementElement.querySelector('.achievement-name').textContent;
+    
+    // Set the achievement icon and name
+    bannerIcon.textContent = achievementIcon;
+    bannerName.textContent = achievementName;
+    
+    // Show the banner
+    banner.classList.remove('hidden');
+    banner.classList.add('show');
+    
+    // Play achievement sound
+    playAchievementSound();
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      banner.classList.remove('show');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 400);
+    }, 3000);
   }
 
   function renderAchievements() {
@@ -1565,6 +1617,51 @@
     oscillator.stop(audioContext.currentTime + 0.15);
   }
 
+  function playAchievementSound() {
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    // Create a realistic cash register "ka-ching" sound
+    const oscillator1 = audioContext.createOscillator();
+    const oscillator2 = audioContext.createOscillator();
+    const oscillator3 = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    oscillator3.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // "Ka" sound - metallic, percussive
+    oscillator1.frequency.setValueAtTime(200, audioContext.currentTime);
+    oscillator1.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.08);
+    
+    // "Ching" sound - bright, bell-like
+    oscillator2.frequency.setValueAtTime(1000, audioContext.currentTime + 0.08);
+    oscillator2.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.15);
+    
+    // Harmonic for metallic quality
+    oscillator3.frequency.setValueAtTime(2000, audioContext.currentTime + 0.08);
+    oscillator3.frequency.exponentialRampToValueAtTime(3000, audioContext.currentTime + 0.15);
+    
+    // Volume envelope for realistic cash register sound
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime + 0.02); // Quick "ka" attack
+    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime + 0.08); // "ka" decay
+    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime + 0.1); // "ching" attack
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3); // "ching" decay
+    
+    oscillator1.start(audioContext.currentTime);
+    oscillator2.start(audioContext.currentTime + 0.08);
+    oscillator3.start(audioContext.currentTime + 0.08);
+    
+    oscillator1.stop(audioContext.currentTime + 0.08);
+    oscillator2.stop(audioContext.currentTime + 0.3);
+    oscillator3.stop(audioContext.currentTime + 0.3);
+  }
+
   // Upgrades state
   const UPGRADE_COSTS = { u1: 15, u2: 30, u3: 50, u4: 7500, u5: 100, u6: 250, u7: 500, u8: 20000, u9: 250000, u10: 10000, u11: 2000, u12: 25000, u13: 30000, u14: 300000, u15: 400000, u16: 1000000, u17: 2000000, u18: 5000000, u19: 10000000, u20: 25000000, u21: 40000000, u22: 75000000, u23: 150000000, u24: 500000000, u25: 1000000000, u26: 1000000000000, u27: 750000000, u29: 1250, u30: 50000, u31: 75000 };
   const owned = { u1: false, u2: false, u3: false, u4: false, u5: false, u6: false, u7: false, u8: false, u9: false, u10: false, u11: false, u12: false, u13: false, u14: false, u15: false, u16: false, u17: false, u18: false, u19: false, u20: false, u21: false, u22: false, u23: false, u24: false, u25: false, u26: false, u27: false, u29: false, u30: false, u31: false };
@@ -1613,7 +1710,7 @@
         renderAutoInvestSection();
         
         // Check achievements after prestige
-        checkAchievements();
+        checkAchievementsOptimized();
       }
       return;
     }
@@ -1634,7 +1731,7 @@
     playBuySound();
     
     // Check achievements
-    checkAchievements();
+    checkAchievementsOptimized();
     
     // Save game state after upgrade purchase
     saveGameState();
@@ -1991,7 +2088,7 @@
     checkStreakTimeout();
     updateUpgradeIndicator();
     updateProgressBars();
-    checkAchievements();
+    checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
     renderStatistics();
     renderStickFigure();
     
@@ -2314,6 +2411,20 @@ document.addEventListener('resume', () => {
     console.log('Music resumed - app resumed (mobile)');
   }
 });
+
+// Achievement banner close button event listener
+const achievementBannerClose = document.getElementById('achievementBannerClose');
+if (achievementBannerClose) {
+  achievementBannerClose.addEventListener('click', () => {
+    const banner = document.getElementById('achievementBanner');
+    if (banner) {
+      banner.classList.remove('show');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 400);
+    }
+  });
+}
 
 // Handle page unload (when user closes tab/app)
 window.addEventListener('beforeunload', () => {
