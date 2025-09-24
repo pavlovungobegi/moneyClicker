@@ -882,12 +882,15 @@ main {
   .earn-content .controls {
     flex-direction: row;
     gap: 8px;
+    width: 100%;
   }
   
   .earn-content .controls button {
     flex: 1;
-    padding: 12px;
+    padding: 14px 12px;
     font-size: 14px;
+    min-height: 48px;
+    width: 100%;
   }
   
   .earn-click-section {
@@ -1287,13 +1290,15 @@ button#depositBtn,
 button#withdrawBtn,
 button#depositAllBtn,
 button#withdrawAllBtn {
-  padding: 8px 12px;
+  padding: 14px 12px;
   font-size: 14px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: white;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 48px;
+  font-weight: 600;
 }
 
 button#depositBtn:hover,
@@ -2017,6 +2022,19 @@ input#amountInput:focus {
   margin-bottom: 8px;
 }
 
+/* Earnings metrics container styling */
+.earnings-metrics-container {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.earnings-metrics-container .earnings-metrics {
+  margin-bottom: 0;
+}
+
 .earn-content .rate {
   text-align: left;
   font-size: 14px;
@@ -2032,20 +2050,24 @@ input#amountInput:focus {
 }
 
 .earn-content .invest {
-  margin: 0;
+  margin: 0 0 8px 0;
+  width: 100%;
 }
 
 .earn-content .controls {
   display: flex;
   gap: 8px;
   align-items: stretch;
+  width: 100%;
 }
 
 .earn-content .controls button {
   flex: 1;
-  padding: 10px 12px;
+  padding: 14px 12px;
   font-size: 14px;
   font-weight: 600;
+  min-height: 48px;
+  width: 100%;
 }
 
 
@@ -2056,7 +2078,7 @@ input#amountInput:focus {
 }
 
 .earn-content .auto-invest {
-  margin: 0;
+  margin: 0 0 8px 0;
   padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -2215,8 +2237,8 @@ input#amountInput:focus {
 }
 
 .earn-content .click-streak {
-  margin: 0;
-  padding: 12px;
+  margin: 0 0 8px 0;
+  padding: 8px;
   border: 1px solid #fbbf24;
   border-radius: 8px;
   background: #fffbeb;

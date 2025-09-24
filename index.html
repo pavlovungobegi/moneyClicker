@@ -98,7 +98,7 @@
         <div class="settings-section">
           <div class="version-info">
             <span class="version-label">Version:</span>
-            <span class="version-number">0.1.14</span>
+            <span class="version-number">0.1.15</span>
           </div>
         </div>
       </div>
@@ -111,25 +111,33 @@
         <section class="panel" aria-labelledby="earnTitle" id="earnSection">
           <h2 id="earnTitle">Earn</h2>
           <div class="earn-content">
-            <!-- Interest Rate and Dividends Group -->
-            <div class="earnings-metrics">
-              <div id="interestContainer" class="rate" aria-live="polite">
-                Interest: <span id="interestPerSec">0.00%</span>
+            <!-- Click Streak Section -->
+            <div class="click-streak hidden" id="clickStreakSection">
+              <div class="streak-info">
+                <div class="streak-label">Click Streak</div>
+                <div class="streak-multiplier" id="streakMultiplier">1.0x</div>
               </div>
-              <div id="dividendInfo" class="dividends hidden" aria-live="polite">
-                <span id="dividendRate">Dividends: 1.00%/10s</span>
-                <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
-                  <circle class="bg" cx="18" cy="18" r="16" />
-                  <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
-                </svg>
+              <div class="streak-progress-container">
+                <div class="streak-progress-bar">
+                  <div class="streak-progress-fill" id="streakProgressFill"></div>
+                </div>
+                <div class="streak-progress-text" id="streakProgressText">1.0x - 3.0x</div>
               </div>
             </div>
 
-            <!-- Investment Controls -->
-            <div class="invest" id="investSection">
-              <div class="controls">
-                <button id="depositAllBtn">Deposit</button>
-                <button id="withdrawAllBtn">Withdraw</button>
+            <!-- Interest Rate and Dividends Group -->
+            <div class="earnings-metrics-container">
+              <div class="earnings-metrics">
+                <div id="interestContainer" class="rate" aria-live="polite">
+                  Interest: <span id="interestPerSec">0.00%</span>
+                </div>
+                <div id="dividendInfo" class="dividends hidden" aria-live="polite">
+                  <span id="dividendRate">Dividends: 1.00%/10s</span>
+                  <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
+                    <circle class="bg" cx="18" cy="18" r="16" />
+                    <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -145,17 +153,11 @@
               </div>
             </div>
 
-            <!-- Click Streak Section -->
-            <div class="click-streak hidden" id="clickStreakSection">
-              <div class="streak-info">
-                <div class="streak-label">Click Streak</div>
-                <div class="streak-multiplier" id="streakMultiplier">1.0x</div>
-              </div>
-              <div class="streak-progress-container">
-                <div class="streak-progress-bar">
-                  <div class="streak-progress-fill" id="streakProgressFill"></div>
-                </div>
-                <div class="streak-progress-text" id="streakProgressText">1.0x - 3.0x</div>
+            <!-- Investment Controls -->
+            <div class="invest" id="investSection">
+              <div class="controls">
+                <button id="depositAllBtn">Deposit</button>
+                <button id="withdrawAllBtn">Withdraw</button>
               </div>
             </div>
 
