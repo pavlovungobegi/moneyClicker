@@ -2072,6 +2072,70 @@ function clearCacheOnLoad() {
 // Clear cache immediately on page load
 clearCacheOnLoad();
 
+// Handle app visibility changes (pause music when app goes to background)
+function handleVisibilityChange() {
+  if (document.hidden) {
+    // App went to background - pause music
+    if (backgroundMusic && !backgroundMusic.paused) {
+      backgroundMusic.pause();
+      console.log('Music paused - app went to background');
+    }
+  } else {
+    // App came to foreground - resume music if it was enabled
+    if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
+      backgroundMusic.play().catch((error) => {
+        console.log('Could not resume music:', error);
+      });
+      console.log('Music resumed - app came to foreground');
+    }
+  }
+}
+
+// Add event listener for visibility changes
+document.addEventListener('visibilitychange', handleVisibilityChange);
+
+// Handle page focus/blur events as backup
+window.addEventListener('blur', () => {
+  if (backgroundMusic && !backgroundMusic.paused) {
+    backgroundMusic.pause();
+    console.log('Music paused - window lost focus');
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
+    backgroundMusic.play().catch((error) => {
+      console.log('Could not resume music on focus:', error);
+    });
+    console.log('Music resumed - window gained focus');
+  }
+});
+
+// Handle mobile app lifecycle events (for PWA)
+document.addEventListener('pause', () => {
+  if (backgroundMusic && !backgroundMusic.paused) {
+    backgroundMusic.pause();
+    console.log('Music paused - app paused (mobile)');
+  }
+});
+
+document.addEventListener('resume', () => {
+  if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
+    backgroundMusic.play().catch((error) => {
+      console.log('Could not resume music on resume:', error);
+    });
+    console.log('Music resumed - app resumed (mobile)');
+  }
+});
+
+// Handle page unload (when user closes tab/app)
+window.addEventListener('beforeunload', () => {
+  if (backgroundMusic && !backgroundMusic.paused) {
+    backgroundMusic.pause();
+    console.log('Music paused - app closing');
+  }
+});
+
 // Register Service Worker for PWA functionality
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
