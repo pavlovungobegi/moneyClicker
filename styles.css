@@ -206,6 +206,36 @@ header {
   transition: color 0.2s ease;
 }
 
+/* Fallback icons for when Font Awesome doesn't load */
+.nav-icon.fallback::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.nav-btn[data-panel="earn"] .nav-icon.fallback::before {
+  content: '💰';
+}
+
+.nav-btn[data-panel="upgrades"] .nav-icon.fallback::before {
+  content: '⬆️';
+}
+
+.nav-btn[data-panel="portfolio"] .nav-icon.fallback::before {
+  content: '📊';
+}
+
+.nav-btn[data-panel="achievements"] .nav-icon.fallback::before {
+  content: '🏆';
+}
+
+.nav-btn[data-panel="stats"] .nav-icon.fallback::before {
+  content: '📈';
+}
+
 .nav-btn.active .nav-icon {
   color: white;
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'interest-inc-v2';
+const CACHE_NAME = 'interest-inc-v4';
 const urlsToCache = [
   './',
   './index.html',
@@ -8,7 +8,12 @@ const urlsToCache = [
   './manifest.json',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  // Font Awesome resources
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.ttf'
 ];
 
 // Install event - cache resources
@@ -20,7 +25,13 @@ self.addEventListener('install', (event) => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache.map(url => {
           // Handle both relative and absolute URLs
-          return new Request(url, { mode: 'no-cors' });
+          if (url.startsWith('http')) {
+            // External URLs (Font Awesome)
+            return new Request(url, { mode: 'cors' });
+          } else {
+            // Local URLs
+            return new Request(url, { mode: 'no-cors' });
+          }
         }));
       })
       .catch((error) => {
