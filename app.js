@@ -407,6 +407,12 @@
 
   function depositAll() {
     if (currentAccountBalance <= 0) return;
+    
+    // Track first investment for achievement
+    if (!hasMadeFirstInvestment && currentAccountBalance > 0) {
+      hasMadeFirstInvestment = true;
+    }
+    
     investmentAccountBalance += currentAccountBalance;
     currentAccountBalance = 0;
     renderBalances();
@@ -700,6 +706,7 @@
         hasPerformedPrestige,
         prestigeResets,
         totalDividendsReceived,
+        hasMadeFirstInvestment,
         
         // Click streak system
         streakCount,
@@ -759,6 +766,7 @@
         hasPerformedPrestige = gameState.hasPerformedPrestige || false;
         prestigeResets = gameState.prestigeResets || 0;
         totalDividendsReceived = gameState.totalDividendsReceived || 0;
+        hasMadeFirstInvestment = gameState.hasMadeFirstInvestment || false;
         
         // Restore click streak
         streakCount = gameState.streakCount || 0;
@@ -848,6 +856,9 @@
       // Reset prestige multipliers
       prestigeClickMultiplier = 1;
       prestigeInterestMultiplier = 1;
+      
+      // Reset first investment tracking
+      hasMadeFirstInvestment = false;
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
@@ -1362,7 +1373,7 @@
     const achievementsUnlockedEl = document.getElementById('achievementsUnlockedDisplay');
     if (achievementsUnlockedEl) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
-      achievementsUnlockedEl.textContent = `${unlockedCount}/12`;
+      achievementsUnlockedEl.textContent = `${unlockedCount}/13`;
     }
   }
 
@@ -1421,6 +1432,7 @@
   // Statistics tracking
   let gameStartTime = Date.now();
   let prestigeResets = 0;
+  let hasMadeFirstInvestment = false;
   
   const achievements = {
     ach1: { unlocked: false, condition: () => getTotalMoney() >= 1000 },
@@ -1434,7 +1446,8 @@
     ach9: { unlocked: false, condition: () => totalUpgradesBought >= 5 },
     ach10: { unlocked: false, condition: () => investmentAccountBalance >= 100000 },
     ach11: { unlocked: false, condition: () => totalDividendsReceived >= 1000000 }, // Receive €1,000,000 in dividends
-    ach12: { unlocked: false, condition: () => hasPerformedPrestige }
+    ach12: { unlocked: false, condition: () => hasPerformedPrestige },
+    ach13: { unlocked: false, condition: () => hasMadeFirstInvestment } // First investment
   };
 
   // Money cap system
