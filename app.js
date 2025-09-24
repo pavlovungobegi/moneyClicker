@@ -596,6 +596,7 @@
         totalUpgradesBought,
         hasPerformedPrestige,
         prestigeResets,
+        totalDividendsReceived,
         
         // Click streak system
         streakCount,
@@ -647,6 +648,7 @@
         totalUpgradesBought = gameState.totalUpgradesBought || 0;
         hasPerformedPrestige = gameState.hasPerformedPrestige || false;
         prestigeResets = gameState.prestigeResets || 0;
+        totalDividendsReceived = gameState.totalDividendsReceived || 0;
         
         // Restore click streak
         streakCount = gameState.streakCount || 0;
@@ -763,6 +765,7 @@
         totalUpgradesBought = 0;
         hasPerformedPrestige = false;
         prestigeResets = 0;
+        totalDividendsReceived = 0;
         streakCount = 0;
         streakMultiplier = 1;
         autoInvestEnabled = false;
@@ -1274,6 +1277,7 @@
   let totalUpgradesBought = 0;
   let hasPerformedPrestige = false;
   let maxStreakReached = false;
+  let totalDividendsReceived = 0;
 
   // Statistics tracking
   let gameStartTime = Date.now();
@@ -1290,7 +1294,7 @@
     ach8: { unlocked: false, condition: () => maxStreakReached },
     ach9: { unlocked: false, condition: () => totalUpgradesBought >= 5 },
     ach10: { unlocked: false, condition: () => investmentAccountBalance >= 100000 },
-    ach11: { unlocked: false, condition: () => false }, // Disabled - no longer tracking dividends
+    ach11: { unlocked: false, condition: () => totalDividendsReceived >= 1000000 }, // Receive €1,000,000 in dividends
     ach12: { unlocked: false, condition: () => hasPerformedPrestige }
   };
 
@@ -1692,6 +1696,9 @@
       const payout = Math.floor(investmentAccountBalance * rate * 100) / 100;
       if (payout > 0) {
         const cappedPayout = applyMoneyCap(payout);
+        
+        // Track total dividends received for achievement
+        totalDividendsReceived += cappedPayout;
         
         if (autoInvestEnabled) {
           // Auto-invest: add dividends to investment account
