@@ -1,4 +1,4 @@
-const CACHE_NAME = 'interest-inc-v4';
+const CACHE_NAME = 'interest-inc-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const urlsToCache = [
   './icon-180.png',
   './icon-192.png',
   './icon-512.png',
+  './404.html',
   // Font Awesome resources
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2',
@@ -80,7 +81,20 @@ self.addEventListener('fetch', (event) => {
         }).catch(() => {
           // If fetch fails, try to serve a fallback page
           if (event.request.destination === 'document') {
-            return caches.match('./index.html');
+            // Try multiple fallback options for GitHub Pages
+            return caches.match('./index.html')
+              .then((response) => {
+                if (response) return response;
+                return caches.match('./');
+              })
+              .then((response) => {
+                if (response) return response;
+                return caches.match('/index.html');
+              })
+              .then((response) => {
+                if (response) return response;
+                return caches.match('/');
+              });
           }
         });
       })

@@ -30,6 +30,25 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <script>
+      // Handle GitHub Pages URL variations for mobile Safari
+      (function() {
+        const currentPath = window.location.pathname;
+        const currentHost = window.location.host;
+        
+        // If we're on GitHub Pages and the path doesn't end with index.html or /
+        if (currentHost.includes('github.io') && 
+            currentPath !== '/' && 
+            !currentPath.endsWith('index.html') && 
+            !currentPath.endsWith('/')) {
+          
+          // Redirect to the proper URL
+          const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+          window.location.replace(baseUrl + '/');
+        }
+      })();
+    </script>
+    
     <header>
       <div class="header-left">
         <h1>Interest Inc.</h1>

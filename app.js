@@ -2020,22 +2020,51 @@
   // Initialize mobile navigation
   initMobileNavigation();
 
-  // Register Service Worker for PWA functionality
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      console.log('Attempting to register service worker...');
-      navigator.serviceWorker.register('./sw.js')
-        .then((registration) => {
-          console.log('SW registered successfully: ', registration);
-          console.log('Scope: ', registration.scope);
-        })
-        .catch((registrationError) => {
-          console.log('SW registration failed: ', registrationError);
-        });
+// Check if Font Awesome loaded and apply fallback if needed
+function checkFontAwesome() {
+  // Check if Font Awesome CSS is loaded by testing if a Font Awesome class exists
+  const testElement = document.createElement('i');
+  testElement.className = 'fas fa-coins';
+  testElement.style.position = 'absolute';
+  testElement.style.left = '-9999px';
+  document.body.appendChild(testElement);
+  
+  const computedStyle = window.getComputedStyle(testElement);
+  const fontFamily = computedStyle.getPropertyValue('font-family');
+  
+  document.body.removeChild(testElement);
+  
+  // If Font Awesome didn't load (no Font Awesome font family), use fallback
+  if (!fontFamily.includes('Font Awesome')) {
+    console.log('Font Awesome not loaded, using emoji fallbacks');
+    const navIcons = document.querySelectorAll('.nav-icon');
+    navIcons.forEach(icon => {
+      icon.classList.add('fallback');
     });
   } else {
-    console.log('Service Worker not supported');
+    console.log('Font Awesome loaded successfully');
   }
+}
+
+// Check Font Awesome after a short delay to allow it to load
+setTimeout(checkFontAwesome, 1000);
+
+// Register Service Worker for PWA functionality
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    console.log('Attempting to register service worker...');
+    navigator.serviceWorker.register('./sw.js')
+      .then((registration) => {
+        console.log('SW registered successfully: ', registration);
+        console.log('Scope: ', registration.scope);
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+} else {
+  console.log('Service Worker not supported');
+}
 
   // Auto Invest Help Modal functionality
   if (autoInvestHelpBtn && autoInvestModal) {
