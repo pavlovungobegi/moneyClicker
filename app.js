@@ -122,6 +122,76 @@
       }
     }
     
+    createFireworkParticles(x, y, count = 25) {
+      for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2;
+        const speed = 8 + Math.random() * 4;
+        this.createParticle('firework', x, y, {
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: 3 + Math.random() * 4,
+          color: `hsl(${Math.random() * 60 + 30}, 100%, 60%)`,
+          life: 2.0,
+          decay: 0.02,
+          gravity: 0.05,
+          bounce: 0.2
+        });
+      }
+    }
+    
+    createGoldenParticles(x, y, count = 20) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('golden', x, y, {
+          vx: (Math.random() - 0.5) * 8,
+          vy: -Math.random() * 6 - 2,
+          size: 4 + Math.random() * 4,
+          color: '#FFD700',
+          life: 2.5,
+          decay: 0.015,
+          gravity: 0.08,
+          bounce: 0.6,
+          rotationSpeed: (Math.random() - 0.5) * 0.2
+        });
+      }
+    }
+    
+    createMilestoneParticles(x, y, count = 30) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('milestone', x, y, {
+          vx: (Math.random() - 0.5) * 12,
+          vy: -Math.random() * 8 - 3,
+          size: 2 + Math.random() * 3,
+          color: `hsl(${Math.random() * 360}, 100%, 70%)`,
+          life: 3.0,
+          decay: 0.01,
+          gravity: 0.06,
+          bounce: 0.4,
+          rotationSpeed: (Math.random() - 0.5) * 0.4
+        });
+      }
+    }
+    
+    createRareAchievementParticles(x, y, count = 40) {
+      // Create multiple bursts for rare achievements
+      for (let burst = 0; burst < 3; burst++) {
+        setTimeout(() => {
+          for (let i = 0; i < count / 3; i++) {
+            this.createParticle('rare', x, y, {
+              vx: (Math.random() - 0.5) * 15,
+              vy: -Math.random() * 10 - 5,
+              size: 3 + Math.random() * 5,
+              color: `hsl(${Math.random() * 60 + 280}, 100%, 60%)`,
+              life: 2.5,
+              decay: 0.018,
+              gravity: 0.1,
+              bounce: 0.3,
+              rotationSpeed: (Math.random() - 0.5) * 0.3
+            });
+          }
+        }, burst * 200);
+      }
+    }
+    
     updateParticles() {
       for (let i = this.particles.length - 1; i >= 0; i--) {
         const particle = this.particles[i];
@@ -220,6 +290,63 @@
           this.ctx.textAlign = 'center';
           this.ctx.textBaseline = 'middle';
           this.ctx.fillText('$', 0, 0);
+        } else if (particle.type === 'firework') {
+          // Draw firework particle (star burst)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const x = Math.cos(angle) * particle.size;
+            const y = Math.sin(angle) * particle.size;
+            if (i === 0) {
+              this.ctx.moveTo(x, y);
+            } else {
+              this.ctx.lineTo(x, y);
+            }
+          }
+          this.ctx.closePath();
+          this.ctx.fill();
+        } else if (particle.type === 'golden') {
+          // Draw golden particle (shining circle)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          
+          // Golden highlight
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          this.ctx.beginPath();
+          this.ctx.arc(-particle.size * 0.3, -particle.size * 0.3, particle.size * 0.4, 0, Math.PI * 2);
+          this.ctx.fill();
+        } else if (particle.type === 'milestone') {
+          // Draw milestone particle (hexagon)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            const x = Math.cos(angle) * particle.size;
+            const y = Math.sin(angle) * particle.size;
+            if (i === 0) {
+              this.ctx.moveTo(x, y);
+            } else {
+              this.ctx.lineTo(x, y);
+            }
+          }
+          this.ctx.closePath();
+          this.ctx.fill();
+        } else if (particle.type === 'rare') {
+          // Draw rare achievement particle (crown shape)
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.moveTo(-particle.size, particle.size * 0.5);
+          this.ctx.lineTo(-particle.size * 0.5, -particle.size * 0.5);
+          this.ctx.lineTo(0, 0);
+          this.ctx.lineTo(particle.size * 0.5, -particle.size * 0.5);
+          this.ctx.lineTo(particle.size, particle.size * 0.5);
+          this.ctx.lineTo(particle.size * 0.3, particle.size * 0.2);
+          this.ctx.lineTo(-particle.size * 0.3, particle.size * 0.2);
+          this.ctx.closePath();
+          this.ctx.fill();
         }
         
         this.ctx.restore();
@@ -272,6 +399,33 @@
     }
     
     shake();
+  }
+  
+  // Screen flash functionality for achievements
+  function screenFlash(color = '#FFD700', duration = 300) {
+    const flashOverlay = document.createElement('div');
+    flashOverlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: ${color};
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 10000;
+      transition: opacity 0.1s ease-out;
+    `;
+    
+    document.body.appendChild(flashOverlay);
+    
+    // Fade out
+    setTimeout(() => {
+      flashOverlay.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(flashOverlay);
+      }, 100);
+    }, duration);
   }
 
   const currentDisplay = document.getElementById("currentDisplay");
@@ -873,20 +1027,50 @@
     banner.classList.remove('hidden');
     banner.classList.add('show');
     
-    // Create achievement particle effects
+    // Create achievement particle effects based on achievement type
     if (particleSystem) {
       const rect = banner.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       
-      // Create confetti particles for achievement
-      particleSystem.createConfettiParticles(centerX, centerY, 20);
+      // Categorize achievements for different effects
+      const milestoneAchievements = ['ach1', 'ach2', 'ach3', 'ach4', 'ach5']; // Money milestones
+      const clickAchievements = ['ach6', 'ach7', 'ach8']; // Click-related achievements
+      const rareAchievements = ['ach11', 'ach12']; // Rare/hard achievements
+      const upgradeAchievements = ['ach9', 'ach10', 'ach13']; // Upgrade-related achievements
       
-      // Create sparkle particles
-      particleSystem.createSparkleParticles(centerX, centerY, 15);
-      
-      // Create upgrade particles
-      particleSystem.createUpgradeParticles(centerX, centerY, 12);
+      if (milestoneAchievements.includes(achievementId)) {
+        // Money milestone achievements - golden particles + fireworks
+        particleSystem.createGoldenParticles(centerX, centerY, 25);
+        particleSystem.createFireworkParticles(centerX, centerY, 30);
+        screenFlash('#FFD700', 400); // Golden flash
+        screenShake(6, 250); // Gentle shake
+        
+      } else if (clickAchievements.includes(achievementId)) {
+        // Click achievements - sparkles + confetti
+        particleSystem.createSparkleParticles(centerX, centerY, 20);
+        particleSystem.createConfettiParticles(centerX, centerY, 25);
+        screenFlash('#FF6B6B', 300); // Red flash
+        
+      } else if (rareAchievements.includes(achievementId)) {
+        // Rare achievements - multiple bursts + screen effects
+        particleSystem.createRareAchievementParticles(centerX, centerY, 50);
+        screenFlash('#9B59B6', 500); // Purple flash
+        screenShake(10, 400); // Strong shake
+        
+      } else if (upgradeAchievements.includes(achievementId)) {
+        // Upgrade achievements - upgrade particles + milestone particles
+        particleSystem.createUpgradeParticles(centerX, centerY, 15);
+        particleSystem.createMilestoneParticles(centerX, centerY, 20);
+        screenFlash('#3498DB', 350); // Blue flash
+        
+      } else {
+        // Default achievement effects
+        particleSystem.createConfettiParticles(centerX, centerY, 20);
+        particleSystem.createSparkleParticles(centerX, centerY, 15);
+        particleSystem.createUpgradeParticles(centerX, centerY, 12);
+        screenFlash('#2ECC71', 300); // Green flash
+      }
     }
     
     // Play achievement sound
@@ -2083,6 +2267,22 @@
         prestigeInterestMultiplier *= 1.25;
         hasPerformedPrestige = true;
         prestigeResets++;
+        
+        // Create prestige reset particle effects
+        if (particleSystem) {
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          
+          // Create massive particle celebration
+          particleSystem.createRareAchievementParticles(centerX, centerY, 100);
+          particleSystem.createFireworkParticles(centerX, centerY, 50);
+          particleSystem.createGoldenParticles(centerX, centerY, 40);
+          particleSystem.createMilestoneParticles(centerX, centerY, 60);
+          
+          // Screen effects
+          screenFlash('#FF6B35', 800); // Orange flash
+          screenShake(15, 600); // Strong shake
+        }
         
         // Reset everything
         currentAccountBalance = 0;
