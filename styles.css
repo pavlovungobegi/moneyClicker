@@ -95,10 +95,10 @@ header {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1px solid #e2e8f0;
-  padding: 8px 0;
+  padding: 12px 0;
   z-index: 1000;
-  height: 5vh;
-  min-height: 60px;
+  height: 6vh;
+  min-height: 70px;
   box-sizing: border-box;
 }
 
@@ -122,10 +122,10 @@ header {
   }
   
   .mobile-nav {
-    /* Add spacing from bottom to prevent accidental swipe-up */
-    bottom: 8px;
+    /* Add more spacing from bottom to prevent accidental swipe-up */
+    bottom: 12px;
     /* Add safe area padding plus extra spacing */
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
     /* Make background opaque */
     background: rgba(255, 255, 255, 1);
     /* Add border radius for better visual separation */
@@ -142,7 +142,7 @@ header {
   
   .panels {
     /* Adjust panels padding for standalone mode */
-    padding-bottom: calc(5vh + 16px + env(safe-area-inset-bottom));
+    padding-bottom: calc(6vh + 24px + env(safe-area-inset-bottom));
   }
   
   /* Hide the home indicator line */
@@ -171,12 +171,12 @@ header {
   justify-content: center;
   background: none;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 50px;
-  height: 44px;
+  min-width: 60px;
+  height: 50px;
   position: relative;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -199,13 +199,19 @@ header {
 }
 
 .nav-icon {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   margin-bottom: 2px;
+  color: #64748b;
+  transition: color 0.2s ease;
 }
 
 .nav-btn.active .nav-icon {
-  filter: brightness(0) invert(1);
+  color: white;
+}
+
+.nav-btn:hover .nav-icon {
+  color: #3b82f6;
 }
 
 /* Legacy footer for backward compatibility */
@@ -639,8 +645,8 @@ main {
   /* Show mobile navigation and hide desktop footer */
   .mobile-nav {
     display: flex;
-    /* Add spacing from bottom to prevent accidental swipe-up */
-    bottom: 8px;
+    /* Add more spacing from bottom to prevent accidental swipe-up */
+    bottom: 12px;
     /* Add border radius for better visual separation */
     border-radius: 16px 16px 0 0;
     /* Add shadow for depth */
@@ -659,7 +665,7 @@ main {
   
   /* Ensure panels don't extend under navigation */
   .panels {
-    padding-bottom: calc(5vh + 16px); /* Add padding to prevent panels from going under nav + spacing */
+    padding-bottom: calc(6vh + 24px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
   }
   
@@ -745,7 +751,7 @@ main {
   
   .panels {
     gap: 12px;
-    padding-bottom: calc(5vh + 16px); /* Add padding to prevent panels from going under nav + spacing */
+    padding-bottom: calc(6vh + 24px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
     /* Enhanced smooth scrolling for small mobile */
     scroll-behavior: smooth;
