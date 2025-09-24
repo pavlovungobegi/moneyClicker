@@ -2,6 +2,194 @@
   let currentAccountBalance = 0;
   let investmentAccountBalance = 0;
 
+  // Particle System
+  class ParticleSystem {
+    constructor() {
+      this.canvas = document.getElementById('particleCanvas');
+      this.ctx = this.canvas.getContext('2d');
+      this.particles = [];
+      this.particlePool = [];
+      this.animationId = null;
+      
+      this.resizeCanvas();
+      window.addEventListener('resize', () => this.resizeCanvas());
+      this.startAnimation();
+    }
+    
+    resizeCanvas() {
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    }
+    
+    createParticle(type, x, y, options = {}) {
+      let particle = this.particlePool.pop();
+      if (!particle) {
+        particle = {};
+      }
+      
+      // Default properties
+      particle.x = x;
+      particle.y = y;
+      particle.vx = (Math.random() - 0.5) * 4;
+      particle.vy = -Math.random() * 3 - 1;
+      particle.life = 1.0;
+      particle.decay = 0.02;
+      particle.size = 4;
+      particle.type = type;
+      particle.rotation = 0;
+      particle.rotationSpeed = (Math.random() - 0.5) * 0.2;
+      particle.gravity = 0.1;
+      particle.bounce = 0.6;
+      particle.color = '#FFD700';
+      
+      // Override with options
+      Object.assign(particle, options);
+      
+      this.particles.push(particle);
+    }
+    
+    createCoinParticles(x, y, count = 5) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('coin', x, y, {
+          vx: (Math.random() - 0.5) * 6,
+          vy: -Math.random() * 4 - 2,
+          size: 6 + Math.random() * 4,
+          color: '#FFD700',
+          life: 1.5,
+          decay: 0.015
+        });
+      }
+    }
+    
+    createSparkleParticles(x, y, count = 8) {
+      for (let i = 0; i < count; i++) {
+        this.createParticle('sparkle', x, y, {
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          size: 2 + Math.random() * 3,
+          color: `hsl(${Math.random() * 60 + 30}, 100%, 70%)`,
+          life: 0.8,
+          decay: 0.03,
+          gravity: 0.05
+        });
+      }
+    }
+    
+    updateParticles() {
+      for (let i = this.particles.length - 1; i >= 0; i--) {
+        const particle = this.particles[i];
+        
+        // Update physics
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vy += particle.gravity;
+        particle.rotation += particle.rotationSpeed;
+        particle.life -= particle.decay;
+        
+        // Bounce off ground
+        if (particle.y > window.innerHeight - particle.size && particle.vy > 0) {
+          particle.y = window.innerHeight - particle.size;
+          particle.vy *= -particle.bounce;
+          particle.vx *= 0.8; // Friction
+        }
+        
+        // Remove dead particles
+        if (particle.life <= 0 || particle.x < -50 || particle.x > window.innerWidth + 50) {
+          this.particles.splice(i, 1);
+          this.particlePool.push(particle);
+        }
+      }
+    }
+    
+    drawParticles() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      
+      this.particles.forEach(particle => {
+        this.ctx.save();
+        this.ctx.globalAlpha = particle.life;
+        this.ctx.translate(particle.x, particle.y);
+        this.ctx.rotate(particle.rotation);
+        
+        if (particle.type === 'coin') {
+          // Draw coin
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          
+          // Coin highlight
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          this.ctx.beginPath();
+          this.ctx.arc(-particle.size * 0.3, -particle.size * 0.3, particle.size * 0.3, 0, Math.PI * 2);
+          this.ctx.fill();
+        } else if (particle.type === 'sparkle') {
+          // Draw sparkle
+          this.ctx.fillStyle = particle.color;
+          this.ctx.beginPath();
+          this.ctx.moveTo(0, -particle.size);
+          this.ctx.lineTo(particle.size * 0.3, -particle.size * 0.3);
+          this.ctx.lineTo(particle.size, 0);
+          this.ctx.lineTo(particle.size * 0.3, particle.size * 0.3);
+          this.ctx.lineTo(0, particle.size);
+          this.ctx.lineTo(-particle.size * 0.3, particle.size * 0.3);
+          this.ctx.lineTo(-particle.size, 0);
+          this.ctx.lineTo(-particle.size * 0.3, -particle.size * 0.3);
+          this.ctx.closePath();
+          this.ctx.fill();
+        }
+        
+        this.ctx.restore();
+      });
+    }
+    
+    animate() {
+      this.updateParticles();
+      this.drawParticles();
+      this.animationId = requestAnimationFrame(() => this.animate());
+    }
+    
+    startAnimation() {
+      if (!this.animationId) {
+        this.animate();
+      }
+    }
+    
+    stopAnimation() {
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+        this.animationId = null;
+      }
+    }
+  }
+  
+  // Initialize particle system
+  let particleSystem;
+  
+  // Screen shake functionality
+  function screenShake(intensity = 5, duration = 200) {
+    const body = document.body;
+    const originalTransform = body.style.transform;
+    const startTime = Date.now();
+    
+    function shake() {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= duration) {
+        body.style.transform = originalTransform;
+        return;
+      }
+      
+      const progress = elapsed / duration;
+      const currentIntensity = intensity * (1 - progress);
+      const x = (Math.random() - 0.5) * currentIntensity;
+      const y = (Math.random() - 0.5) * currentIntensity;
+      
+      body.style.transform = `translate(${x}px, ${y}px)`;
+      requestAnimationFrame(shake);
+    }
+    
+    shake();
+  }
+
   const currentDisplay = document.getElementById("currentDisplay");
   const investmentDisplay = document.getElementById("investmentDisplay");
   const headerCurrentDisplay = document.getElementById("headerCurrentDisplay");
@@ -317,6 +505,23 @@
     const cappedIncome = applyMoneyCap(income);
     currentAccountBalance += cappedIncome;
     
+    // Create particle effects
+    if (particleSystem && clickBtn) {
+      const rect = clickBtn.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      // Create coin particles
+      particleSystem.createCoinParticles(centerX, centerY, isCritical ? 8 : 5);
+      
+      // Create sparkle particles
+      particleSystem.createSparkleParticles(centerX, centerY, isCritical ? 12 : 8);
+      
+      // Screen shake for critical hits
+      if (isCritical) {
+        screenShake(8, 300);
+      }
+    }
     
     renderBalances();
     updateUpgradeIndicator();
@@ -2565,6 +2770,9 @@ if ('serviceWorker' in navigator) {
   
   // Initialize background music immediately when page loads
   initBackgroundMusic();
+  
+  // Initialize particle system
+  particleSystem = new ParticleSystem();
   
   // Initialize upgrade visibility state (will be called after DOM is ready)
   function initUpgradeVisibility() {
