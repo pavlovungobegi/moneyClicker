@@ -1271,8 +1271,31 @@
     }
   }
 
-  if (depositAllBtn) depositAllBtn.addEventListener("click", depositAll);
-  if (withdrawAllBtn) withdrawAllBtn.addEventListener("click", withdrawAll);
+  if (depositAllBtn) {
+    depositAllBtn.addEventListener("click", depositAll);
+    
+    // Add touch-specific animation handling
+    depositAllBtn.addEventListener("touchstart", (e) => {
+      depositAllBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    depositAllBtn.addEventListener("touchend", (e) => {
+      depositAllBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+  
+  if (withdrawAllBtn) {
+    withdrawAllBtn.addEventListener("click", withdrawAll);
+    
+    // Add touch-specific animation handling
+    withdrawAllBtn.addEventListener("touchstart", (e) => {
+      withdrawAllBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    withdrawAllBtn.addEventListener("touchend", (e) => {
+      withdrawAllBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
 
   // Prestige system
   let prestigeClickMultiplier = 1;
