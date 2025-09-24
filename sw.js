@@ -1,4 +1,4 @@
-const CACHE_NAME = 'interest-inc-v5';
+const CACHE_NAME = 'interest-inc-v6';
 const urlsToCache = [
   './',
   './index.html',
@@ -63,7 +63,7 @@ self.addEventListener('fetch', (event) => {
         // Clone the request because it's a stream
         const fetchRequest = event.request.clone();
         
-        return fetch(fetchRequest).then((response) => {
+        return fetch(fetchRequest, { cache: 'no-cache' }).then((response) => {
           // Check if we received a valid response
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;

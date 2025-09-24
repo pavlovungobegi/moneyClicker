@@ -813,59 +813,6 @@
     }
   }
   
-  // Clear Cache functionality
-  function performClearCache() {
-    const confirmClear = confirm(
-      "🗑️ CLEAR CACHE 🗑️\n\n" +
-      "This will clear all cached files:\n" +
-      "• All stylesheets and scripts\n" +
-      "• All images and assets\n" +
-      "• All Font Awesome icons\n" +
-      "• Service worker cache\n\n" +
-      "Your game progress will be preserved.\n" +
-      "This is useful for seeing latest changes during development.\n\n" +
-      "Continue?"
-    );
-    
-    if (confirmClear) {
-      // Clear all caches
-      if ('caches' in window) {
-        caches.keys().then((cacheNames) => {
-          const deletePromises = cacheNames.map((cacheName) => {
-            console.log('Deleting cache:', cacheName);
-            return caches.delete(cacheName);
-          });
-          
-          Promise.all(deletePromises).then(() => {
-            console.log('All caches cleared');
-            
-            // Force service worker update
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then((registrations) => {
-                registrations.forEach((registration) => {
-                  registration.update();
-                });
-              });
-            }
-            
-            // Show success message and reload
-            alert("✅ Cache cleared successfully!\n\nThe page will now reload with fresh content.");
-            
-            // Reload page with cache bypass
-            window.location.reload(true);
-          }).catch((error) => {
-            console.error('Error clearing caches:', error);
-            alert("Cache cleared with some errors. The page will reload anyway.");
-            window.location.reload(true);
-          });
-        });
-      } else {
-        // Fallback for browsers without cache API
-        alert("Cache cleared! The page will now reload.");
-        window.location.reload(true);
-      }
-    }
-  }
   
   const tourSteps = [
     {
@@ -2020,14 +1967,6 @@
     });
   }
   
-  // Clear Cache button functionality
-  const clearCacheBtn = document.getElementById('clearCacheBtn');
-  if (clearCacheBtn) {
-    clearCacheBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      performClearCache();
-    });
-  }
 
   // Mobile Navigation functionality
   function initMobileNavigation() {
@@ -2112,6 +2051,27 @@ function checkFontAwesome() {
 // Check Font Awesome after a short delay to allow it to load
 setTimeout(checkFontAwesome, 1000);
 
+// Automatic cache clearing on page load (preserves game data)
+function clearCacheOnLoad() {
+  if ('caches' in window) {
+    caches.keys().then((cacheNames) => {
+      const deletePromises = cacheNames.map((cacheName) => {
+        console.log('Auto-clearing cache:', cacheName);
+        return caches.delete(cacheName);
+      });
+      
+      Promise.all(deletePromises).then(() => {
+        console.log('All caches auto-cleared on page load');
+      }).catch((error) => {
+        console.error('Error auto-clearing caches:', error);
+      });
+    });
+  }
+}
+
+// Clear cache immediately on page load
+clearCacheOnLoad();
+
 // Register Service Worker for PWA functionality
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -2120,6 +2080,9 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         console.log('SW registered successfully: ', registration);
         console.log('Scope: ', registration.scope);
+        
+        // Force service worker update after registration
+        registration.update();
       })
       .catch((registrationError) => {
         console.log('SW registration failed: ', registrationError);
