@@ -724,9 +724,13 @@
         console.log('Game state loaded successfully');
         
         // Update UI after loading state
+    // Initialize upgrade visibility state before rendering
+    initUpgradeVisibility();
+    
     renderBalances();
     renderUpgradesOwned();
     renderUpgradePrices();
+    // Apply upgrade visibility rules now that hide-completed class is set
     sortUpgradesByCost();
     renderInvestmentUnlocked();
     renderInterestPerSecond();
@@ -1617,8 +1621,7 @@
   }
 
   if (toggleCompletedBtn && upgradesSection) {
-    // Default: hide completed upgrades
-    upgradesSection.classList.add('hide-completed');
+    // hide-completed class is already set during early initialization
     updateToggleCompletedUI();
     toggleCompletedBtn.addEventListener('click', () => {
       upgradesSection.classList.toggle('hide-completed');
@@ -1931,10 +1934,14 @@
     checkPortfolioTour();
   }, TICK_MS);
 
+  // Initialize upgrade visibility state before rendering
+  initUpgradeVisibility();
+  
   renderBalances();
   renderUpgradesOwned();
   renderRank();
   renderUpgradePrices();
+  // Apply upgrade visibility rules now that hide-completed class is set
   sortUpgradesByCost();
   renderInvestmentUnlocked();
   renderPrestigeMultipliers();
@@ -2300,6 +2307,15 @@ if ('serviceWorker' in navigator) {
   
   // Initialize background music immediately when page loads
   initBackgroundMusic();
+  
+  // Initialize upgrade visibility state (will be called after DOM is ready)
+  function initUpgradeVisibility() {
+    const upgradesSection = document.getElementById('upgradesSection');
+    if (upgradesSection) {
+      // Default: hide completed upgrades
+      upgradesSection.classList.add('hide-completed');
+    }
+  }
   
   // Load saved audio settings
   loadAudioSettings();
