@@ -102,6 +102,27 @@ header {
   box-sizing: border-box;
 }
 
+/* PWA Standalone Mode Adjustments */
+@media (display-mode: standalone) {
+  .mobile-nav {
+    /* In standalone mode, we can use the full bottom area */
+    bottom: 0;
+    /* Add safe area padding for devices with home indicator */
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  
+  /* Adjust main content for standalone mode */
+  main {
+    /* Account for safe area in standalone mode */
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  
+  .panels {
+    /* Adjust panels padding for standalone mode */
+    padding-bottom: calc(5vh + max(0px, env(safe-area-inset-bottom)));
+  }
+}
+
 .mobile-nav {
   display: flex;
   justify-content: space-around;
