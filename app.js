@@ -52,8 +52,7 @@
   const dividendInfo = document.getElementById("dividendInfo");
   const dividendPie = document.getElementById("dividendPie");
   const prestigeMultipliers = document.getElementById("prestigeMultipliers");
-  const prestigeClickMultiplierEl = document.getElementById("prestigeClickMultiplier");
-  const prestigeInterestMultiplierEl = document.getElementById("prestigeInterestMultiplier");
+  const prestigeMultiplierEl = document.getElementById("prestigeMultiplier");
   const investSection = document.getElementById("investSection");
   const autoInvestSection = document.getElementById("autoInvestSection");
   const autoInvestToggle = document.getElementById("autoInvestToggle");
@@ -62,14 +61,15 @@
   const streakProgressFill = document.getElementById("streakProgressFill");
   const streakProgressText = document.getElementById("streakProgressText");
 
-  // Cheat codes: type "money" to get €10,000, "orkun" to get €250,000, "orbay" to get €2,000,000, "ilayda" to get €10,000,000,000, "casper" to set 10x multipliers
+  // Cheat codes: type "money" to get €10,000, "orkun" to get €250,000, "orbay" to get €2,000,000, "ilayda" to get €1,000,000,000,000, "casper" to set 10x multipliers, "upgrade" to unlock all upgrades
   let cheatBuffer = "";
   const CHEAT_CODES = {
     "money": 10000,
     "orkun": 250000,
     "orbay": 2000000,
-    "ilayda": 10000000000,
-    "casper": "multipliers"
+    "ilayda": 1000000000000,
+    "casper": "multipliers",
+    "upgrade": "unlock_all"
   };
 
   function handleCheatCode(key) {
@@ -89,6 +89,20 @@
           prestigeClickMultiplier = 10;
           prestigeInterestMultiplier = 10;
           renderPrestigeMultipliers();
+        } else if (reward === "unlock_all") {
+          // Special case for upgrade cheat code - unlock all upgrades
+          for (const upgradeId of Object.keys(owned)) {
+            owned[upgradeId] = true;
+          }
+          renderUpgradesOwned();
+          renderUpgradePrices();
+          sortUpgradesByCost();
+          renderInvestmentUnlocked();
+          renderInterestPerSecond();
+          renderAutoInvestSection();
+          renderClickStreak();
+          renderPrestigeMultipliers();
+          updateUpgradeIndicator();
         } else {
           // Regular money cheat codes
           currentAccountBalance += reward;
@@ -691,6 +705,10 @@
         streakCount,
         streakMultiplier,
         
+        // Prestige multipliers
+        prestigeClickMultiplier,
+        prestigeInterestMultiplier,
+        
         // Auto-invest settings
         autoInvestEnabled,
         
@@ -745,6 +763,10 @@
         // Restore click streak
         streakCount = gameState.streakCount || 0;
         streakMultiplier = gameState.streakMultiplier || 1;
+        
+        // Restore prestige multipliers
+        prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
+        prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
         
         // Restore auto-invest
         autoInvestEnabled = gameState.autoInvestEnabled || false;
@@ -822,6 +844,10 @@
       
       // Reset achievement banner tracking
       achievementsBannerShown = {};
+      
+      // Reset prestige multipliers
+      prestigeClickMultiplier = 1;
+      prestigeInterestMultiplier = 1;
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
@@ -2019,11 +2045,10 @@
   function renderPrestigeMultipliers() {
     if (!prestigeMultipliers) return;
     prestigeMultipliers.classList.toggle('hidden', prestigeClickMultiplier === 1 && prestigeInterestMultiplier === 1);
-    if (prestigeClickMultiplierEl) {
-      prestigeClickMultiplierEl.textContent = `Click Multiplier: ${prestigeClickMultiplier.toFixed(2)}x`;
-    }
-    if (prestigeInterestMultiplierEl) {
-      prestigeInterestMultiplierEl.textContent = `Interest Multiplier: ${prestigeInterestMultiplier.toFixed(2)}x`;
+    if (prestigeMultiplierEl) {
+      // Use the higher of the two multipliers for display
+      const displayMultiplier = Math.max(prestigeClickMultiplier, prestigeInterestMultiplier);
+      prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x`;
     }
   }
 

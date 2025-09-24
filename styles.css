@@ -2202,6 +2202,20 @@ input#amountInput:focus {
   margin-bottom: 0;
 }
 
+/* Prestige multiplier in settings */
+.settings-section .prestige {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.4;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.settings-section .prestige div {
+  margin: 0;
+  font-weight: 500;
+}
+
 .earn-content .rate {
   text-align: left;
   font-size: 14px;

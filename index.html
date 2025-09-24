@@ -88,6 +88,15 @@
         </div>
         
         <div class="settings-section">
+          <h3>Game Stats</h3>
+          <div class="setting-item">
+            <div id="prestigeMultipliers" class="prestige hidden" aria-live="polite">
+              <div id="prestigeMultiplier">Multiplier: 1.00x</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
           <h3>Game Data</h3>
           <div class="setting-item">
             <button id="hardResetBtn" class="hard-reset-btn">Hard Reset</button>
@@ -98,7 +107,7 @@
         <div class="settings-section">
           <div class="version-info">
             <span class="version-label">Version:</span>
-            <span class="version-number">0.2.0</span>
+            <span class="version-number">0.2.3</span>
           </div>
         </div>
       </div>
@@ -128,15 +137,17 @@
             <!-- Interest Rate and Dividends Group -->
             <div class="earnings-metrics-container">
               <div class="earnings-metrics">
-                <div id="interestContainer" class="rate" aria-live="polite">
-                  Interest: <span id="interestPerSec">0.00%</span>
-                </div>
-                <div id="dividendInfo" class="dividends hidden" aria-live="polite">
-                  <span id="dividendRate">Dividends: 1.00%/10s</span>
-                  <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
-                    <circle class="bg" cx="18" cy="18" r="16" />
-                    <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
-                  </svg>
+                <div class="metrics-left">
+                  <div id="interestContainer" class="rate" aria-live="polite">
+                    Interest: <span id="interestPerSec">0.00%</span>
+                  </div>
+                  <div id="dividendInfo" class="dividends hidden" aria-live="polite">
+                    <span id="dividendRate">Dividends: 1.00%/10s</span>
+                    <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
+                      <circle class="bg" cx="18" cy="18" r="16" />
+                      <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -161,11 +172,6 @@
               </div>
             </div>
 
-            <!-- Prestige Multipliers -->
-            <div id="prestigeMultipliers" class="prestige hidden" aria-live="polite">
-              <span id="prestigeClickMultiplier">Click Multiplier: 1.00x</span>
-              <span id="prestigeInterestMultiplier">Interest Multiplier: 1.00x</span>
-            </div>
 
             <!-- Click Button at Bottom -->
             <div class="earn-click-section">
