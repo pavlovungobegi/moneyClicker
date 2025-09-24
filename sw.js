@@ -1,7 +1,7 @@
 const CACHE_NAME = 'interest-inc-v2';
 const urlsToCache = [
   './',
-  './main.html',
+  './index.html',
   './styles.css',
   './app.js',
   './backround.mp3',
@@ -69,7 +69,7 @@ self.addEventListener('fetch', (event) => {
         }).catch(() => {
           // If fetch fails, try to serve a fallback page
           if (event.request.destination === 'document') {
-            return caches.match('./main.html');
+            return caches.match('./index.html');
           }
         });
       })
