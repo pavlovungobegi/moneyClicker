@@ -123,9 +123,9 @@ header {
   
   .mobile-nav {
     /* Add more spacing from bottom to prevent accidental swipe-up */
-    bottom: 20px;
+    bottom: 24px;
     /* Add safe area padding plus extra spacing */
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
     /* Make background opaque */
     background: rgba(255, 255, 255, 1);
     /* Add border radius for better visual separation */
@@ -142,7 +142,7 @@ header {
   
   .panels {
     /* Adjust panels padding for standalone mode */
-    padding-bottom: calc(6vh + 32px + env(safe-area-inset-bottom));
+    padding-bottom: calc(6vh + 36px + env(safe-area-inset-bottom));
   }
   
   /* Hide the home indicator line */
@@ -171,12 +171,12 @@ header {
   justify-content: center;
   background: none;
   border: none;
-  padding: 10px 16px;
+  padding: 12px 18px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 60px;
-  height: 50px;
+  min-width: 70px;
+  height: 60px;
   position: relative;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -199,7 +199,7 @@ header {
 }
 
 .nav-icon {
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
   margin-bottom: 2px;
   color: #64748b;
@@ -681,7 +681,7 @@ main {
   .mobile-nav {
     display: flex;
     /* Add more spacing from bottom to prevent accidental swipe-up */
-    bottom: 20px;
+    bottom: 24px;
     /* Add border radius for better visual separation */
     border-radius: 16px 16px 0 0;
     /* Add shadow for depth */
@@ -700,7 +700,7 @@ main {
   
   /* Ensure panels don't extend under navigation */
   .panels {
-    padding-bottom: calc(6vh + 32px); /* Add padding to prevent panels from going under nav + spacing */
+    padding-bottom: calc(6vh + 36px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
   }
   
@@ -711,12 +711,13 @@ main {
   
   /* Adjust navigation for very small screens */
   .nav-btn {
-    min-width: 45px;
-    padding: 6px 8px;
+    min-width: 55px;
+    padding: 8px 10px;
+    height: 50px;
   }
   
   .nav-icon {
-    font-size: 18px;
+    font-size: 20px;
   }
 }
 
@@ -786,7 +787,7 @@ main {
   
   .panels {
     gap: 12px;
-    padding-bottom: calc(6vh + 32px); /* Add padding to prevent panels from going under nav + spacing */
+    padding-bottom: calc(6vh + 36px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
     /* Enhanced smooth scrolling for small mobile */
     scroll-behavior: smooth;
