@@ -305,6 +305,7 @@
     
     
     renderBalances();
+    updateUpgradeIndicator();
     
     // Create flying money number with critical hit styling (show actual amount added)
     createFlyingMoney(cappedIncome, isCritical);
@@ -714,14 +715,15 @@
         console.log('Game state loaded successfully');
         
         // Update UI after loading state
-        renderBalances();
-        renderUpgradesOwned();
-        renderUpgradePrices();
-        sortUpgradesByCost();
-        renderInvestmentUnlocked();
-        renderInterestPerSecond();
-        renderAutoInvestSection();
-        renderStatistics();
+    renderBalances();
+    renderUpgradesOwned();
+    renderUpgradePrices();
+    sortUpgradesByCost();
+    renderInvestmentUnlocked();
+    renderInterestPerSecond();
+    renderAutoInvestSection();
+    renderStatistics();
+    updateUpgradeIndicator();
         
         // Apply audio settings after loading game state
         applyAudioSettings();
@@ -1513,6 +1515,7 @@
     // After purchase, re-sort and re-evaluate which upgrade to show next
     renderUpgradePrices();
     sortUpgradesByCost();
+    updateUpgradeIndicator();
     
     // Play buy sound
     playBuySound();
@@ -1601,6 +1604,23 @@
     if (owned.u25) rateBoost *= 1.2; // +20%
     if (owned.u31) rateBoost *= 1.1; // +10%
     return 1 + (BASE_COMPOUND_MULTIPLIER_PER_TICK - 1) * rateBoost * prestigeInterestMultiplier;
+  }
+
+  // Check if any upgrades are available and update indicator
+  function updateUpgradeIndicator() {
+    const indicator = document.getElementById('upgradeIndicator');
+    if (!indicator) return;
+    
+    // Check if any upgrade is affordable using only current account balance
+    const hasAffordableUpgrade = Object.entries(UPGRADE_COSTS).some(([upgradeId, cost]) => {
+      return !owned[upgradeId] && currentAccountBalance >= cost;
+    });
+    
+    if (hasAffordableUpgrade) {
+      indicator.classList.remove('hidden');
+    } else {
+      indicator.classList.add('hidden');
+    }
   }
 
   // Sort upgrades by cost ascending
@@ -1857,6 +1877,7 @@
     renderAutoInvestSection();
     renderClickStreak();
     checkStreakTimeout();
+    updateUpgradeIndicator();
     updateProgressBars();
     checkAchievements();
     renderStatistics();
@@ -1885,6 +1906,7 @@
   renderAchievements();
   renderStatistics();
   renderStickFigure();
+  updateUpgradeIndicator();
   
   // Settings panel functionality
   const settingsToggle = document.getElementById('settingsToggle');
