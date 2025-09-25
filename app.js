@@ -1992,8 +1992,6 @@
     educationDisplay.innerHTML = `<span>Education:</span><span>${educationLevel}</span>`;
   }
 
-  // Track last object counts to avoid unnecessary re-renders
-  let lastObjectCounts = null;
   
   // Tour system (disabled - keeping for future use)
   let tourState = {
@@ -2349,109 +2347,6 @@
     }
   ];
   
-  function renderWealthVisualization() {
-    const totalWealth = currentAccountBalance + investmentAccountBalance;
-    
-    // Define wealth objects and their values
-    const wealthObjects = [
-      { value: 10000000000000, id: 'galaxy', emoji: '🌌' },
-      { value: 1000000000000, id: 'trillionStar', emoji: '⭐' },
-      { value: 100000000000, id: 'globe', emoji: '🌍' },
-      { value: 10000000000, id: 'crown', emoji: '👑' },
-      { value: 1000000000, id: 'privateIsland', emoji: '🏝️' },
-      { value: 100000000, id: 'castle', emoji: '🏰' },
-      { value: 10000000, id: 'diamond', emoji: '💎' },
-      { value: 1000000, id: 'goldBar', emoji: '🥇' },
-      { value: 100000, id: 'moneyStack', emoji: '💰' },
-      { value: 10000, id: 'moneyBill', emoji: '💵' },
-      { value: 1000, id: 'coin', emoji: '🪙' }
-    ];
-    
-    // Calculate how many of each object we can afford
-    let remainingWealth = totalWealth;
-    const currentObjectCounts = {};
-    
-    wealthObjects.forEach(({ value, id, emoji }) => {
-      const count = Math.floor(remainingWealth / value);
-      currentObjectCounts[id] = count;
-      remainingWealth = remainingWealth % value;
-    });
-    
-    // Filter out objects that represent less than 1% of total wealth
-    const filteredObjectCounts = {};
-    wealthObjects.forEach(({ value, id }) => {
-      const count = currentObjectCounts[id] || 0;
-      const singleObjectPercentage = totalWealth > 0 ? (value / totalWealth) * 100 : 0;
-      
-      
-      // Only include objects where a single object represents 1% or more of total wealth
-      if (singleObjectPercentage >= 1) {
-        filteredObjectCounts[id] = count;
-      }
-    });
-    
-    // Check if the filtered object counts have changed
-    const hasChanged = !lastObjectCounts || 
-      wealthObjects.some(({ id }) => (filteredObjectCounts[id] || 0) !== (lastObjectCounts[id] || 0));
-    
-    // Only update if the visual representation has changed
-    if (!hasChanged) return;
-    
-    // Get the container
-    const container = document.querySelector('.wealth-objects');
-    if (!container) return;
-    
-    // If this is the first render, do a full render
-    if (!lastObjectCounts) {
-      lastObjectCounts = { ...filteredObjectCounts };
-      container.innerHTML = '';
-      
-      // Add all filtered objects
-      wealthObjects.forEach(({ id, emoji }) => {
-        const count = filteredObjectCounts[id] || 0;
-        for (let i = 0; i < count; i++) {
-          const span = document.createElement('span');
-          span.className = 'wealth-object';
-          span.id = `${id}_${i}`;
-          span.textContent = emoji;
-          span.style.display = 'inline-block';
-          span.style.animation = 'wealthAppear 0.5s ease-out';
-          container.appendChild(span);
-        }
-      });
-      return;
-    }
-    
-    // Incremental update: only add/remove objects that changed
-    wealthObjects.forEach(({ id, emoji }) => {
-      const oldCount = lastObjectCounts[id] || 0;
-      const newCount = filteredObjectCounts[id] || 0;
-      
-      if (newCount > oldCount) {
-        // Add new objects
-        for (let i = oldCount; i < newCount; i++) {
-          const span = document.createElement('span');
-          span.className = 'wealth-object';
-          span.id = `${id}_${i}`;
-          span.textContent = emoji;
-          span.style.display = 'inline-block';
-          span.style.animation = 'wealthAppear 0.5s ease-out';
-          container.appendChild(span);
-        }
-      } else if (newCount < oldCount) {
-        // Remove excess objects
-        for (let i = newCount; i < oldCount; i++) {
-          const elementToRemove = document.getElementById(`${id}_${i}`);
-          if (elementToRemove) {
-            elementToRemove.remove();
-          }
-        }
-      }
-    });
-    
-    // Update the last counts with filtered values
-    lastObjectCounts = { ...filteredObjectCounts };
-  }
 
   function startTour() {
     if (tourState.completed) return;
@@ -3753,8 +3648,6 @@
     renderStatistics();
     renderStickFigure();
     
-    // Update wealth visualization
-    renderWealthVisualization();
     
     // Check tour triggers
     checkTourTriggers();
