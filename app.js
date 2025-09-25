@@ -61,6 +61,18 @@
       }
     }
     
+    createCriticalCoin(x, y) {
+      // Create a single orange coin for critical hits
+      this.createParticle('coin', x, y, {
+        vx: (Math.random() - 0.5) * 2, // Less horizontal movement (more centered)
+        vy: -Math.random() * 2 - 6, // More upward movement and higher
+        size: 10 + Math.random() * 3, // Larger size (10-13px vs 8-10px)
+        color: '#FF8C00', // Orange color
+        life: 2.5, // Longer life for better visibility
+        decay: 0.008 // Slower decay
+      });
+    }
+    
     createSparkleParticles(x, y, count = 8) {
       for (let i = 0; i < count; i++) {
         this.createParticle('sparkle', x, y, {
@@ -1564,15 +1576,20 @@
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       
-      // Create coin particles
-      particleSystem.createCoinParticles(centerX, centerY, isCritical ? 8 : 5);
-      
-      // Create sparkle particles
-      particleSystem.createSparkleParticles(centerX, centerY, isCritical ? 12 : 8);
-      
-      // Screen shake for critical hits
       if (isCritical) {
+        // Critical hit: single orange coin + screen shake
+        particleSystem.createCriticalCoin(centerX, centerY);
         screenShake(8, 300);
+      } else {
+        // Normal click: regular particles based on income
+        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.6), 1), 6);
+        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 1), 2), 9);
+        
+        // Create coin particles
+        particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
+        
+        // Create sparkle particles
+        particleSystem.createSparkleParticles(centerX, centerY, baseSparkleCount);
       }
     }
     
@@ -1594,8 +1611,12 @@
     // Create flying money number with critical hit styling (show actual amount added)
     createFlyingMoney(cappedIncome, isCritical);
     
-    // Play click sound
-    playClickSound();
+    // Play appropriate sound
+    if (isCritical) {
+      playCriticalCoinSound();
+    } else {
+      playClickSound();
+    }
     
     // Check achievements
     checkAchievementsOptimized();
@@ -2885,6 +2906,31 @@
     
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
+  }
+
+  function playCriticalCoinSound() {
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    // Create a more metallic, coin-like sound
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Lower frequency for more metallic sound
+    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.15);
+    
+    // Higher gain for more prominent sound
+    gainNode.gain.setValueAtTime(0.6, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
   }
 
   function playBuySound() {
