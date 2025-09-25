@@ -732,18 +732,18 @@
     // Check for new events (only one event can be active at a time)
     const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive;
     
-    console.log('🎲 Event Check:', {
-      anyEventActive,
-      marketBoomActive,
-      marketCrashActive,
-      flashSaleActive,
-      now,
-      cooldowns: {
-        marketBoom: EVENT_CONFIG.eventCooldowns.marketBoom,
-        marketCrash: EVENT_CONFIG.eventCooldowns.marketCrash,
-        flashSale: EVENT_CONFIG.eventCooldowns.flashSale
-      }
-    });
+    // console.log('🎲 Event Check:', {
+    //   anyEventActive,
+    //   marketBoomActive,
+    //   marketCrashActive,
+    //   flashSaleActive,
+    //   now,
+    //   cooldowns: {
+    //     marketBoom: EVENT_CONFIG.eventCooldowns.marketBoom,
+    //     marketCrash: EVENT_CONFIG.eventCooldowns.marketCrash,
+    //     flashSale: EVENT_CONFIG.eventCooldowns.flashSale
+    //   }
+    // });
     
     if (!anyEventActive) {
       // Only check for new events if no event is currently active
@@ -755,42 +755,42 @@
       const saleProb = EVENT_CONFIG.probabilities.flashSale;
       const totalProb = boomProb + crashProb + saleProb;
       
-      console.log('🎲 Event Roll:', {
-        roll: eventRoll,
-        probabilities: {
-          marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
-          marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
-          flashSale: `${boomProb + crashProb}-${totalProb} (${(saleProb * 100).toFixed(1)}%)`,
-          nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
-        },
-        cooldownChecks: {
-          marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
-          marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
-          flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale
-        }
-      });
+      // console.log('🎲 Event Roll:', {
+      //   roll: eventRoll,
+      //   probabilities: {
+      //     marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
+      //     marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
+      //     flashSale: `${boomProb + crashProb}-${totalProb} (${(saleProb * 100).toFixed(1)}%)`,
+      //     nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
+      //   },
+      //   cooldownChecks: {
+      //     marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
+      //     marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
+      //     flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale
+      //   }
+      // });
       
       // Market Boom
       if (now >= EVENT_CONFIG.eventCooldowns.marketBoom && eventRoll < boomProb) {
-        console.log('🎯 TRIGGERING: Market Boom!');
+        // console.log('🎯 TRIGGERING: Market Boom!');
         triggerMarketBoom();
       }
       // Market Crash  
       else if (now >= EVENT_CONFIG.eventCooldowns.marketCrash && eventRoll >= boomProb && eventRoll < boomProb + crashProb) {
-        console.log('🎯 TRIGGERING: Market Crash!');
+        // console.log('🎯 TRIGGERING: Market Crash!');
         triggerMarketCrash();
       }
       // Flash Sale
       else if (now >= EVENT_CONFIG.eventCooldowns.flashSale && eventRoll >= boomProb + crashProb && eventRoll < totalProb) {
-        console.log('🎯 TRIGGERING: Flash Sale!');
+        // console.log('🎯 TRIGGERING: Flash Sale!');
         triggerFlashSale();
       }
       // Nothing happens
       else {
-        console.log(`🎲 Result: Nothing triggered (${((1 - totalProb) * 100).toFixed(1)}% chance)`);
+        // console.log(`🎲 Result: Nothing triggered (${((1 - totalProb) * 100).toFixed(1)}% chance)`);
       }
     } else {
-      console.log('🎲 Skipping event check - event already active');
+      // console.log('🎲 Skipping event check - event already active');
     }
   }
   
@@ -1097,7 +1097,7 @@
     } else if (num >= 1000) {
       return (num / 1000).toFixed(2) + 'k';
     } else {
-      return num.toFixed(0);
+      return num.toFixed(2); // Show cents for amounts below 1000
     }
   }
 
@@ -1165,8 +1165,8 @@
     }
     if (investmentDisplay && numberAnimator) {
       const investmentValue = parseDisplayedValue(investmentDisplay.textContent);
-      // Only animate for significant changes (1% or more)
-      const minChange = Math.max(investmentAccountBalance * 0.01, 1);
+      // Dynamic threshold: 1% of balance, but minimum 0.01 for small amounts
+      const minChange = Math.max(investmentAccountBalance * 0.01, 0.01);
       numberAnimator.animateValue(investmentDisplay, investmentValue, investmentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
     }
     
@@ -1178,7 +1178,8 @@
     }
     if (headerInvestmentDisplay && numberAnimator) {
       const headerInvestmentValue = parseDisplayedValue(headerInvestmentDisplay.textContent);
-      const minChange = Math.max(investmentAccountBalance * 0.01, 1);
+      // Dynamic threshold: 1% of balance, but minimum 0.01 for small amounts
+      const minChange = Math.max(investmentAccountBalance * 0.01, 0.01);
       numberAnimator.animateValue(headerInvestmentDisplay, headerInvestmentValue, investmentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
     }
   }
@@ -2975,6 +2976,7 @@
     
     renderBalances();
     renderUpgradesOwned();
+    renderInterestPerSecond();
     // After purchase, re-sort and re-evaluate which upgrade to show next
     renderUpgradePrices();
     sortUpgradesByCost();
@@ -3042,6 +3044,7 @@
     if (owned.u22) rateBoost *= 1.15; // +15%
     if (owned.u25) rateBoost *= 1.2; // +20%
     if (owned.u31) rateBoost *= 1.1; // +10%
+    if (owned.u32) rateBoost *= 1.1; // +10% (Negotiation)
     
     // Market event effects
     if (marketBoomActive) {
@@ -3145,7 +3148,7 @@
 
   function tickDividends(deltaMs) {
     if (!owned.u10) {
-      console.log('Dividends not owned (u10), skipping');
+      // console.log('Dividends not owned (u10), skipping');
       return;
     }
     dividendElapsed += deltaMs;
@@ -3711,7 +3714,7 @@ function handleVisibilityChange() {
     // App went to background - pause music and animations
     if (backgroundMusic && !backgroundMusic.paused) {
       backgroundMusic.pause();
-      console.log('Music paused - app went to background');
+      // console.log('Music paused - app went to background');
     }
     // Stop dividend animation to save resources
     if (dividendAnimationId) {
@@ -3724,7 +3727,7 @@ function handleVisibilityChange() {
       backgroundMusic.play().catch((error) => {
         console.log('Could not resume music:', error);
       });
-      console.log('Music resumed - app came to foreground');
+      // console.log('Music resumed - app came to foreground');
     }
     // Restart dividend animation if dividends are enabled
     if (owned.u10 && !dividendAnimationId) {
@@ -3740,7 +3743,7 @@ document.addEventListener('visibilitychange', handleVisibilityChange);
 window.addEventListener('blur', () => {
   if (backgroundMusic && !backgroundMusic.paused) {
     backgroundMusic.pause();
-    console.log('Music paused - window lost focus');
+    // console.log('Music paused - window lost focus');
   }
   // Stop dividend animation to save resources
   if (dividendAnimationId) {
@@ -3754,7 +3757,7 @@ window.addEventListener('focus', () => {
     backgroundMusic.play().catch((error) => {
       console.log('Could not resume music on focus:', error);
     });
-    console.log('Music resumed - window gained focus');
+    // console.log('Music resumed - window gained focus');
   }
   // Restart dividend animation if dividends are enabled
   if (owned.u10 && !dividendAnimationId) {
@@ -3766,7 +3769,7 @@ window.addEventListener('focus', () => {
 document.addEventListener('pause', () => {
   if (backgroundMusic && !backgroundMusic.paused) {
     backgroundMusic.pause();
-    console.log('Music paused - app paused (mobile)');
+    // console.log('Music paused - app paused (mobile)');
   }
   // Stop dividend animation to save resources
   if (dividendAnimationId) {
@@ -3780,7 +3783,7 @@ document.addEventListener('resume', () => {
     backgroundMusic.play().catch((error) => {
       console.log('Could not resume music on resume:', error);
     });
-    console.log('Music resumed - app resumed (mobile)');
+    // console.log('Music resumed - app resumed (mobile)');
   }
   // Restart dividend animation if dividends are enabled
   if (owned.u10 && !dividendAnimationId) {
@@ -3806,7 +3809,7 @@ if (achievementBannerClose) {
 window.addEventListener('beforeunload', () => {
   if (backgroundMusic && !backgroundMusic.paused) {
     backgroundMusic.pause();
-    console.log('Music paused - app closing');
+    // console.log('Music paused - app closing');
   }
 });
 
@@ -3910,6 +3913,15 @@ if ('serviceWorker' in navigator) {
       const m = getCompoundMultiplierPerTick();
       const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
       const percent = (perSecondMultiplier - 1) * 100;
+      
+      // Debug logging
+      console.log('renderInterestPerSecond called:', {
+        multiplier: m,
+        perSecondMultiplier: perSecondMultiplier,
+        percent: percent,
+        owned_u4: owned.u4,
+        owned_u32: owned.u32
+      });
     
     // Calculate earnings per second
     const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
@@ -3919,8 +3931,8 @@ if ('serviceWorker' in navigator) {
       const currentText = interestPerSecEl.textContent.replace('%', '');
       const currentValue = parseFloat(currentText) || 0;
       
-      // Only animate for significant changes (0.1% or more)
-      const minChange = 0.1;
+      // Only animate for significant changes (0.01% or more)
+      const minChange = 0.01;
       numberAnimator.animateValue(interestPerSecEl, currentValue, percent, 250, (value) => value.toFixed(2) + "%", minChange);
     } else {
       // Fallback to instant update
