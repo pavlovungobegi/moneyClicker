@@ -592,12 +592,13 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.02,    // 3% chance
-      marketCrash: 0.03,   // 4% chance  
-      flashSale: 0.015,     // 2% chance
-      greatDepression: 0.01, // 1% chance
-      taxCollection: 0.025,   // 2% chance
-      robbery: 0.015          // 1% chance
+      marketBoom: 0.04,    // 3% chance
+      marketCrash: 0.06,   // 4% chance  
+      flashSale: 0.03,     // 2% chance
+      greatDepression: 0.02, // 1% chance
+      taxCollection: 0.05,   // 2% chance
+      robbery: 0.03,          // 1% chance
+      divorce: 0.02             // 1% chance
     },
     
     // Event durations (milliseconds)
@@ -615,7 +616,8 @@
       flashSale: 180000,    // 3 minutes
       greatDepression: 60000, // 1 minute
       taxCollection: 60000,   // 1 minute
-      robbery: 60000          // 1 minute
+      robbery: 60000,          // 1 minute
+      divorce: 60000            // 1 minute
     },
     
     // Event-specific cooldowns
@@ -625,7 +627,8 @@
       flashSale: 0,
       greatDepression: 0,
       taxCollection: 0,
-      robbery: 0
+      robbery: 0,
+      divorce: 0
     }
   };
   
@@ -823,6 +826,43 @@
     renderBalances();
   }
   
+  function triggerDivorce() {
+    // Divorce is an instant event (no duration) but follows the same "one event at a time" rule
+    // Set cooldown
+    EVENT_CONFIG.eventCooldowns.divorce = Date.now() + EVENT_CONFIG.cooldowns.divorce;
+    
+    // Calculate total net worth and 50% loss
+    const totalNetWorth = currentAccountBalance + investmentAccountBalance;
+    const lossAmount = totalNetWorth * 0.5;
+    
+    // Apply 50% loss to both accounts proportionally
+    const currentLoss = currentAccountBalance * 0.5;
+    const investmentLoss = investmentAccountBalance * 0.5;
+    
+    currentAccountBalance -= currentLoss;
+    investmentAccountBalance -= investmentLoss;
+    
+    // Show notification
+    showEventNotification("💔 You are divorced!", `Lost €${formatNumberShort(lossAmount)} (50% of your net worth)!`, "divorce");
+    
+    // Visual effects
+    screenFlash('#8B008B', 700); // Purple flash (divorce color)
+    screenShake(10, 500); // Very strong shake
+    
+    // Sound effect (reuse error sound for divorce)
+    playErrorSound();
+    
+    // Create divorce particles
+    if (particleSystem) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount);
+    }
+    
+    // Update displays
+    renderBalances();
+  }
+  
   // Check for expired events immediately (called every second)
   function checkExpiredEvents() {
     const now = Date.now();
@@ -913,7 +953,8 @@
       const depressionProb = EVENT_CONFIG.probabilities.greatDepression;
       const taxProb = EVENT_CONFIG.probabilities.taxCollection;
       const robberyProb = EVENT_CONFIG.probabilities.robbery;
-      const totalProb = boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb;
+      const divorceProb = EVENT_CONFIG.probabilities.divorce;
+      const totalProb = boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb + divorceProb;
       
       console.log('🎲 Event Roll:', {
         roll: eventRoll,
@@ -923,7 +964,8 @@
           flashSale: `${boomProb + crashProb}-${boomProb + crashProb + saleProb} (${(saleProb * 100).toFixed(1)}%)`,
           greatDepression: `${boomProb + crashProb + saleProb}-${boomProb + crashProb + saleProb + depressionProb} (${(depressionProb * 100).toFixed(1)}%)`,
           taxCollection: `${boomProb + crashProb + saleProb + depressionProb}-${boomProb + crashProb + saleProb + depressionProb + taxProb} (${(taxProb * 100).toFixed(1)}%)`,
-          robbery: `${boomProb + crashProb + saleProb + depressionProb + taxProb}-${totalProb} (${(robberyProb * 100).toFixed(1)}%)`,
+          robbery: `${boomProb + crashProb + saleProb + depressionProb + taxProb}-${boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb} (${(robberyProb * 100).toFixed(1)}%)`,
+          divorce: `${boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb}-${totalProb} (${(divorceProb * 100).toFixed(1)}%)`,
           nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
         },
         cooldownChecks: {
@@ -932,7 +974,8 @@
           flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale,
           greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression,
           taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection,
-          robbery: now >= EVENT_CONFIG.eventCooldowns.robbery
+          robbery: now >= EVENT_CONFIG.eventCooldowns.robbery,
+          divorce: now >= EVENT_CONFIG.eventCooldowns.divorce
         }
       });
       
@@ -962,9 +1005,14 @@
         triggerTaxCollection();
       }
       // Robbery
-      else if (now >= EVENT_CONFIG.eventCooldowns.robbery && eventRoll >= boomProb + crashProb + saleProb + depressionProb + taxProb && eventRoll < totalProb) {
+      else if (now >= EVENT_CONFIG.eventCooldowns.robbery && eventRoll >= boomProb + crashProb + saleProb + depressionProb + taxProb && eventRoll < boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb) {
         console.log('🎯 TRIGGERING: Robbery!');
         triggerRobbery();
+      }
+      // Divorce
+      else if (now >= EVENT_CONFIG.eventCooldowns.divorce && eventRoll >= boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb && eventRoll < totalProb) {
+        console.log('🎯 TRIGGERING: Divorce!');
+        triggerDivorce();
       }
       // Nothing happens
       else {
@@ -2204,6 +2252,7 @@
       EVENT_CONFIG.eventCooldowns.greatDepression = 0;
       EVENT_CONFIG.eventCooldowns.taxCollection = 0;
       EVENT_CONFIG.eventCooldowns.robbery = 0;
+      EVENT_CONFIG.eventCooldowns.divorce = 0;
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {

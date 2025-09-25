@@ -90,6 +90,12 @@
   box-shadow: 0 8px 32px rgba(139, 0, 0, 0.4);
 }
 
+.market-event-notification.divorce {
+  background: linear-gradient(135deg, rgba(139, 0, 139, 0.9) 0%, rgba(75, 0, 75, 0.9) 100%);
+  border-color: rgba(139, 0, 139, 0.5);
+  box-shadow: 0 8px 32px rgba(139, 0, 139, 0.4);
+}
+
 .market-event-notification .event-title {
   font-size: 18px;
   font-weight: bold;
