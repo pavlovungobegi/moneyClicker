@@ -591,10 +591,11 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.05,    // 4% chance
-      marketCrash: 0.2,   // 4% chance  
-      flashSale: 0.05,     // 2% chance
-      greatDepression: 0.2 // 1% chance
+      marketBoom: 0.04,    // 4% chance
+      marketCrash: 0.04,   // 4% chance  
+      flashSale: 0.02,     // 2% chance
+      greatDepression: 0.01, // 1% chance
+      taxCollection: 0.22   // 2% chance
     },
     
     // Event durations (milliseconds)
@@ -610,7 +611,8 @@
       marketBoom: 60000,    // 1 minute
       marketCrash: 60000,   // 1 minute
       flashSale: 180000,    // 3 minutes
-      greatDepression: 60000 // 1 minute
+      greatDepression: 60000, // 1 minute
+      taxCollection: 60000   // 1 minute
     },
     
     // Event-specific cooldowns
@@ -618,7 +620,8 @@
       marketBoom: 0,
       marketCrash: 0,
       flashSale: 0,
-      greatDepression: 0
+      greatDepression: 0,
+      taxCollection: 0
     }
   };
   
@@ -756,6 +759,36 @@
     renderBalances();
   }
   
+  function triggerTaxCollection() {
+    // Tax collection is an instant event (no duration) but follows the same "one event at a time" rule
+    // Set cooldown
+    EVENT_CONFIG.eventCooldowns.taxCollection = Date.now() + EVENT_CONFIG.cooldowns.taxCollection;
+    
+    // Calculate 8% tax on investment account
+    const taxAmount = investmentAccountBalance * 0.08;
+    investmentAccountBalance -= taxAmount;
+    
+    // Show notification
+    showEventNotification("🏛️ Tax Collection!", `Paid €${formatNumberShort(taxAmount)} in taxes!`, "tax-collection");
+    
+    // Visual effects
+    screenFlash('#8B4513', 400); // Brown flash (tax color)
+    screenShake(3, 200); // Gentle shake
+    
+    // Sound effect (reuse error sound for tax)
+    playErrorSound();
+    
+    // Create tax particles
+    if (particleSystem) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      particleSystem.createMoneyLossParticles(centerX, centerY, taxAmount);
+    }
+    
+    // Update displays
+    renderBalances();
+  }
+  
   // Check for expired events immediately (called every second)
   function checkExpiredEvents() {
     const now = Date.now();
@@ -833,7 +866,8 @@
       const crashProb = EVENT_CONFIG.probabilities.marketCrash;
       const saleProb = EVENT_CONFIG.probabilities.flashSale;
       const depressionProb = EVENT_CONFIG.probabilities.greatDepression;
-      const totalProb = boomProb + crashProb + saleProb + depressionProb;
+      const taxProb = EVENT_CONFIG.probabilities.taxCollection;
+      const totalProb = boomProb + crashProb + saleProb + depressionProb + taxProb;
       
       console.log('🎲 Event Roll:', {
         roll: eventRoll,
@@ -841,14 +875,16 @@
           marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
           marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
           flashSale: `${boomProb + crashProb}-${boomProb + crashProb + saleProb} (${(saleProb * 100).toFixed(1)}%)`,
-          greatDepression: `${boomProb + crashProb + saleProb}-${totalProb} (${(depressionProb * 100).toFixed(1)}%)`,
+          greatDepression: `${boomProb + crashProb + saleProb}-${boomProb + crashProb + saleProb + depressionProb} (${(depressionProb * 100).toFixed(1)}%)`,
+          taxCollection: `${boomProb + crashProb + saleProb + depressionProb}-${totalProb} (${(taxProb * 100).toFixed(1)}%)`,
           nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
         },
         cooldownChecks: {
           marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
           marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
           flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale,
-          greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression
+          greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression,
+          taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection
         }
       });
       
@@ -868,9 +904,14 @@
         triggerFlashSale();
       }
       // Great Depression
-      else if (now >= EVENT_CONFIG.eventCooldowns.greatDepression && eventRoll >= boomProb + crashProb + saleProb && eventRoll < totalProb) {
+      else if (now >= EVENT_CONFIG.eventCooldowns.greatDepression && eventRoll >= boomProb + crashProb + saleProb && eventRoll < boomProb + crashProb + saleProb + depressionProb) {
         console.log('🎯 TRIGGERING: Great Depression!');
         triggerGreatDepression();
+      }
+      // Tax Collection
+      else if (now >= EVENT_CONFIG.eventCooldowns.taxCollection && eventRoll >= boomProb + crashProb + saleProb + depressionProb && eventRoll < totalProb) {
+        console.log('🎯 TRIGGERING: Tax Collection!');
+        triggerTaxCollection();
       }
       // Nothing happens
       else {

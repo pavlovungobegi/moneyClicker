@@ -78,6 +78,12 @@
   border-color: rgba(108, 117, 125, 0.3);
 }
 
+.market-event-notification.tax-collection {
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.85) 0%, rgba(160, 82, 45, 0.85) 100%);
+  border-color: rgba(139, 69, 19, 0.3);
+  box-shadow: 0 8px 32px rgba(139, 69, 19, 0.4);
+}
+
 .market-event-notification .event-title {
   font-size: 18px;
   font-weight: bold;
