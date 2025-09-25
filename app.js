@@ -600,6 +600,22 @@
   let eventName = null;
   let eventTimer = null;
   
+  // Property system configuration
+  const PROPERTY_CONFIG = {
+    parkingGarage: {
+      name: "Parking Garage",
+      baseCost: 30000,
+      incomePerSecond: 100,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-building"
+    }
+  };
+
+  // Property ownership tracking
+  let properties = {
+    parkingGarage: 0
+  };
+
   // Event system configuration
   const EVENT_CONFIG = {
     // Event probabilities (per check)
@@ -1324,6 +1340,7 @@
   const buyU30Btn = document.getElementById("buyU30Btn");
   const buyU31Btn = document.getElementById("buyU31Btn");
   const buyU32Btn = document.getElementById("buyU32Btn");
+  const buyParkingGarageBtn = document.getElementById("buyParkingGarageBtn");
   const rankDisplay = document.getElementById("rankDisplay");
   const interestPerSecEl = document.getElementById("interestPerSec");
   const interestContainer = document.getElementById("interestContainer");
@@ -1790,6 +1807,103 @@
     saveGameState();
   }
 
+  // Property system functions
+  function getPropertyCost(propertyId) {
+    const config = PROPERTY_CONFIG[propertyId];
+    const owned = properties[propertyId];
+    return Math.floor(config.baseCost * Math.pow(config.priceMultiplier, owned));
+  }
+
+  function getPropertyTotalIncome(propertyId) {
+    const config = PROPERTY_CONFIG[propertyId];
+    const owned = properties[propertyId];
+    return owned * config.incomePerSecond;
+  }
+
+  function buyProperty(propertyId) {
+    const cost = getPropertyCost(propertyId);
+    
+    if (currentAccountBalance < cost) {
+      console.log('Insufficient funds for property purchase:', { propertyId, cost, currentBalance: currentAccountBalance });
+      playErrorSound();
+      return false;
+    }
+    
+    currentAccountBalance -= cost;
+    properties[propertyId]++;
+    
+    // Create purchase particle effects
+    if (particleSystem) {
+      const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
+      if (buyBtn) {
+        const rect = buyBtn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create upgrade particles
+        particleSystem.createUpgradeParticles(centerX, centerY, 8);
+        
+        // Create money gain particles
+        particleSystem.createMoneyGainParticles(centerX, centerY, cost);
+      }
+    }
+    
+    // Play buy sound
+    playBuySound();
+    
+    // Update displays
+    renderBalances();
+    renderPropertyUI(propertyId);
+    saveGameState();
+    
+    return true;
+  }
+
+  function renderPropertyUI(propertyId) {
+    const config = PROPERTY_CONFIG[propertyId];
+    const owned = properties[propertyId];
+    const cost = getPropertyCost(propertyId);
+    const totalIncome = getPropertyTotalIncome(propertyId);
+    
+    // Update owned count
+    const ownedEl = document.getElementById(`${propertyId}Owned`);
+    if (ownedEl) {
+      ownedEl.textContent = owned;
+    }
+    
+    // Update cost
+    const costEl = document.getElementById(`${propertyId}Cost`);
+    if (costEl) {
+      costEl.textContent = `€${formatNumberShort(cost)}`;
+    }
+    
+    // Update total income
+    const totalIncomeEl = document.getElementById(`${propertyId}TotalIncome`);
+    if (totalIncomeEl) {
+      totalIncomeEl.textContent = `€${formatNumberShort(totalIncome)}/sec total`;
+    }
+    
+    // Update buy button state
+    const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
+    if (buyBtn) {
+      buyBtn.disabled = currentAccountBalance < cost;
+    }
+  }
+
+  function renderAllProperties() {
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      renderPropertyUI(propertyId);
+    });
+  }
+
+  function getTotalPropertyIncome() {
+    let total = 0;
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      total += getPropertyTotalIncome(propertyId);
+    });
+    return total;
+  }
+
   function updateClickStreak() {
     const currentTime = Date.now();
     
@@ -2102,6 +2216,9 @@
         // Upgrades owned
         owned: { ...owned },
         
+        // Properties owned
+        properties: { ...properties },
+        
         // Statistics
         totalClicks,
         totalCriticalHits,
@@ -2171,6 +2288,15 @@
           Object.keys(gameState.owned).forEach(key => {
             if (owned.hasOwnProperty(key)) {
               owned[key] = gameState.owned[key];
+            }
+          });
+        }
+        
+        // Restore properties
+        if (gameState.properties) {
+          Object.keys(gameState.properties).forEach(key => {
+            if (properties.hasOwnProperty(key)) {
+              properties[key] = gameState.properties[key];
             }
           });
         }
@@ -2301,6 +2427,11 @@
       EVENT_CONFIG.eventCooldowns.taxCollection = 0;
       EVENT_CONFIG.eventCooldowns.robbery = 0;
       EVENT_CONFIG.eventCooldowns.divorce = 0;
+      
+      // Reset properties
+      properties = {
+        parkingGarage: 0
+      };
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
@@ -2772,6 +2903,20 @@
     }, { passive: true });
   }
 
+  // Property system event listeners
+  if (buyParkingGarageBtn) {
+    buyParkingGarageBtn.addEventListener("click", () => buyProperty("parkingGarage"));
+    
+    // Add touch-specific animation handling
+    buyParkingGarageBtn.addEventListener("touchstart", (e) => {
+      buyParkingGarageBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyParkingGarageBtn.addEventListener("touchend", (e) => {
+      buyParkingGarageBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
   // Prestige system
   let prestigeClickMultiplier = 1;
   let prestigeInterestMultiplier = 1;
@@ -2999,7 +3144,11 @@
   }
 
   function playErrorSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    console.log('playErrorSound called:', { soundEnabled, audioContext: !!audioContext, soundEffectsEnabled });
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) {
+      console.log('playErrorSound blocked by conditions');
+      return;
+    }
     
     // Ensure audio context is resumed for iOS PWA
     resumeAudioContext();
@@ -3712,6 +3861,13 @@
       investmentAccountBalance = Math.round((investmentAccountBalance + cappedGrowth) * 100) / 100;
     }
 
+    // Property income
+    const propertyIncome = getTotalPropertyIncome();
+    if (propertyIncome > 0) {
+      const cappedPropertyIncome = applyMoneyCap(propertyIncome);
+      currentAccountBalance = Math.round((currentAccountBalance + cappedPropertyIncome) * 100) / 100;
+    }
+
     // Dividends
     tickDividends(TICK_MS);
 
@@ -3719,6 +3875,7 @@
     renderUpgradesOwned();
     renderRank();
     renderDividendUI(TICK_MS);
+    renderAllProperties();
     renderInvestmentUnlocked();
     renderPrestigeMultipliers();
     renderAutoInvestSection();
@@ -3753,6 +3910,7 @@
   renderUpgradesOwned();
   renderRank();
   renderUpgradePrices();
+  renderAllProperties();
   // Apply upgrade visibility rules now that hide-completed class is set
   // Use requestAnimationFrame to ensure DOM is fully rendered
   requestAnimationFrame(() => {
