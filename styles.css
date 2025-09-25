@@ -281,6 +281,172 @@ header {
   box-sizing: border-box;
 }
 
+/* Active Event Display */
+.active-event-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.active-event-display.hidden {
+  display: none;
+}
+
+.event-icon {
+  font-size: 16px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.event-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-timer-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.event-timer-progress {
+  flex: 1;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.event-timer-fill {
+  height: 100%;
+  background: #64748b;
+  border-radius: 2px;
+  transition: width 0.1s linear;
+  width: 100%;
+}
+
+.event-timer-text {
+  font-size: 9px;
+  color: #64748b;
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+  min-width: 20px;
+  text-align: right;
+}
+
+/* Event-specific styling */
+.active-event-display.market-boom {
+  background: linear-gradient(135deg, rgba(0, 200, 81, 0.1) 0%, rgba(0, 160, 65, 0.1) 100%);
+  border-color: rgba(0, 200, 81, 0.3);
+}
+
+.active-event-display.market-boom .event-icon {
+  color: #00C851;
+}
+
+.active-event-display.market-boom .event-timer-fill {
+  background: #00C851;
+}
+
+.active-event-display.market-crash {
+  background: linear-gradient(135deg, rgba(255, 68, 68, 0.1) 0%, rgba(204, 0, 0, 0.1) 100%);
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
+.active-event-display.market-crash .event-icon {
+  color: #FF4444;
+}
+
+.active-event-display.market-crash .event-timer-fill {
+  background: #FF4444;
+}
+
+.active-event-display.flash-sale {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 140, 66, 0.1) 100%);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+.active-event-display.flash-sale .event-icon {
+  color: #FF6B35;
+}
+
+.active-event-display.flash-sale .event-timer-fill {
+  background: #FF6B35;
+}
+
+.active-event-display.great-depression {
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.1) 0%, rgba(75, 0, 0, 0.1) 100%);
+  border-color: rgba(139, 0, 0, 0.3);
+}
+
+.active-event-display.great-depression .event-icon {
+  color: #8B0000;
+}
+
+.active-event-display.great-depression .event-timer-fill {
+  background: #8B0000;
+}
+
+/* Pulse animation for low timer */
+@keyframes pulse {
+  0% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% { 
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+/* Timer-specific pulse animation (only affects the number) */
+@keyframes timerPulse {
+  0% { 
+    color: #64748b;
+    transform: scale(1);
+  }
+  100% { 
+    color: #dc2626;
+    transform: scale(1.1);
+  }
+}
+
+/* Progress bar pulse animation for low timer */
+@keyframes progressPulse {
+  0% { 
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  100% { 
+    opacity: 0.7;
+    transform: scaleY(1.2);
+  }
+}
+
 /* Desktop Footer */
 .desktop-footer {
   height: 5vh;
@@ -762,6 +928,29 @@ main {
     align-items: center;
     justify-content: center;
     gap: 8px;
+  }
+  
+  /* Mobile active event display */
+  .active-event-display {
+    position: absolute;
+    top: 8px;
+    right: 60px; /* Move left to avoid overlapping with settings button */
+    min-width: 100px;
+    max-width: 140px;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  
+  .active-event-display .event-name {
+    font-size: 10px;
+  }
+  
+  .active-event-display .event-timer-text {
+    font-size: 8px;
+  }
+  
+  .active-event-display .event-timer-progress {
+    height: 2px;
   }
   
   .header-left {

@@ -581,14 +581,20 @@
   let greatDepressionEndTime = 0;
   let eventCooldown = 0;
   
+  // Active event display elements
+  let activeEventDisplay = null;
+  let eventIcon = null;
+  let eventName = null;
+  let eventTimer = null;
+  
   // Event system configuration
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.04,    // 4% chance
-      marketCrash: 0.04,   // 4% chance  
-      flashSale: 0.02,     // 2% chance
-      greatDepression: 0.01 // 1% chance
+      marketBoom: 0.08,    // 4% chance
+      marketCrash: 0.08,   // 4% chance  
+      flashSale: 0.03,     // 2% chance
+      greatDepression: 0.03 // 1% chance
     },
     
     // Event durations (milliseconds)
@@ -637,6 +643,7 @@
     // Update interest rate and dividend rate display colors
     updateInterestRateColor();
     updateDividendRateColor();
+    updateActiveEventDisplay();
   }
   
   function triggerMarketCrash() {
@@ -670,6 +677,7 @@
     // Update interest rate and dividend rate display colors
     updateInterestRateColor();
     updateDividendRateColor();
+    updateActiveEventDisplay();
     
     // Update displays
     renderBalances();
@@ -707,6 +715,8 @@
     if (upgradesSection) {
       upgradesSection.classList.add('flash-sale-active');
     }
+    
+    updateActiveEventDisplay();
   }
   
   function triggerGreatDepression() {
@@ -740,6 +750,7 @@
     // Update interest rate and dividend rate display colors
     updateInterestRateColor();
     updateDividendRateColor();
+    updateActiveEventDisplay();
     
     // Update displays
     renderBalances();
@@ -755,6 +766,7 @@
       updateDividendRateColor();
       renderDividendUI(0); // Update dividend display
       showEventNotification("📈 Boom Ended", "Interest & dividend rates returned to normal", "boom-end");
+      updateActiveEventDisplay();
     }
     
     if (marketCrashActive && now >= marketCrashEndTime) {
@@ -763,6 +775,7 @@
       updateDividendRateColor();
       renderDividendUI(0); // Update dividend display
       showEventNotification("📉 Crash Ended", "Interest & dividend rates returned to normal", "crash-end");
+      updateActiveEventDisplay();
     }
     
     if (flashSaleActive && now >= flashSaleEndTime) {
@@ -775,6 +788,7 @@
       if (upgradesSection) {
         upgradesSection.classList.remove('flash-sale-active');
       }
+      updateActiveEventDisplay();
     }
     
     if (greatDepressionActive && now >= greatDepressionEndTime) {
@@ -783,6 +797,7 @@
       updateDividendRateColor();
       renderDividendUI(0); // Update dividend display
       showEventNotification("💀 Depression Ended", "Interest rates returned to normal, dividends resumed", "depression-end");
+      updateActiveEventDisplay();
     }
     
     // Check for new events (only one event can be active at a time)
@@ -889,6 +904,68 @@
       dividendRateEl.classList.add('market-crash');
     } else if (greatDepressionActive) {
       dividendRateEl.classList.add('great-depression');
+    }
+  }
+  
+  function updateActiveEventDisplay() {
+    if (!activeEventDisplay || !eventIcon || !eventName || !eventTimerFill || !eventTimerText) return;
+    
+    const now = Date.now();
+    let activeEvent = null;
+    let endTime = 0;
+    let eventType = '';
+    let totalDuration = 0;
+    
+    // Determine which event is active
+    if (marketBoomActive && now < marketBoomEndTime) {
+      activeEvent = { name: 'Market Boom', icon: '📈', type: 'market-boom' };
+      endTime = marketBoomEndTime;
+      eventType = 'market-boom';
+      totalDuration = EVENT_CONFIG.durations.marketBoom;
+    } else if (marketCrashActive && now < marketCrashEndTime) {
+      activeEvent = { name: 'Market Crash', icon: '📉', type: 'market-crash' };
+      endTime = marketCrashEndTime;
+      eventType = 'market-crash';
+      totalDuration = EVENT_CONFIG.durations.marketCrash;
+    } else if (flashSaleActive && now < flashSaleEndTime) {
+      activeEvent = { name: 'Flash Sale', icon: '🏷️', type: 'flash-sale' };
+      endTime = flashSaleEndTime;
+      eventType = 'flash-sale';
+      totalDuration = EVENT_CONFIG.durations.flashSale;
+    } else if (greatDepressionActive && now < greatDepressionEndTime) {
+      activeEvent = { name: 'Great Depression', icon: '💀', type: 'great-depression' };
+      endTime = greatDepressionEndTime;
+      eventType = 'great-depression';
+      totalDuration = EVENT_CONFIG.durations.greatDepression;
+    }
+    
+    if (activeEvent) {
+      // Show the display
+      activeEventDisplay.classList.remove('hidden');
+      activeEventDisplay.className = `active-event-display ${eventType}`;
+      
+      // Update content
+      eventIcon.textContent = activeEvent.icon;
+      eventName.textContent = activeEvent.name;
+      
+      // Calculate time remaining and progress
+      const timeLeft = Math.max(0, endTime - now);
+      const seconds = Math.ceil(timeLeft / 1000);
+      const progressPercent = Math.max(0, (timeLeft / totalDuration) * 100);
+      
+      // Update progress bar
+      eventTimerFill.style.width = `${progressPercent}%`;
+      eventTimerText.textContent = `${seconds}s`;
+      
+      // Add pulsing animation when time is low (to the progress bar)
+      if (seconds <= 5) {
+        eventTimerFill.style.animation = 'progressPulse 0.5s ease-in-out infinite alternate';
+      } else {
+        eventTimerFill.style.animation = '';
+      }
+    } else {
+      // Hide the display
+      activeEventDisplay.classList.add('hidden');
     }
   }
   
@@ -1101,6 +1178,13 @@
   const streakMultiplierEl = document.getElementById("streakMultiplier");
   const streakProgressFill = document.getElementById("streakProgressFill");
   const streakProgressText = document.getElementById("streakProgressText");
+  
+  // Active event display elements
+  activeEventDisplay = document.getElementById("activeEventDisplay");
+  eventIcon = activeEventDisplay?.querySelector(".event-icon");
+  eventName = activeEventDisplay?.querySelector(".event-name");
+  eventTimerFill = activeEventDisplay?.querySelector(".event-timer-fill");
+  eventTimerText = activeEventDisplay?.querySelector(".event-timer-text");
 
   // Cheat codes: type "money" to get €10,000, "orkun" to get €250,000, "orbay" to get €2,000,000, "ilayda" to get €1,000,000,000,000, "casper" to set 10x multipliers, "upgrade" to unlock all upgrades
   let cheatBuffer = "";
@@ -3531,6 +3615,7 @@
     renderPrestigeMultipliers();
     renderAutoInvestSection();
     renderClickStreak();
+    updateActiveEventDisplay();
     checkStreakTimeout();
     updateUpgradeIndicator();
     updateProgressBars();
