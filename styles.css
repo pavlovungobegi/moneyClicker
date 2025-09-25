@@ -1685,7 +1685,8 @@ main {
 button#depositBtn,
 button#withdrawBtn,
 button#depositAllBtn,
-button#withdrawAllBtn {
+button#withdrawAllBtn,
+button#withdrawHalfBtn {
   padding: 14px 12px;
   font-size: 14px;
   border: 1px solid #cbd5e1;
@@ -1706,7 +1707,8 @@ button#withdrawAllBtn {
 button#depositBtn:hover,
 button#withdrawBtn:hover,
 button#depositAllBtn:hover,
-button#withdrawAllBtn:hover {
+button#withdrawAllBtn:hover,
+button#withdrawHalfBtn:hover {
   background: #f1f5f9;
   border-color: #94a3b8;
   transform: translateY(-1px);
@@ -1716,7 +1718,8 @@ button#withdrawAllBtn:hover {
 button#depositBtn:active,
 button#withdrawBtn:active,
 button#depositAllBtn:active,
-button#withdrawAllBtn:active {
+button#withdrawAllBtn:active,
+button#withdrawHalfBtn:active {
   transform: translateY(1px);
   animation: clickPulse 0.3s ease;
 }
@@ -1724,7 +1727,8 @@ button#withdrawAllBtn:active {
 /* Touch-specific animations for deposit/withdraw buttons */
 @media (hover: none) and (pointer: coarse) {
   button#depositAllBtn:active,
-  button#withdrawAllBtn:active {
+  button#withdrawAllBtn:active,
+  button#withdrawHalfBtn:active {
     transform: translateY(2px) scale(0.98);
     background: #f1f5f9;
     border-color: #94a3b8;
@@ -1735,7 +1739,8 @@ button#withdrawAllBtn:active {
 
 /* JavaScript-triggered touch animation for deposit/withdraw buttons */
 button#depositAllBtn.touch-active,
-button#withdrawAllBtn.touch-active {
+button#withdrawAllBtn.touch-active,
+button#withdrawHalfBtn.touch-active {
   transform: translateY(2px) scale(0.98);
   background: #f1f5f9;
   border-color: #94a3b8;
@@ -1745,13 +1750,15 @@ button#withdrawAllBtn.touch-active {
 
 /* Remove focus outline and prevent selection */
 button#depositAllBtn:focus,
-button#withdrawAllBtn:focus {
+button#withdrawAllBtn:focus,
+button#withdrawHalfBtn:focus {
   outline: none;
   box-shadow: none;
 }
 
 button#depositAllBtn:focus-visible,
-button#withdrawAllBtn:focus-visible {
+button#withdrawAllBtn:focus-visible,
+button#withdrawHalfBtn:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }

@@ -1292,6 +1292,7 @@
   const withdrawBtn = document.getElementById("withdrawBtn");
   const depositAllBtn = document.getElementById("depositAllBtn");
   const withdrawAllBtn = document.getElementById("withdrawAllBtn");
+  const withdrawHalfBtn = document.getElementById("withdrawHalfBtn");
   const buyU1Btn = document.getElementById("buyU1Btn");
   const buyU2Btn = document.getElementById("buyU2Btn");
   const buyU3Btn = document.getElementById("buyU3Btn");
@@ -1615,7 +1616,7 @@
     if (isCritical) {
       playCriticalCoinSound();
     } else {
-      playClickSound();
+    playClickSound();
     }
     
     // Check achievements
@@ -1751,6 +1752,35 @@
         
         // Create sparkle particles for withdrawal
         particleSystem.createSparkleParticles(centerX, centerY, 6);
+      }
+    }
+    
+    renderBalances();
+    if (amountInput) amountInput.value = ""; // clear input
+    playWithdrawSound(); // Play withdraw sound effect
+    saveGameState();
+  }
+
+  function withdrawHalf() {
+    if (investmentAccountBalance <= 0) return;
+    
+    const withdrawAmount = investmentAccountBalance * 0.5;
+    currentAccountBalance += withdrawAmount;
+    investmentAccountBalance -= withdrawAmount;
+    
+    // Create withdraw particle effects
+    if (particleSystem) {
+      const withdrawHalfBtn = document.getElementById('withdrawHalfBtn');
+      if (withdrawHalfBtn) {
+        const rect = withdrawHalfBtn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create money particles flowing to current account
+        particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
+        
+        // Create sparkle particles for withdrawal
+        particleSystem.createSparkleParticles(centerX, centerY, 4);
       }
     }
     
@@ -2726,6 +2756,19 @@
     
     withdrawAllBtn.addEventListener("touchend", (e) => {
       withdrawAllBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
+  if (withdrawHalfBtn) {
+    withdrawHalfBtn.addEventListener("click", withdrawHalf);
+    
+    // Add touch-specific animation handling
+    withdrawHalfBtn.addEventListener("touchstart", (e) => {
+      withdrawHalfBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    withdrawHalfBtn.addEventListener("touchend", (e) => {
+      withdrawHalfBtn.classList.remove("touch-active");
     }, { passive: true });
   }
 
