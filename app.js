@@ -640,12 +640,12 @@
     marketCrashEndTime = Date.now() + EVENT_CONFIG.durations.marketCrash;
     EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + EVENT_CONFIG.cooldowns.marketCrash;
     
-    // Calculate 10% loss
-    const lossAmount = investmentAccountBalance * 0.1;
+    // Calculate 20% loss
+    const lossAmount = investmentAccountBalance * 0.2;
     investmentAccountBalance -= lossAmount;
     
     // Show notification
-    showEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest & dividend rates reduced by 50%!`, "crash");
+    showEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest & dividend rates reduced by 70%!`, "crash");
     
     // Visual effects
     screenFlash('#FF0000', 500); // Red flash
@@ -3071,7 +3071,7 @@
     if (marketBoomActive) {
       rateBoost *= 1.5; // +50% during boom
     } else if (marketCrashActive) {
-      rateBoost *= 0.5; // -50% during crash
+      rateBoost *= 0.3; // -70% during crash
     }
     
     return 1 + (BASE_COMPOUND_MULTIPLIER_PER_TICK - 1) * rateBoost * prestigeInterestMultiplier;
@@ -3192,7 +3192,7 @@
     if (marketBoomActive) {
       rateMultiplier *= 1.5; // +50% during boom
     } else if (marketCrashActive) {
-      rateMultiplier *= 0.5; // -50% during crash
+      rateMultiplier *= 0.3; // -70% during crash
     }
     
     const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
@@ -3320,7 +3320,7 @@
       if (marketBoomActive) {
         rateMultiplier *= 1.5; // +50% during boom
       } else if (marketCrashActive) {
-        rateMultiplier *= 0.5; // -50% during crash
+        rateMultiplier *= 0.3; // -70% during crash
       }
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
