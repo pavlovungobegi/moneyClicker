@@ -2604,7 +2604,8 @@
     if (newTotal <= MAX_TOTAL_MONEY) {
       return amountToAdd; // No cap needed
     } else {
-      return Math.max(0, MAX_TOTAL_MONEY - currentTotal); // Only add what fits
+      const cappedAmount = Math.max(0, MAX_TOTAL_MONEY - currentTotal);
+      return cappedAmount; // Only add what fits
     }
   }
 
@@ -3159,9 +3160,13 @@
   const BASE_DIVIDEND_INTERVAL_MS = 10000;
   const BASE_DIVIDEND_RATE = 0.01;
   let dividendElapsed = 0;
+  let dividendAnimationId = null;
 
   function tickDividends(deltaMs) {
-    if (!owned.u10) return;
+    if (!owned.u10) {
+      console.log('Dividends not owned (u10), skipping');
+      return;
+    }
     dividendElapsed += deltaMs;
     
     // Calculate speed multipliers (stack multiplicatively)
@@ -3183,33 +3188,124 @@
     const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     const rate = BASE_DIVIDEND_RATE * rateMultiplier;
     
+    
     if (dividendElapsed >= interval) {
       dividendElapsed -= interval;
       const payout = Math.floor(investmentAccountBalance * rate * 100) / 100;
+      
+      console.log('🎯 DIVIDEND PAYOUT TRIGGERED!', {
+        investmentAccountBalance,
+        rate,
+        payout,
+        autoInvestEnabled,
+        currentAccountBefore: currentAccountBalance,
+        investmentAccountBefore: investmentAccountBalance
+      });
+      
       if (payout > 0) {
         const cappedPayout = applyMoneyCap(payout);
+        
+        if (cappedPayout <= 0) {
+          console.log('❌ Capped payout is 0 or negative, skipping');
+          return;
+        }
         
         // Track total dividends received for achievement
         totalDividendsReceived += cappedPayout;
         
+        // Create flying money particles for dividend payout
+        if (particleSystem && particleSystem.createMoneyParticles) {
+          const dividendCircle = document.getElementById('dividendCircle');
+          if (dividendCircle) {
+            const rect = dividendCircle.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Create money particles from the dividend circle
+            particleSystem.createMoneyParticles(centerX, centerY, Math.min(cappedPayout / 1000000, 15));
+          }
+        }
+        
         if (autoInvestEnabled) {
           // Auto-invest: add dividends to investment account
           investmentAccountBalance += cappedPayout;
+          console.log('💰 Added to investment account:', cappedPayout, 'New balance:', investmentAccountBalance);
         } else {
           // Normal: add dividends to current account
           currentAccountBalance += cappedPayout;
+          console.log('💰 Added to current account:', cappedPayout, 'New balance:', currentAccountBalance);
         }
         
+        // Force UI update after dividend payout
+        renderBalances();
+        
+      } else {
+        console.log('❌ Payout is 0 or negative, skipping');
       }
     }
   }
 
 
+  // Smooth dividend animation function
+  function animateDividendTimer() {
+    if (!owned.u10) {
+      if (dividendAnimationId) {
+        cancelAnimationFrame(dividendAnimationId);
+        dividendAnimationId = null;
+      }
+      return;
+    }
+    
+    // Calculate speed multipliers (same as tickDividends)
+    let speedMultiplier = 1;
+    if (owned.u12) speedMultiplier *= 0.8;
+    if (owned.u15) speedMultiplier *= 0.8;
+    if (owned.u16) speedMultiplier *= 0.8;
+    if (owned.u18) speedMultiplier *= 0.8;
+    if (owned.u21) speedMultiplier *= 0.8;
+    if (owned.u23) speedMultiplier *= 0.5;
+    
+    const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
+    
+    // Use the same dividendElapsed variable as the payout logic for synchronization
+    const timeInCycle = dividendElapsed % interval;
+    const remaining = Math.ceil((interval - timeInCycle) / 1000);
+    const percent = timeInCycle / interval;
+    const dashOffset = 100 - percent * 100;
+    
+    // Update countdown timer smoothly
+    const countdownEl = document.getElementById('dividendCountdown');
+    if (countdownEl) {
+      countdownEl.textContent = `${remaining}s`;
+    }
+    
+    // Update circle fill smoothly
+    const circleFill = document.querySelector('.dividend-circle .circle-fill');
+    if (circleFill) {
+      circleFill.setAttribute('stroke-dashoffset', String(dashOffset));
+    }
+    
+    // Continue animation
+    dividendAnimationId = requestAnimationFrame(animateDividendTimer);
+  }
+
   function renderDividendUI(deltaMs) {
     if (!dividendInfo) return;
     dividendInfo.classList.toggle('hidden', !owned.u10);
     
-    if (!owned.u10) return;
+    if (!owned.u10) {
+      // Stop animation if dividends are disabled
+      if (dividendAnimationId) {
+        cancelAnimationFrame(dividendAnimationId);
+        dividendAnimationId = null;
+      }
+      return;
+    }
+    
+    // Start smooth animation if not already running
+    if (!dividendAnimationId) {
+      animateDividendTimer();
+    }
     
     // Calculate speed multipliers (same as tickDividends)
     let speedMultiplier = 1;
@@ -3230,14 +3326,6 @@
     const rate = BASE_DIVIDEND_RATE * rateMultiplier;
     const intervalSeconds = Math.round(interval / 1000);
     const ratePercent = (rate * 100).toFixed(2);
-    
-    // Update pie chart
-    if (dividendPie) {
-      const percent = (dividendElapsed % interval) / interval;
-      const dashOffset = 100 - percent * 100;
-      const fg = dividendPie.querySelector('.fg');
-      if (fg) fg.setAttribute('stroke-dashoffset', String(dashOffset));
-    }
 
     // Update dividend rate display
     const rateEl = document.getElementById('dividendRate');
@@ -3255,13 +3343,6 @@
     const intervalEl = document.getElementById('dividendInterval');
     if (intervalEl) {
       intervalEl.textContent = `Every ${intervalSeconds}s`;
-    }
-    
-    // Update countdown timer
-    const countdownEl = document.getElementById('dividendCountdown');
-    if (countdownEl) {
-      const remaining = Math.ceil((interval - (dividendElapsed % interval)) / 1000);
-      countdownEl.textContent = `${remaining}s`;
     }
     
     // Calculate and display dividend amount per payout
@@ -3664,10 +3745,15 @@ clearCacheOnLoad();
 // Handle app visibility changes (pause music when app goes to background)
 function handleVisibilityChange() {
   if (document.hidden) {
-    // App went to background - pause music
+    // App went to background - pause music and animations
     if (backgroundMusic && !backgroundMusic.paused) {
       backgroundMusic.pause();
       console.log('Music paused - app went to background');
+    }
+    // Stop dividend animation to save resources
+    if (dividendAnimationId) {
+      cancelAnimationFrame(dividendAnimationId);
+      dividendAnimationId = null;
     }
   } else {
     // App came to foreground - resume music if it was enabled
@@ -3676,6 +3762,10 @@ function handleVisibilityChange() {
         console.log('Could not resume music:', error);
       });
       console.log('Music resumed - app came to foreground');
+    }
+    // Restart dividend animation if dividends are enabled
+    if (owned.u10 && !dividendAnimationId) {
+      animateDividendTimer();
     }
   }
 }
@@ -3689,6 +3779,11 @@ window.addEventListener('blur', () => {
     backgroundMusic.pause();
     console.log('Music paused - window lost focus');
   }
+  // Stop dividend animation to save resources
+  if (dividendAnimationId) {
+    cancelAnimationFrame(dividendAnimationId);
+    dividendAnimationId = null;
+  }
 });
 
 window.addEventListener('focus', () => {
@@ -3698,6 +3793,10 @@ window.addEventListener('focus', () => {
     });
     console.log('Music resumed - window gained focus');
   }
+  // Restart dividend animation if dividends are enabled
+  if (owned.u10 && !dividendAnimationId) {
+    animateDividendTimer();
+  }
 });
 
 // Handle mobile app lifecycle events (for PWA)
@@ -3705,6 +3804,11 @@ document.addEventListener('pause', () => {
   if (backgroundMusic && !backgroundMusic.paused) {
     backgroundMusic.pause();
     console.log('Music paused - app paused (mobile)');
+  }
+  // Stop dividend animation to save resources
+  if (dividendAnimationId) {
+    cancelAnimationFrame(dividendAnimationId);
+    dividendAnimationId = null;
   }
 });
 
@@ -3714,6 +3818,10 @@ document.addEventListener('resume', () => {
       console.log('Could not resume music on resume:', error);
     });
     console.log('Music resumed - app resumed (mobile)');
+  }
+  // Restart dividend animation if dividends are enabled
+  if (owned.u10 && !dividendAnimationId) {
+    animateDividendTimer();
   }
 });
 
@@ -3920,5 +4028,6 @@ if ('serviceWorker' in navigator) {
     updateScrollIndicators(); // Initial call
   })();
 })();
+
 
 

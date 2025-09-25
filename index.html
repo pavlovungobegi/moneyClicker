@@ -161,11 +161,13 @@
                     <div class="rate-details">
                       <div class="rate-earnings" id="dividendAmount">€0.00</div>
                       <div class="rate-timer">
-                        <svg id="dividendPie" class="pie" width="16" height="16" viewBox="0 0 36 36" aria-hidden="true">
-                          <circle class="bg" cx="18" cy="18" r="16" />
-                          <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
-                        </svg>
-                        <span id="dividendCountdown">10s</span>
+                        <div class="dividend-circle" id="dividendCircle">
+                          <svg width="24" height="24" viewBox="0 0 36 36" aria-hidden="true">
+                            <circle class="circle-bg" cx="18" cy="18" r="16" />
+                            <circle class="circle-fill" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
+                          </svg>
+                          <div class="circle-text" id="dividendCountdown">10s</div>
+                        </div>
                       </div>
                     </div>
                   </div>
