@@ -48,7 +48,7 @@
       this.particles.push(particle);
     }
     
-    createCoinParticles(x, y, count = 5) {
+    createCoinParticles(x, y, count = 3) {
       for (let i = 0; i < count; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -73,7 +73,7 @@
       });
     }
     
-    createSparkleParticles(x, y, count = 8) {
+    createSparkleParticles(x, y, count = 4) {
       for (let i = 0; i < count; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -87,7 +87,7 @@
       }
     }
     
-    createUpgradeParticles(x, y, count = 10) {
+    createUpgradeParticles(x, y, count = 5) {
       for (let i = 0; i < count; i++) {
         this.createParticle('upgrade', x, y, {
           vx: (Math.random() - 0.5) * 10,
@@ -102,7 +102,7 @@
       }
     }
     
-    createConfettiParticles(x, y, count = 15) {
+    createConfettiParticles(x, y, count = 8) {
       for (let i = 0; i < count; i++) {
         this.createParticle('confetti', x, y, {
           vx: (Math.random() - 0.5) * 12,
@@ -119,7 +119,7 @@
     }
     
     createMoneyGainParticles(x, y, amount) {
-      const count = Math.min(8, Math.max(5, Math.floor(amount / 1000)));
+      const count = Math.min(4, Math.max(3, Math.floor(amount / 2000)));
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -134,7 +134,7 @@
       }
     }
     
-    createFireworkParticles(x, y, count = 15) {
+    createFireworkParticles(x, y, count = 8) {
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
         const speed = 8 + Math.random() * 4;
@@ -151,7 +151,7 @@
       }
     }
     
-    createGoldenParticles(x, y, count = 20) {
+    createGoldenParticles(x, y, count = 10) {
       for (let i = 0; i < count; i++) {
         this.createParticle('golden', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -167,7 +167,7 @@
       }
     }
     
-    createMilestoneParticles(x, y, count = 30) {
+    createMilestoneParticles(x, y, count = 15) {
       for (let i = 0; i < count; i++) {
         this.createParticle('milestone', x, y, {
           vx: (Math.random() - 0.5) * 12,
@@ -183,7 +183,7 @@
       }
     }
     
-    createRareAchievementParticles(x, y, count = 40) {
+    createRareAchievementParticles(x, y, count = 20) {
       // Create multiple bursts for rare achievements
       for (let burst = 0; burst < 3; burst++) {
         setTimeout(() => {
@@ -1626,8 +1626,8 @@
         screenShake(8, 300);
       } else {
         // Normal click: regular particles based on income
-        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.6), 1), 6);
-        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 1), 2), 9);
+        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.3), 1), 3);
+        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.5), 1), 5);
         
         // Create coin particles
         particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
@@ -1765,7 +1765,7 @@
         particleSystem.createMoneyGainParticles(centerX, centerY, depositAmount);
         
         // Create upgrade particles for investment
-        particleSystem.createUpgradeParticles(centerX, centerY, 8);
+        particleSystem.createUpgradeParticles(centerX, centerY, 4);
       }
     }
     
@@ -1794,7 +1794,7 @@
         particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
         
         // Create sparkle particles for withdrawal
-        particleSystem.createSparkleParticles(centerX, centerY, 6);
+        particleSystem.createSparkleParticles(centerX, centerY, 3);
       }
     }
     
@@ -1823,7 +1823,7 @@
         particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
         
         // Create sparkle particles for withdrawal
-        particleSystem.createSparkleParticles(centerX, centerY, 4);
+        particleSystem.createSparkleParticles(centerX, centerY, 2);
       }
     }
     
@@ -1867,7 +1867,7 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create upgrade particles
-        particleSystem.createUpgradeParticles(centerX, centerY, 8);
+        particleSystem.createUpgradeParticles(centerX, centerY, 4);
         
         // Create money gain particles
         particleSystem.createMoneyGainParticles(centerX, centerY, cost);
@@ -2202,15 +2202,15 @@
       
       if (milestoneAchievements.includes(achievementId)) {
         // Money milestone achievements - golden particles + fireworks
-        particleSystem.createGoldenParticles(centerX, centerY, 25);
-        particleSystem.createFireworkParticles(centerX, centerY, 30);
+        particleSystem.createGoldenParticles(centerX, centerY, 13);
+        particleSystem.createFireworkParticles(centerX, centerY, 15);
         screenFlash('#FFD700', 400); // Golden flash
         screenShake(6, 250); // Gentle shake
         
       } else if (clickAchievements.includes(achievementId)) {
         // Click achievements - sparkles + confetti
-        particleSystem.createSparkleParticles(centerX, centerY, 20);
-        particleSystem.createConfettiParticles(centerX, centerY, 25);
+        particleSystem.createSparkleParticles(centerX, centerY, 10);
+        particleSystem.createConfettiParticles(centerX, centerY, 13);
         screenFlash('#FF6B6B', 300); // Red flash
         
       } else if (rareAchievements.includes(achievementId)) {
@@ -2221,15 +2221,15 @@
         
       } else if (upgradeAchievements.includes(achievementId)) {
         // Upgrade achievements - upgrade particles + milestone particles
-        particleSystem.createUpgradeParticles(centerX, centerY, 15);
-        particleSystem.createMilestoneParticles(centerX, centerY, 20);
+        particleSystem.createUpgradeParticles(centerX, centerY, 8);
+        particleSystem.createMilestoneParticles(centerX, centerY, 10);
         screenFlash('#3498DB', 350); // Blue flash
         
       } else {
         // Default achievement effects
-        particleSystem.createConfettiParticles(centerX, centerY, 20);
-        particleSystem.createSparkleParticles(centerX, centerY, 15);
-        particleSystem.createUpgradeParticles(centerX, centerY, 12);
+        particleSystem.createConfettiParticles(centerX, centerY, 10);
+        particleSystem.createSparkleParticles(centerX, centerY, 4);
+        particleSystem.createUpgradeParticles(centerX, centerY, 3);
         screenFlash('#2ECC71', 300); // Green flash
       }
     }
@@ -3526,10 +3526,10 @@
           const centerY = window.innerHeight / 2;
           
           // Create massive particle celebration
-          particleSystem.createRareAchievementParticles(centerX, centerY, 100);
-          particleSystem.createFireworkParticles(centerX, centerY, 50);
-          particleSystem.createGoldenParticles(centerX, centerY, 40);
-          particleSystem.createMilestoneParticles(centerX, centerY, 60);
+          particleSystem.createRareAchievementParticles(centerX, centerY, 50);
+          particleSystem.createFireworkParticles(centerX, centerY, 25);
+          particleSystem.createGoldenParticles(centerX, centerY, 20);
+          particleSystem.createMilestoneParticles(centerX, centerY, 30);
           
           // Screen effects
           screenFlash('#FF6B35', 800); // Orange flash
@@ -3585,11 +3585,11 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create upgrade particles
-        particleSystem.createUpgradeParticles(centerX, centerY, 10);
+        particleSystem.createUpgradeParticles(centerX, centerY, 5);
         
         // Create confetti for expensive upgrades
         if (cost >= 10000) {
-          particleSystem.createConfettiParticles(centerX, centerY, 15);
+          particleSystem.createConfettiParticles(centerX, centerY, 8);
         }
         
         // Create money gain particles
@@ -3840,7 +3840,7 @@
             const centerY = rect.top + rect.height / 2;
             
             // Create money particles from the dividend circle
-            particleSystem.createMoneyParticles(centerX, centerY, Math.min(cappedPayout / 1000000, 15));
+            particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(cappedPayout / 2000000, 8));
           }
         }
         
