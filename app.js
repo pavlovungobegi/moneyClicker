@@ -3208,46 +3208,72 @@
   function renderDividendUI(deltaMs) {
     if (!dividendInfo) return;
     dividendInfo.classList.toggle('hidden', !owned.u10);
-    if (dividendPie && owned.u10) {
-      // Calculate speed multipliers (same as tickDividends)
-      let speedMultiplier = 1;
-      if (owned.u12) speedMultiplier *= 0.8;
-      if (owned.u15) speedMultiplier *= 0.8;
-      if (owned.u16) speedMultiplier *= 0.8;
-      if (owned.u18) speedMultiplier *= 0.8;
-      if (owned.u21) speedMultiplier *= 0.8;
-      if (owned.u23) speedMultiplier *= 0.5;
-      
-      const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
+    
+    if (!owned.u10) return;
+    
+    // Calculate speed multipliers (same as tickDividends)
+    let speedMultiplier = 1;
+    if (owned.u12) speedMultiplier *= 0.8;
+    if (owned.u15) speedMultiplier *= 0.8;
+    if (owned.u16) speedMultiplier *= 0.8;
+    if (owned.u18) speedMultiplier *= 0.8;
+    if (owned.u21) speedMultiplier *= 0.8;
+    if (owned.u23) speedMultiplier *= 0.5;
+    
+    let rateMultiplier = 1;
+    if (owned.u13) rateMultiplier *= 1.25;
+    if (owned.u14) rateMultiplier *= 1.2;
+    if (owned.u17) rateMultiplier *= 1.25;
+    if (owned.u24) rateMultiplier *= 1.5;
+    
+    const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
+    const rate = BASE_DIVIDEND_RATE * rateMultiplier;
+    const intervalSeconds = Math.round(interval / 1000);
+    const ratePercent = (rate * 100).toFixed(2);
+    
+    // Update pie chart
+    if (dividendPie) {
       const percent = (dividendElapsed % interval) / interval;
       const dashOffset = 100 - percent * 100;
       const fg = dividendPie.querySelector('.fg');
       if (fg) fg.setAttribute('stroke-dashoffset', String(dashOffset));
     }
 
-    // Update dividend rate display with actual values
+    // Update dividend rate display
     const rateEl = document.getElementById('dividendRate');
-    if (rateEl && owned.u10) {
-      // Calculate multipliers (same as tickDividends)
-      let speedMultiplier = 1;
-      if (owned.u12) speedMultiplier *= 0.8;
-      if (owned.u15) speedMultiplier *= 0.8;
-      if (owned.u16) speedMultiplier *= 0.8;
-      if (owned.u18) speedMultiplier *= 0.8;
-      if (owned.u21) speedMultiplier *= 0.8;
-      if (owned.u23) speedMultiplier *= 0.5;
-      
-      let rateMultiplier = 1;
-      if (owned.u13) rateMultiplier *= 1.25;
-      if (owned.u14) rateMultiplier *= 1.2;
-      if (owned.u17) rateMultiplier *= 1.25;
-      if (owned.u24) rateMultiplier *= 1.5;
-      
-      const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
-      const rate = BASE_DIVIDEND_RATE * rateMultiplier;
-      const intervalSeconds = Math.round(interval / 1000);
-      const ratePercent = (rate * 100).toFixed(2);
-      rateEl.textContent = `Dividends: ${ratePercent}%/${intervalSeconds}s`;
+    if (rateEl) {
+      if (numberAnimator) {
+        const currentText = rateEl.textContent.replace('%', '');
+        const currentValue = parseFloat(currentText) || 0;
+        numberAnimator.animateValue(rateEl, currentValue, parseFloat(ratePercent), 250, (value) => value.toFixed(2) + "%");
+      } else {
+        rateEl.textContent = ratePercent + "%";
+      }
+    }
+    
+    // Update dividend interval display
+    const intervalEl = document.getElementById('dividendInterval');
+    if (intervalEl) {
+      intervalEl.textContent = `Every ${intervalSeconds}s`;
+    }
+    
+    // Update countdown timer
+    const countdownEl = document.getElementById('dividendCountdown');
+    if (countdownEl) {
+      const remaining = Math.ceil((interval - (dividendElapsed % interval)) / 1000);
+      countdownEl.textContent = `${remaining}s`;
+    }
+    
+    // Calculate and display dividend amount per payout
+    const dividendAmount = investmentAccountBalance * rate;
+    const dividendAmountEl = document.getElementById('dividendAmount');
+    if (dividendAmountEl) {
+      if (numberAnimator) {
+        const currentAmount = parseDisplayedValue(dividendAmountEl.textContent);
+        numberAnimator.animateValue(dividendAmountEl, currentAmount, dividendAmount, 250, (value) => '€' + formatNumberShort(value));
+      } else {
+        dividendAmountEl.textContent = '€' + formatNumberShort(dividendAmount);
+      }
     }
   }
 
@@ -3814,6 +3840,9 @@ if ('serviceWorker' in navigator) {
     const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
     const percent = (perSecondMultiplier - 1) * 100;
     
+    // Calculate earnings per second
+    const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
+    
     if (numberAnimator) {
       // Parse current percentage from element text
       const currentText = interestPerSecEl.textContent.replace('%', '');
@@ -3825,6 +3854,29 @@ if ('serviceWorker' in navigator) {
     } else {
       // Fallback to instant update
       interestPerSecEl.textContent = percent.toFixed(2) + "%";
+    }
+    
+    // Update earnings per second display
+    const interestPerSecondEl = document.getElementById('interestPerSecond');
+    if (interestPerSecondEl) {
+      if (numberAnimator) {
+        const currentEarnings = parseDisplayedValue(interestPerSecondEl.textContent);
+        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, (value) => '€' + formatNumberShort(value) + '/sec');
+      } else {
+        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/sec';
+      }
+    }
+    
+    
+    // Update market event styling
+    const interestRow = document.getElementById('interestContainer');
+    if (interestRow) {
+      interestRow.classList.remove('market-boom', 'market-crash');
+      if (marketBoomActive) {
+        interestRow.classList.add('market-boom');
+      } else if (marketCrashActive) {
+        interestRow.classList.add('market-crash');
+      }
     }
   }
 

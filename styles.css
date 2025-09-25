@@ -510,7 +510,7 @@ main {
 .panel {
   border: 2px solid #d1d5db;
   border-radius: 10px;
-  padding: 16px;
+  padding: 12px;
   height: 100%;
   transition: all 0.2s ease;
   display: flex;
@@ -822,7 +822,7 @@ main {
     flex: 0 0 calc(100vw - 32px); /* Full width minus padding */
     height: 100%;
     min-height: 0;
-    padding: 16px;
+    padding: 12px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
     /* Better snap behavior */
@@ -997,7 +997,7 @@ main {
   
   .panel {
     flex: 0 0 calc(100vw - 16px); /* Full width minus padding for small screens */
-    padding: 12px;
+    padding: 10px;
     scroll-margin: 0;
   }
   
@@ -1033,7 +1033,7 @@ main {
   
   .earn-click-section {
     margin-top: auto;
-    margin-bottom: 8px; /* Reduced space to allow button to expand downward */
+    margin-bottom: 4px; /* Reduced space to allow button to expand downward */
   }
   
   .earn-click-section button {
@@ -1067,7 +1067,7 @@ main {
   
   /* Reduced space for click button to allow expansion */
   .earn-click-section {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   
   /* Make click button taller on mobile */
@@ -1091,7 +1091,7 @@ main {
 
 .auto-invest {
   flex: 1;
-  padding: 12px;
+  padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #f8fafc;
@@ -1109,7 +1109,7 @@ main {
 
 .click-streak {
   flex: 1;
-  padding: 12px;
+  padding: 8px;
   border: 1px solid #fbbf24;
   border-radius: 8px;
   background: #fffbeb;
@@ -1123,7 +1123,7 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .streak-label {
@@ -2317,7 +2317,7 @@ input#amountInput:focus {
 .earn-click-section {
   display: flex;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .earnings-metrics {
@@ -2332,12 +2332,144 @@ input#amountInput:focus {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: 8px;
+  margin-bottom: 6px;
 }
 
 .earnings-metrics-container .earnings-metrics {
   margin-bottom: 0;
+}
+
+/* Compact Rate Rows */
+.rate-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  margin-bottom: 2px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.rate-icon {
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rate-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rate-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.rate-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.rate-earnings {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+  text-align: right;
+  min-width: 60px;
+}
+
+.rate-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rate-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: #6b7280;
+}
+
+.pie {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pie circle {
+  fill: none;
+  stroke-width: 2;
+}
+
+.pie .bg {
+  stroke: #e5e7eb;
+}
+
+.pie .fg {
+  stroke: #f59e0b;
+  transition: stroke-dashoffset 0.3s ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Market event styling for interest row */
+.rate-row.market-boom .rate-value {
+  color: #059669;
+  animation: boomPulse 1s ease-in-out infinite alternate;
+}
+
+.rate-row.market-crash .rate-value {
+  color: #dc2626;
+  animation: crashPulse 1s ease-in-out infinite alternate;
+}
+
+/* Mobile optimizations for rate rows */
+@media (max-width: 768px) {
+  .rate-row {
+    padding: 4px 6px;
+    margin-bottom: 3px;
+    gap: 6px;
+  }
+  
+  .rate-icon {
+    font-size: 12px;
+    width: 14px;
+    height: 14px;
+  }
+  
+  .rate-label {
+    font-size: 9px;
+  }
+  
+  .rate-value {
+    font-size: 12px;
+  }
+  
+  .rate-earnings {
+    font-size: 9px;
+    min-width: 50px;
+  }
+  
+  .rate-timer {
+    font-size: 8px;
+    gap: 3px;
+  }
 }
 
 /* Prestige multiplier in settings */
@@ -2369,13 +2501,13 @@ input#amountInput:focus {
 }
 
 .earn-content .invest {
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
   width: 100%;
 }
 
 .earn-content .controls {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: stretch;
   width: 100%;
 }
@@ -2397,8 +2529,8 @@ input#amountInput:focus {
 }
 
 .earn-content .auto-invest {
-  margin: 0 0 8px 0;
-  padding: 8px;
+  margin: 0 0 4px 0;
+  padding: 6px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: #f8fafc;
@@ -2556,8 +2688,8 @@ input#amountInput:focus {
 }
 
 .earn-content .click-streak {
-  margin: 0 0 8px 0;
-  padding: 8px;
+  margin: 0 0 4px 0;
+  padding: 6px;
   border: 1px solid #fbbf24;
   border-radius: 8px;
   background: #fffbeb;

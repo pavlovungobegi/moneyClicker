@@ -141,15 +141,33 @@
             <div class="earnings-metrics-container hidden">
               <div class="earnings-metrics">
                 <div class="metrics-left">
-                  <div id="interestContainer" class="rate hidden" aria-live="polite">
-                    Interest: <span id="interestPerSec">0.00%</span>
+                  <!-- Interest Rate -->
+                  <div id="interestContainer" class="rate-row hidden" aria-live="polite">
+                    <div class="rate-icon">📈</div>
+                    <div class="rate-info">
+                      <div class="rate-label">Interest</div>
+                      <div class="rate-value" id="interestPerSec">0.00%</div>
+                    </div>
+                    <div class="rate-earnings" id="interestPerSecond">€0.00/sec</div>
                   </div>
-                  <div id="dividendInfo" class="dividends hidden" aria-live="polite">
-                    <span id="dividendRate">Dividends: 1.00%/10s</span>
-                    <svg id="dividendPie" class="pie" width="20" height="20" viewBox="0 0 36 36" aria-hidden="true">
-                      <circle class="bg" cx="18" cy="18" r="16" />
-                      <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
-                    </svg>
+                  
+                  <!-- Dividends -->
+                  <div id="dividendInfo" class="rate-row hidden" aria-live="polite">
+                    <div class="rate-icon">💰</div>
+                    <div class="rate-info">
+                      <div class="rate-label">Dividends</div>
+                      <div class="rate-value" id="dividendRate">1.00%</div>
+                    </div>
+                    <div class="rate-details">
+                      <div class="rate-earnings" id="dividendAmount">€0.00</div>
+                      <div class="rate-timer">
+                        <svg id="dividendPie" class="pie" width="16" height="16" viewBox="0 0 36 36" aria-hidden="true">
+                          <circle class="bg" cx="18" cy="18" r="16" />
+                          <circle class="fg" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
+                        </svg>
+                        <span id="dividendCountdown">10s</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
