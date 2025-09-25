@@ -608,12 +608,28 @@
       incomePerSecond: 100,
       priceMultiplier: 1.05, // 5% increase per purchase
       icon: "fas fa-building"
+    },
+    apartment: {
+      name: "Apartment",
+      baseCost: 500000,
+      incomePerSecond: 1250,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-home"
+    },
+    officeBuilding: {
+      name: "Office Building",
+      baseCost: 10000000,
+      incomePerSecond: 15000,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-building"
     }
   };
 
   // Property ownership tracking
   let properties = {
-    parkingGarage: 0
+    parkingGarage: 0,
+    apartment: 0,
+    officeBuilding: 0
   };
 
   // Event system configuration
@@ -1341,6 +1357,8 @@
   const buyU31Btn = document.getElementById("buyU31Btn");
   const buyU32Btn = document.getElementById("buyU32Btn");
   const buyParkingGarageBtn = document.getElementById("buyParkingGarageBtn");
+  const buyApartmentBtn = document.getElementById("buyApartmentBtn");
+  const buyOfficeBuildingBtn = document.getElementById("buyOfficeBuildingBtn");
   const rankDisplay = document.getElementById("rankDisplay");
   const interestPerSecEl = document.getElementById("interestPerSec");
   const interestContainer = document.getElementById("interestContainer");
@@ -2430,7 +2448,9 @@
       
       // Reset properties
       properties = {
-        parkingGarage: 0
+        parkingGarage: 0,
+        apartment: 0,
+        officeBuilding: 0
       };
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
@@ -2914,6 +2934,32 @@
     
     buyParkingGarageBtn.addEventListener("touchend", (e) => {
       buyParkingGarageBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
+  if (buyApartmentBtn) {
+    buyApartmentBtn.addEventListener("click", () => buyProperty("apartment"));
+    
+    // Add touch-specific animation handling
+    buyApartmentBtn.addEventListener("touchstart", (e) => {
+      buyApartmentBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyApartmentBtn.addEventListener("touchend", (e) => {
+      buyApartmentBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
+  if (buyOfficeBuildingBtn) {
+    buyOfficeBuildingBtn.addEventListener("click", () => buyProperty("officeBuilding"));
+    
+    // Add touch-specific animation handling
+    buyOfficeBuildingBtn.addEventListener("touchstart", (e) => {
+      buyOfficeBuildingBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyOfficeBuildingBtn.addEventListener("touchend", (e) => {
+      buyOfficeBuildingBtn.classList.remove("touch-active");
     }, { passive: true });
   }
 

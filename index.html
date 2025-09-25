@@ -609,93 +609,95 @@
 
         <section class="panel" id="leaderboardPanel" aria-labelledby="leaderboardTitle">
           <h2 id="leaderboardTitle">Portfolio</h2>
-          <div class="leaderboard-row">
-            <div>Global rank</div>
-            <div class="leaderboard-rank" id="rankDisplay">8,200,000,000</div>
+          <div class="character-education-row">
+            <div class="stick-figure-container" id="stickFigureContainer">
+              <svg id="stickFigure" width="60" height="60" viewBox="0 0 120 120">
+                <!-- Base stick figure (always visible) -->
+                <!-- Head -->
+                <circle cx="60" cy="20" r="8" fill="none" stroke="black" stroke-width="2"/>
+                <!-- Body -->
+                <line x1="60" y1="28" x2="60" y2="80" stroke="black" stroke-width="2"/>
+                <!-- Arms -->
+                <line x1="60" y1="40" x2="45" y2="60" stroke="black" stroke-width="2"/>
+                <line x1="60" y1="40" x2="75" y2="60" stroke="black" stroke-width="2"/>
+                <!-- Legs -->
+                <line x1="60" y1="80" x2="45" y2="110" stroke="black" stroke-width="2"/>
+                <line x1="60" y1="80" x2="75" y2="110" stroke="black" stroke-width="2"/>
+                
+                <!-- Upgrade items (initially hidden) -->
+                <!-- Pencil (u1 - elementary school) -->
+                <g id="pencil" class="upgrade-item" style="display: none;">
+                  <line x1="75" y1="60" x2="85" y2="50" stroke="black" stroke-width="2"/>
+                  <line x1="85" y1="50" x2="87" y2="49" stroke="black" stroke-width="1"/>
+                </g>
+                
+                <!-- Book (u2 - secondary school) -->
+                <g id="book" class="upgrade-item" style="display: none;">
+                  <rect x="35" y="55" width="8" height="12" fill="none" stroke="black" stroke-width="2"/>
+                  <line x1="37" y1="58" x2="41" y2="58" stroke="black" stroke-width="1"/>
+                  <line x1="37" y1="61" x2="41" y2="61" stroke="black" stroke-width="1"/>
+                  <line x1="37" y1="64" x2="41" y2="64" stroke="black" stroke-width="1"/>
+                </g>
+                
+                <!-- Calculator (u3 - high school) -->
+                <g id="calculator" class="upgrade-item" style="display: none;">
+                  <rect x="33" y="50" width="12" height="16" fill="none" stroke="black" stroke-width="2"/>
+                  <rect x="35" y="52" width="8" height="3" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="37" cy="58" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="39" cy="58" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="41" cy="58" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="37" cy="61" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="39" cy="61" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="41" cy="61" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="37" cy="64" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="39" cy="64" r="1" fill="none" stroke="black" stroke-width="1"/>
+                  <circle cx="41" cy="64" r="1" fill="none" stroke="black" stroke-width="1"/>
+                </g>
+                
+                <!-- Glasses (u5 - bachelor's) -->
+                <g id="glasses" class="upgrade-item" style="display: none;">
+                  <circle cx="56" cy="20" r="3" fill="none" stroke="black" stroke-width="1.5"/>
+                  <circle cx="64" cy="20" r="3" fill="none" stroke="black" stroke-width="1.5"/>
+                  <line x1="59" y1="20" x2="61" y2="20" stroke="black" stroke-width="1.5"/>
+                </g>
+                
+                <!-- Trophy (u6 - master's) -->
+                <g id="trophy" class="upgrade-item" style="display: none;">
+                  <!-- Trophy base -->
+                  <rect x="20" y="100" width="8" height="4" fill="none" stroke="black" stroke-width="2"/>
+                  <!-- Trophy stem -->
+                  <rect x="22" y="90" width="4" height="10" fill="none" stroke="black" stroke-width="2"/>
+                  <!-- Trophy cup -->
+                  <path d="M 20 90 Q 24 85 28 90 L 28 95 Q 24 100 20 95 Z" fill="none" stroke="black" stroke-width="2"/>
+                  <!-- Trophy handles -->
+                  <path d="M 20 92 Q 15 92 15 95 Q 15 98 20 98" fill="none" stroke="black" stroke-width="1.5"/>
+                  <path d="M 28 92 Q 33 92 33 95 Q 33 98 28 98" fill="none" stroke="black" stroke-width="1.5"/>
+                </g>
+                
+                <!-- Nobel Prize (u7 - PhD) -->
+                <g id="nobelPrize" class="upgrade-item" style="display: none;">
+                  <!-- Medal -->
+                  <circle cx="95" cy="90" r="8" fill="none" stroke="black" stroke-width="2"/>
+                  <!-- Medal center -->
+                  <circle cx="95" cy="90" r="4" fill="none" stroke="black" stroke-width="1.5"/>
+                  <!-- Medal details -->
+                  <line x1="95" y1="86" x2="95" y2="94" stroke="black" stroke-width="1"/>
+                  <line x1="91" y1="90" x2="99" y2="90" stroke="black" stroke-width="1"/>
+                  <!-- Ribbon -->
+                  <rect x="87" y="98" width="16" height="8" fill="none" stroke="black" stroke-width="2"/>
+                  <line x1="89" y1="100" x2="93" y2="100" stroke="black" stroke-width="1"/>
+                  <line x1="97" y1="100" x2="101" y2="100" stroke="black" stroke-width="1"/>
+                  <line x1="89" y1="103" x2="93" y2="103" stroke="black" stroke-width="1"/>
+                  <line x1="97" y1="103" x2="101" y2="103" stroke="black" stroke-width="1"/>
+                </g>
+              </svg>
+            </div>
+            <div class="global-rank-section">
+              <div class="global-rank-label">Global rank</div>
+              <div class="leaderboard-rank" id="rankDisplay">8,200,000,000</div>
+            </div>
+            <div class="education-display" id="educationDisplay">Education: None</div>
           </div>
-          <div class="stick-figure-container" id="stickFigureContainer">
-            <svg id="stickFigure" width="120" height="120" viewBox="0 0 120 120">
-              <!-- Base stick figure (always visible) -->
-              <!-- Head -->
-              <circle cx="60" cy="20" r="8" fill="none" stroke="black" stroke-width="2"/>
-              <!-- Body -->
-              <line x1="60" y1="28" x2="60" y2="80" stroke="black" stroke-width="2"/>
-              <!-- Arms -->
-              <line x1="60" y1="40" x2="45" y2="60" stroke="black" stroke-width="2"/>
-              <line x1="60" y1="40" x2="75" y2="60" stroke="black" stroke-width="2"/>
-              <!-- Legs -->
-              <line x1="60" y1="80" x2="45" y2="110" stroke="black" stroke-width="2"/>
-              <line x1="60" y1="80" x2="75" y2="110" stroke="black" stroke-width="2"/>
-              
-              <!-- Upgrade items (initially hidden) -->
-              <!-- Pencil (u1 - elementary school) -->
-              <g id="pencil" class="upgrade-item" style="display: none;">
-                <line x1="75" y1="60" x2="85" y2="50" stroke="black" stroke-width="2"/>
-                <line x1="85" y1="50" x2="87" y2="49" stroke="black" stroke-width="1"/>
-              </g>
-              
-              <!-- Book (u2 - secondary school) -->
-              <g id="book" class="upgrade-item" style="display: none;">
-                <rect x="35" y="55" width="8" height="12" fill="none" stroke="black" stroke-width="2"/>
-                <line x1="37" y1="58" x2="41" y2="58" stroke="black" stroke-width="1"/>
-                <line x1="37" y1="61" x2="41" y2="61" stroke="black" stroke-width="1"/>
-                <line x1="37" y1="64" x2="41" y2="64" stroke="black" stroke-width="1"/>
-              </g>
-              
-              <!-- Calculator (u3 - high school) -->
-              <g id="calculator" class="upgrade-item" style="display: none;">
-                <rect x="33" y="50" width="12" height="16" fill="none" stroke="black" stroke-width="2"/>
-                <rect x="35" y="52" width="8" height="3" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="37" cy="58" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="39" cy="58" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="41" cy="58" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="37" cy="61" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="39" cy="61" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="41" cy="61" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="37" cy="64" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="39" cy="64" r="1" fill="none" stroke="black" stroke-width="1"/>
-                <circle cx="41" cy="64" r="1" fill="none" stroke="black" stroke-width="1"/>
-              </g>
-              
-              <!-- Glasses (u5 - bachelor's) -->
-              <g id="glasses" class="upgrade-item" style="display: none;">
-                <circle cx="56" cy="20" r="3" fill="none" stroke="black" stroke-width="1.5"/>
-                <circle cx="64" cy="20" r="3" fill="none" stroke="black" stroke-width="1.5"/>
-                <line x1="59" y1="20" x2="61" y2="20" stroke="black" stroke-width="1.5"/>
-              </g>
-              
-              <!-- Trophy (u6 - master's) -->
-              <g id="trophy" class="upgrade-item" style="display: none;">
-                <!-- Trophy base -->
-                <rect x="20" y="100" width="8" height="4" fill="none" stroke="black" stroke-width="2"/>
-                <!-- Trophy stem -->
-                <rect x="22" y="90" width="4" height="10" fill="none" stroke="black" stroke-width="2"/>
-                <!-- Trophy cup -->
-                <path d="M 20 90 Q 24 85 28 90 L 28 95 Q 24 100 20 95 Z" fill="none" stroke="black" stroke-width="2"/>
-                <!-- Trophy handles -->
-                <path d="M 20 92 Q 15 92 15 95 Q 15 98 20 98" fill="none" stroke="black" stroke-width="1.5"/>
-                <path d="M 28 92 Q 33 92 33 95 Q 33 98 28 98" fill="none" stroke="black" stroke-width="1.5"/>
-              </g>
-              
-              <!-- Nobel Prize (u7 - PhD) -->
-              <g id="nobelPrize" class="upgrade-item" style="display: none;">
-                <!-- Medal -->
-                <circle cx="95" cy="90" r="8" fill="none" stroke="black" stroke-width="2"/>
-                <!-- Medal center -->
-                <circle cx="95" cy="90" r="4" fill="none" stroke="black" stroke-width="1.5"/>
-                <!-- Medal details -->
-                <line x1="95" y1="86" x2="95" y2="94" stroke="black" stroke-width="1"/>
-                <line x1="91" y1="90" x2="99" y2="90" stroke="black" stroke-width="1"/>
-                <!-- Ribbon -->
-                <rect x="87" y="98" width="16" height="8" fill="none" stroke="black" stroke-width="2"/>
-                <line x1="89" y1="100" x2="93" y2="100" stroke="black" stroke-width="1"/>
-                <line x1="97" y1="100" x2="101" y2="100" stroke="black" stroke-width="1"/>
-                <line x1="89" y1="103" x2="93" y2="103" stroke="black" stroke-width="1"/>
-                <line x1="97" y1="103" x2="101" y2="103" stroke="black" stroke-width="1"/>
-              </g>
-            </svg>
-          </div>
-          <div class="education-display" id="educationDisplay">Education: None</div>
           
           <!-- Parking Garage Property -->
           <div class="property-row" data-property-id="parkingGarage">
@@ -715,6 +717,48 @@
             <div class="property-actions">
               <div class="property-cost" id="parkingGarageCost">€30,000</div>
               <button class="property-buy-btn" id="buyParkingGarageBtn">Buy</button>
+            </div>
+          </div>
+
+          <!-- Apartment Property -->
+          <div class="property-row" data-property-id="apartment">
+            <div class="property-icon">
+              <div class="property-icon-circle">
+                <i class="fas fa-home"></i>
+              </div>
+            </div>
+            <div class="property-info">
+              <div class="property-name">Apartment</div>
+              <div class="property-details">
+                <span class="property-owned" id="apartmentOwned">0</span> owned
+                <span class="property-income">€1,250/sec each</span>
+              </div>
+              <div class="property-total-income" id="apartmentTotalIncome">€0/sec total</div>
+            </div>
+            <div class="property-actions">
+              <div class="property-cost" id="apartmentCost">€500,000</div>
+              <button class="property-buy-btn" id="buyApartmentBtn">Buy</button>
+            </div>
+          </div>
+
+          <!-- Office Building Property -->
+          <div class="property-row" data-property-id="officeBuilding">
+            <div class="property-icon">
+              <div class="property-icon-circle">
+                <i class="fas fa-building"></i>
+              </div>
+            </div>
+            <div class="property-info">
+              <div class="property-name">Office Building</div>
+              <div class="property-details">
+                <span class="property-owned" id="officeBuildingOwned">0</span> owned
+                <span class="property-income">€15,000/sec each</span>
+              </div>
+              <div class="property-total-income" id="officeBuildingTotalIncome">€0/sec total</div>
+            </div>
+            <div class="property-actions">
+              <div class="property-cost" id="officeBuildingCost">€10,000,000</div>
+              <button class="property-buy-btn" id="buyOfficeBuildingBtn">Buy</button>
             </div>
           </div>
           

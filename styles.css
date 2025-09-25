@@ -888,10 +888,11 @@ main {
   align-items: center;
   justify-content: space-between;
   font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .leaderboard-rank {
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .game {
@@ -1771,7 +1772,7 @@ button#withdrawHalfBtn:focus-visible {
   background: white;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
-  margin: 8px 0;
+  margin: 4px 0;
   gap: 10px;
   transition: all 0.2s ease;
 }
@@ -1899,6 +1900,7 @@ button#withdrawHalfBtn:focus-visible {
   .property-row {
     padding: 6px 10px;
     gap: 8px;
+    margin: 3px 0;
   }
   
   .property-icon-circle {
@@ -1927,6 +1929,30 @@ button#withdrawHalfBtn:focus-visible {
     padding: 5px 10px;
     font-size: 11px;
     min-width: 45px;
+  }
+  
+  /* Make Portfolio section more compact on mobile */
+  .character-education-row {
+    margin-top: 4px;
+    padding: 4px;
+    gap: 8px;
+  }
+  
+  .global-rank-label {
+    font-size: 10px;
+  }
+  
+  .leaderboard-rank {
+    font-size: 11px;
+  }
+  
+  #stickFigure {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  
+  .education-display {
+    font-size: 11px;
   }
 }
 
@@ -2174,16 +2200,40 @@ input#amountInput:focus {
   color: #22c55e;
 }
 
+/* Character and Education Row */
+.character-education-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  gap: 12px;
+}
+
+.global-rank-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  text-align: center;
+}
+
+.global-rank-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
 /* Stick Figure */
 .stick-figure-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 16px;
-  padding: 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .upgrade-item {
@@ -2191,18 +2241,12 @@ input#amountInput:focus {
 }
 
 .education-display {
-  text-align: left;
-  margin-top: 8px;
-  font-size: 14px;
+  text-align: right;
+  font-size: 12px;
   font-weight: 500;
   color: #374151;
-  background: #f3f4f6;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #d1d5db;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex: 1;
+  text-align: right;
 }
 
 /* Wealth Visualization */
