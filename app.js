@@ -580,6 +580,7 @@
   let flashSaleEndTime = 0;
   let greatDepressionEndTime = 0;
   let eventCooldown = 0;
+  let skipNextEventCheck = false; // Skip next event check to give breathing room
   
   // Active event display elements
   let activeEventDisplay = null;
@@ -591,11 +592,12 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.04,    // 4% chance
-      marketCrash: 0.04,   // 4% chance  
-      flashSale: 0.02,     // 2% chance
+      marketBoom: 0.02,    // 3% chance
+      marketCrash: 0.03,   // 4% chance  
+      flashSale: 0.015,     // 2% chance
       greatDepression: 0.01, // 1% chance
-      taxCollection: 0.22   // 2% chance
+      taxCollection: 0.025,   // 2% chance
+      robbery: 0.015          // 1% chance
     },
     
     // Event durations (milliseconds)
@@ -612,7 +614,8 @@
       marketCrash: 60000,   // 1 minute
       flashSale: 180000,    // 3 minutes
       greatDepression: 60000, // 1 minute
-      taxCollection: 60000   // 1 minute
+      taxCollection: 60000,   // 1 minute
+      robbery: 60000          // 1 minute
     },
     
     // Event-specific cooldowns
@@ -621,7 +624,8 @@
       marketCrash: 0,
       flashSale: 0,
       greatDepression: 0,
-      taxCollection: 0
+      taxCollection: 0,
+      robbery: 0
     }
   };
   
@@ -789,6 +793,36 @@
     renderBalances();
   }
   
+  function triggerRobbery() {
+    // Robbery is an instant event (no duration) but follows the same "one event at a time" rule
+    // Set cooldown
+    EVENT_CONFIG.eventCooldowns.robbery = Date.now() + EVENT_CONFIG.cooldowns.robbery;
+    
+    // Steal all money from current account
+    const stolenAmount = currentAccountBalance;
+    currentAccountBalance = 0;
+    
+    // Show notification
+    showEventNotification(" You are robbed!", `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`, "robbery");
+    
+    // Visual effects
+    screenFlash('#8B0000', 600); // Dark red flash
+    screenShake(8, 400); // Strong shake
+    
+    // Sound effect (reuse error sound for robbery)
+    playErrorSound();
+    
+    // Create robbery particles
+    if (particleSystem) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      particleSystem.createMoneyLossParticles(centerX, centerY, stolenAmount);
+    }
+    
+    // Update displays
+    renderBalances();
+  }
+  
   // Check for expired events immediately (called every second)
   function checkExpiredEvents() {
     const now = Date.now();
@@ -801,6 +835,7 @@
       renderDividendUI(0); // Update dividend display
       showEventNotification("📈 Boom Ended", "Interest & dividend rates returned to normal", "boom-end");
       updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
     if (marketCrashActive && now >= marketCrashEndTime) {
@@ -810,6 +845,7 @@
       renderDividendUI(0); // Update dividend display
       showEventNotification("📉 Crash Ended", "Interest & dividend rates returned to normal", "crash-end");
       updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
     if (flashSaleActive && now >= flashSaleEndTime) {
@@ -823,6 +859,7 @@
         upgradesSection.classList.remove('flash-sale-active');
       }
       updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
     if (greatDepressionActive && now >= greatDepressionEndTime) {
@@ -832,6 +869,7 @@
       renderDividendUI(0); // Update dividend display
       showEventNotification("💀 Depression Ended", "Interest rates returned to normal, dividends resumed", "depression-end");
       updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
     }
   }
 
@@ -840,6 +878,13 @@
     
     // Check if events should end (this is now handled by checkExpiredEvents)
     checkExpiredEvents();
+    
+    // Skip event checking if we need breathing room after an event ended
+    if (skipNextEventCheck) {
+      skipNextEventCheck = false; // Reset the flag
+      console.log('🛑 Skipping event check for breathing room');
+      return;
+    }
     
     // Check for new events (only one event can be active at a time)
     const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive;
@@ -867,7 +912,8 @@
       const saleProb = EVENT_CONFIG.probabilities.flashSale;
       const depressionProb = EVENT_CONFIG.probabilities.greatDepression;
       const taxProb = EVENT_CONFIG.probabilities.taxCollection;
-      const totalProb = boomProb + crashProb + saleProb + depressionProb + taxProb;
+      const robberyProb = EVENT_CONFIG.probabilities.robbery;
+      const totalProb = boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb;
       
       console.log('🎲 Event Roll:', {
         roll: eventRoll,
@@ -876,7 +922,8 @@
           marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
           flashSale: `${boomProb + crashProb}-${boomProb + crashProb + saleProb} (${(saleProb * 100).toFixed(1)}%)`,
           greatDepression: `${boomProb + crashProb + saleProb}-${boomProb + crashProb + saleProb + depressionProb} (${(depressionProb * 100).toFixed(1)}%)`,
-          taxCollection: `${boomProb + crashProb + saleProb + depressionProb}-${totalProb} (${(taxProb * 100).toFixed(1)}%)`,
+          taxCollection: `${boomProb + crashProb + saleProb + depressionProb}-${boomProb + crashProb + saleProb + depressionProb + taxProb} (${(taxProb * 100).toFixed(1)}%)`,
+          robbery: `${boomProb + crashProb + saleProb + depressionProb + taxProb}-${totalProb} (${(robberyProb * 100).toFixed(1)}%)`,
           nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
         },
         cooldownChecks: {
@@ -884,7 +931,8 @@
           marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
           flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale,
           greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression,
-          taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection
+          taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection,
+          robbery: now >= EVENT_CONFIG.eventCooldowns.robbery
         }
       });
       
@@ -909,9 +957,14 @@
         triggerGreatDepression();
       }
       // Tax Collection
-      else if (now >= EVENT_CONFIG.eventCooldowns.taxCollection && eventRoll >= boomProb + crashProb + saleProb + depressionProb && eventRoll < totalProb) {
+      else if (now >= EVENT_CONFIG.eventCooldowns.taxCollection && eventRoll >= boomProb + crashProb + saleProb + depressionProb && eventRoll < boomProb + crashProb + saleProb + depressionProb + taxProb) {
         console.log('🎯 TRIGGERING: Tax Collection!');
         triggerTaxCollection();
+      }
+      // Robbery
+      else if (now >= EVENT_CONFIG.eventCooldowns.robbery && eventRoll >= boomProb + crashProb + saleProb + depressionProb + taxProb && eventRoll < totalProb) {
+        console.log('🎯 TRIGGERING: Robbery!');
+        triggerRobbery();
       }
       // Nothing happens
       else {
@@ -1227,7 +1280,7 @@
   const streakMultiplierEl = document.getElementById("streakMultiplier");
   const streakProgressFill = document.getElementById("streakProgressFill");
   const streakProgressText = document.getElementById("streakProgressText");
-  
+
   // Active event display elements
   activeEventDisplay = document.getElementById("activeEventDisplay");
   eventIcon = activeEventDisplay?.querySelector(".event-icon");
@@ -1993,6 +2046,7 @@
         flashSaleEndTime,
         greatDepressionEndTime,
         eventCooldown,
+        skipNextEventCheck,
         eventConfig: EVENT_CONFIG,
         
         // Save timestamp
@@ -2065,6 +2119,7 @@
         flashSaleEndTime = gameState.flashSaleEndTime || 0;
         greatDepressionEndTime = gameState.greatDepressionEndTime || 0;
         eventCooldown = gameState.eventCooldown || 0;
+        skipNextEventCheck = gameState.skipNextEventCheck || false;
         
         // Restore event configuration
         if (gameState.eventConfig) {
@@ -2140,12 +2195,15 @@
       flashSaleEndTime = 0;
       greatDepressionEndTime = 0;
       eventCooldown = 0;
+      skipNextEventCheck = false;
       
       // Reset event cooldowns
       EVENT_CONFIG.eventCooldowns.marketBoom = 0;
       EVENT_CONFIG.eventCooldowns.marketCrash = 0;
       EVENT_CONFIG.eventCooldowns.flashSale = 0;
       EVENT_CONFIG.eventCooldowns.greatDepression = 0;
+      EVENT_CONFIG.eventCooldowns.taxCollection = 0;
+      EVENT_CONFIG.eventCooldowns.robbery = 0;
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
