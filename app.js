@@ -1300,7 +1300,6 @@
   const buyU18Btn = document.getElementById("buyU18Btn");
   const buyU19Btn = document.getElementById("buyU19Btn");
   const buyU20Btn = document.getElementById("buyU20Btn");
-  const buyU21Btn = document.getElementById("buyU21Btn");
   const buyU22Btn = document.getElementById("buyU22Btn");
   const buyU23Btn = document.getElementById("buyU23Btn");
   const buyU24Btn = document.getElementById("buyU24Btn");
@@ -3051,7 +3050,6 @@
     u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate" },
     u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u20: { cost: 25000000, name: "Master Interest", effect: "Increases interest rate by 15%", type: "interest" },
-    u21: { cost: 40000000, name: "Ultra Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
     u27: { cost: 750000000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
     u29: { cost: 1250, name: "Critical Hits", effect: "15% chance for 5x click damage", type: "special" },
@@ -3358,7 +3356,6 @@
     // Calculate speed multipliers (stack multiplicatively)
     let speedMultiplier = 1;
     if (owned.u12) speedMultiplier *= 0.8; // 20% faster
-    if (owned.u21) speedMultiplier *= 0.8; // 20% faster
     
     // Calculate rate multipliers (stack multiplicatively)
     let rateMultiplier = 1;
@@ -3436,7 +3433,6 @@
       // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
       if (owned.u12) speedMultiplier *= 0.8;
-      if (owned.u21) speedMultiplier *= 0.8;
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     
@@ -3483,7 +3479,6 @@
     // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
       if (owned.u12) speedMultiplier *= 0.8;
-      if (owned.u21) speedMultiplier *= 0.8;
       
       let rateMultiplier = 1;
       if (owned.u13) rateMultiplier *= 1.25;
