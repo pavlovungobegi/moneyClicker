@@ -1102,38 +1102,10 @@
   }
 
   function renderUpgradePrices() {
-    const map = {
-      u1: document.getElementById('u1Price'),
-      u2: document.getElementById('u2Price'),
-      u3: document.getElementById('u3Price'),
-      u4: document.getElementById('u4Price'),
-      u5: document.getElementById('u5Price'),
-      u6: document.getElementById('u6Price'),
-      u7: document.getElementById('u7Price'),
-      u8: document.getElementById('u8Price'),
-      u9: document.getElementById('u9Price'),
-      u10: document.getElementById('u10Price'),
-      u11: document.getElementById('u11Price'),
-      u12: document.getElementById('u12Price'),
-      u13: document.getElementById('u13Price'),
-      u14: document.getElementById('u14Price'),
-      u15: document.getElementById('u15Price'),
-      u16: document.getElementById('u16Price'),
-      u17: document.getElementById('u17Price'),
-      u18: document.getElementById('u18Price'),
-      u19: document.getElementById('u19Price'),
-      u20: document.getElementById('u20Price'),
-      u21: document.getElementById('u21Price'),
-      u22: document.getElementById('u22Price'),
-      u23: document.getElementById('u23Price'),
-      u24: document.getElementById('u24Price'),
-      u25: document.getElementById('u25Price'),
-      u26: document.getElementById('u26Price'),
-      u27: document.getElementById('u27Price'),
-      u29: document.getElementById('u29Price'),
-      u30: document.getElementById('u30Price'),
-      u31: document.getElementById('u31Price'),
-    };
+    // Generate upgrade price elements mapping automatically
+    const map = Object.fromEntries(
+      Object.keys(UPGRADE_CONFIG).map(id => [id, document.getElementById(id + 'Price')])
+    );
     Object.entries(map).forEach(([key, el]) => {
       if (!el) return;
       let cost = UPGRADE_COSTS[key];
@@ -1212,68 +1184,13 @@
   }
 
   function renderUpgradesOwned() {
-    // Toggle CSS class to hide buy button and prevent layout shift
-    const u1 = document.querySelector('.upgrade[data-upgrade-id="u1"]');
-    const u2 = document.querySelector('.upgrade[data-upgrade-id="u2"]');
-    const u3 = document.querySelector('.upgrade[data-upgrade-id="u3"]');
-    const u4 = document.querySelector('.upgrade[data-upgrade-id="u4"]');
-    const u5 = document.querySelector('.upgrade[data-upgrade-id="u5"]');
-    const u6 = document.querySelector('.upgrade[data-upgrade-id="u6"]');
-    const u7 = document.querySelector('.upgrade[data-upgrade-id="u7"]');
-    const u8 = document.querySelector('.upgrade[data-upgrade-id="u8"]');
-    const u9 = document.querySelector('.upgrade[data-upgrade-id="u9"]');
-    if (u1) u1.classList.toggle('owned', !!owned.u1);
-    if (u2) u2.classList.toggle('owned', !!owned.u2);
-    if (u3) u3.classList.toggle('owned', !!owned.u3);
-    if (u4) u4.classList.toggle('owned', !!owned.u4);
-    if (u5) u5.classList.toggle('owned', !!owned.u5);
-    if (u6) u6.classList.toggle('owned', !!owned.u6);
-    if (u7) u7.classList.toggle('owned', !!owned.u7);
-    if (u8) u8.classList.toggle('owned', !!owned.u8);
-    if (u9) u9.classList.toggle('owned', !!owned.u9);
-    const u10 = document.querySelector('.upgrade[data-upgrade-id="u10"]');
-    const u11 = document.querySelector('.upgrade[data-upgrade-id="u11"]');
-    const u12 = document.querySelector('.upgrade[data-upgrade-id="u12"]');
-    const u13 = document.querySelector('.upgrade[data-upgrade-id="u13"]');
-    const u14 = document.querySelector('.upgrade[data-upgrade-id="u14"]');
-    const u15 = document.querySelector('.upgrade[data-upgrade-id="u15"]');
-    const u16 = document.querySelector('.upgrade[data-upgrade-id="u16"]');
-    const u17 = document.querySelector('.upgrade[data-upgrade-id="u17"]');
-    const u18 = document.querySelector('.upgrade[data-upgrade-id="u18"]');
-    const u19 = document.querySelector('.upgrade[data-upgrade-id="u19"]');
-    const u20 = document.querySelector('.upgrade[data-upgrade-id="u20"]');
-    const u21 = document.querySelector('.upgrade[data-upgrade-id="u21"]');
-    const u22 = document.querySelector('.upgrade[data-upgrade-id="u22"]');
-    const u23 = document.querySelector('.upgrade[data-upgrade-id="u23"]');
-    const u24 = document.querySelector('.upgrade[data-upgrade-id="u24"]');
-    const u25 = document.querySelector('.upgrade[data-upgrade-id="u25"]');
-    const u26 = document.querySelector('.upgrade[data-upgrade-id="u26"]');
-    const u27 = document.querySelector('.upgrade[data-upgrade-id="u27"]');
-    const u28 = document.querySelector('.upgrade[data-upgrade-id="u28"]');
-    const u29 = document.querySelector('.upgrade[data-upgrade-id="u29"]');
-    const u30 = document.querySelector('.upgrade[data-upgrade-id="u30"]');
-    if (u10) u10.classList.toggle('owned', !!owned.u10);
-    if (u11) u11.classList.toggle('owned', !!owned.u11);
-    if (u12) u12.classList.toggle('owned', !!owned.u12);
-    if (u13) u13.classList.toggle('owned', !!owned.u13);
-    if (u14) u14.classList.toggle('owned', !!owned.u14);
-    if (u15) u15.classList.toggle('owned', !!owned.u15);
-    if (u16) u16.classList.toggle('owned', !!owned.u16);
-    if (u17) u17.classList.toggle('owned', !!owned.u17);
-    if (u18) u18.classList.toggle('owned', !!owned.u18);
-    if (u19) u19.classList.toggle('owned', !!owned.u19);
-    if (u20) u20.classList.toggle('owned', !!owned.u20);
-    if (u21) u21.classList.toggle('owned', !!owned.u21);
-    if (u22) u22.classList.toggle('owned', !!owned.u22);
-    if (u23) u23.classList.toggle('owned', !!owned.u23);
-    if (u24) u24.classList.toggle('owned', !!owned.u24);
-    if (u25) u25.classList.toggle('owned', !!owned.u25);
-    if (u26) u26.classList.toggle('owned', !!owned.u26);
-    if (u27) u27.classList.toggle('owned', !!owned.u27);
-    if (u29) u29.classList.toggle('owned', !!owned.u29);
-    if (u30) u30.classList.toggle('owned', !!owned.u30);
-    const u31 = document.querySelector('.upgrade[data-upgrade-id="u31"]');
-    if (u31) u31.classList.toggle('owned', !!owned.u31);
+    // Automatically render ownership for all upgrades
+    Object.keys(UPGRADE_CONFIG).forEach(id => {
+      const element = document.querySelector(`.upgrade[data-upgrade-id="${id}"]`);
+      if (element) {
+        element.classList.toggle('owned', !!owned[id]);
+      }
+    });
   }
 
   function getPerClickIncome() {
@@ -1790,11 +1707,11 @@
   // Function to reset tutorial (useful for testing or user request)
   function resetTutorial() {
     tourState = {
-      active: false,
-      currentStep: 0,
-      completed: false,
-      portfolioTourShown: false
-    };
+    active: false,
+    currentStep: 0,
+    completed: false,
+    portfolioTourShown: false
+  };
     saveTourState();
     console.log('Tutorial has been reset. Refresh the page to see it again.');
   }
@@ -2340,51 +2257,51 @@
       arrow.style.display = 'none';
     } else {
       // Desktop positioning logic
-      switch (position) {
-        case 'bottom':
-          top = targetRect.bottom + 20;
-          left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-          arrow.classList.add('top');
-          break;
-        case 'right':
-          top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-          left = targetRect.right + 30;
-          arrow.classList.add('left');
-          break;
-        case 'left':
-          top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-          left = targetRect.left - tooltipRect.width - 20;
-          arrow.classList.add('right');
-          break;
-        case 'top':
-          top = targetRect.top - tooltipRect.height - 20;
-          left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-          arrow.classList.add('bottom');
-          break;
-      }
+    switch (position) {
+      case 'bottom':
+        top = targetRect.bottom + 20;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        arrow.classList.add('top');
+        break;
+      case 'right':
+        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.right + 30;
+        arrow.classList.add('left');
+        break;
+      case 'left':
+        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.left - tooltipRect.width - 20;
+        arrow.classList.add('right');
+        break;
+      case 'top':
+        top = targetRect.top - tooltipRect.height - 20;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        arrow.classList.add('bottom');
+        break;
+    }
       
       // Show arrow on desktop
       arrow.style.display = 'block';
-      
-      // Ensure tooltip stays within viewport
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      
-      if (left < 20) left = 20;
-      if (left + tooltipRect.width > viewportWidth - 20) {
-        left = viewportWidth - tooltipRect.width - 20;
-      }
-      if (top < 20) top = 20;
-      if (top + tooltipRect.height > viewportHeight - 20) {
-        top = viewportHeight - tooltipRect.height - 20;
+    
+    // Ensure tooltip stays within viewport
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    if (left < 20) left = 20;
+    if (left + tooltipRect.width > viewportWidth - 20) {
+      left = viewportWidth - tooltipRect.width - 20;
+    }
+    if (top < 20) top = 20;
+    if (top + tooltipRect.height > viewportHeight - 20) {
+      top = viewportHeight - tooltipRect.height - 20;
       }
     }
     
     // Use requestAnimationFrame to ensure proper rendering
     requestAnimationFrame(() => {
-      tooltip.style.position = 'fixed';
-      tooltip.style.top = top + 'px';
-      tooltip.style.left = left + 'px';
+    tooltip.style.position = 'fixed';
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
     });
   }
   
@@ -2898,9 +2815,55 @@
     oscillator3.stop(audioContext.currentTime + 0.3);
   }
 
-  // Upgrades state
-  const UPGRADE_COSTS = { u1: 10, u2: 20, u3: 50, u4: 6000, u5: 100, u6: 250, u7: 500, u8: 20000, u9: 250000, u10: 10000, u11: 20, u12: 25000, u13: 30000, u14: 300000, u15: 400000, u16: 1000000, u17: 2000000, u18: 5000000, u19: 10000000, u20: 25000000, u21: 40000000, u22: 75000000, u23: 150000000, u24: 500000000, u25: 1000000000, u26: 1000000000000, u27: 750000000, u29: 1250, u30: 50000, u31: 75000 };
-  const owned = { u1: false, u2: false, u3: false, u4: false, u5: false, u6: false, u7: false, u8: false, u9: false, u10: false, u11: false, u12: false, u13: false, u14: false, u15: false, u16: false, u17: false, u18: false, u19: false, u20: false, u21: false, u22: false, u23: false, u24: false, u25: false, u26: false, u27: false, u29: false, u30: false, u31: false };
+  // Centralized upgrade configuration
+  // To add a new upgrade: Add an entry with id, cost, name, effect, and type
+  // To remove an upgrade: Delete the entry from this object
+  // Types: "click", "interest", "dividend", "dividend_speed", "dividend_rate", "unlock", "prestige", "special"
+  //
+  // Example of adding a new upgrade:
+  // 1. Add to UPGRADE_CONFIG: u32: { cost: 1000, name: "New Upgrade", effect: "Does something", type: "click" }
+  // 2. Add HTML to index.html: <div class="upgrade" data-upgrade-id="u32">...</div>
+  // 3. Add logic in getPerClickIncome() or getCompoundMultiplierPerTick() if needed
+  // That's it! Everything else is automatic.
+  const UPGRADE_CONFIG = {
+    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click" },
+    u2: { cost: 20, name: "Finish secondary school", effect: "Adds +2 euros per click", type: "click" },
+    u3: { cost: 50, name: "Finish high school", effect: "Adds +4 euros per click", type: "click" },
+    u4: { cost: 6000, name: "Better credit score", effect: "Increases investment interest by 20%", type: "interest" },
+    u5: { cost: 100, name: "Finish bachelor's", effect: "Adds +10 euros per click", type: "click" },
+    u6: { cost: 250, name: "Finish master's", effect: "Adds +20 euros per click", type: "click" },
+    u7: { cost: 500, name: "Do a PhD", effect: "Adds +40 euros per click", type: "click" },
+    u8: { cost: 20000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest" },
+    u9: { cost: 250000, name: "Befriend a banker", effect: "Increases investment interest by 15%", type: "interest" },
+    u10: { cost: 10000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend" },
+    u11: { cost: 20, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
+    u12: { cost: 25000, name: "Dividends 2", effect: "Speed up dividends by 20%", type: "dividend_speed" },
+    u13: { cost: 30000, name: "Dividends 3", effect: "Increase dividend rate by 25%", type: "dividend_rate" },
+    u14: { cost: 300000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate" },
+    u15: { cost: 400000, name: "Fast Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
+    u16: { cost: 1000000, name: "Turbo Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
+    u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate" },
+    u18: { cost: 5000000, name: "Hyper Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
+    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
+    u20: { cost: 25000000, name: "Master Interest", effect: "Increases interest rate by 15%", type: "interest" },
+    u21: { cost: 40000000, name: "Ultra Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
+    u22: { cost: 75000000, name: "Legendary Interest", effect: "Increases interest rate by 15%", type: "interest" },
+    u25: { cost: 1000000000, name: "Supreme Interest", effect: "Increases interest rate by 20%", type: "interest" },
+    u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
+    u27: { cost: 750000000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
+    u29: { cost: 1250, name: "Critical Hits", effect: "15% chance for 5x click damage", type: "special" },
+    u30: { cost: 50000, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
+    u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" }
+  };
+
+  // Generate upgrade costs and owned objects from config
+  const UPGRADE_COSTS = Object.fromEntries(
+    Object.entries(UPGRADE_CONFIG).map(([id, config]) => [id, config.cost])
+  );
+  
+  const owned = Object.fromEntries(
+    Object.keys(UPGRADE_CONFIG).map(id => [id, false])
+  );
 
   function tryBuyUpgrade(key) {
     if (owned[key]) return;
@@ -3027,36 +2990,13 @@
     saveGameState();
   }
 
-  if (buyU1Btn) buyU1Btn.addEventListener("click", () => tryBuyUpgrade("u1"));
-  if (buyU2Btn) buyU2Btn.addEventListener("click", () => tryBuyUpgrade("u2"));
-  if (buyU3Btn) buyU3Btn.addEventListener("click", () => tryBuyUpgrade("u3"));
-  if (buyU4Btn) buyU4Btn.addEventListener("click", () => tryBuyUpgrade("u4"));
-  if (buyU5Btn) buyU5Btn.addEventListener("click", () => tryBuyUpgrade("u5"));
-  if (buyU6Btn) buyU6Btn.addEventListener("click", () => tryBuyUpgrade("u6"));
-  if (buyU7Btn) buyU7Btn.addEventListener("click", () => tryBuyUpgrade("u7"));
-  if (buyU8Btn) buyU8Btn.addEventListener("click", () => tryBuyUpgrade("u8"));
-  if (buyU9Btn) buyU9Btn.addEventListener("click", () => tryBuyUpgrade("u9"));
-  if (buyU10Btn) buyU10Btn.addEventListener("click", () => tryBuyUpgrade("u10"));
-  if (buyU11Btn) buyU11Btn.addEventListener("click", () => tryBuyUpgrade("u11"));
-  if (buyU12Btn) buyU12Btn.addEventListener("click", () => tryBuyUpgrade("u12"));
-  if (buyU13Btn) buyU13Btn.addEventListener("click", () => tryBuyUpgrade("u13"));
-  if (buyU14Btn) buyU14Btn.addEventListener("click", () => tryBuyUpgrade("u14"));
-  if (buyU15Btn) buyU15Btn.addEventListener("click", () => tryBuyUpgrade("u15"));
-  if (buyU16Btn) buyU16Btn.addEventListener("click", () => tryBuyUpgrade("u16"));
-  if (buyU17Btn) buyU17Btn.addEventListener("click", () => tryBuyUpgrade("u17"));
-  if (buyU18Btn) buyU18Btn.addEventListener("click", () => tryBuyUpgrade("u18"));
-  if (buyU19Btn) buyU19Btn.addEventListener("click", () => tryBuyUpgrade("u19"));
-  if (buyU20Btn) buyU20Btn.addEventListener("click", () => tryBuyUpgrade("u20"));
-  if (buyU21Btn) buyU21Btn.addEventListener("click", () => tryBuyUpgrade("u21"));
-  if (buyU22Btn) buyU22Btn.addEventListener("click", () => tryBuyUpgrade("u22"));
-  if (buyU23Btn) buyU23Btn.addEventListener("click", () => tryBuyUpgrade("u23"));
-  if (buyU24Btn) buyU24Btn.addEventListener("click", () => tryBuyUpgrade("u24"));
-  if (buyU25Btn) buyU25Btn.addEventListener("click", () => tryBuyUpgrade("u25"));
-  if (buyU26Btn) buyU26Btn.addEventListener("click", () => tryBuyUpgrade("u26"));
-  if (buyU27Btn) buyU27Btn.addEventListener("click", () => tryBuyUpgrade("u27"));
-  if (buyU29Btn) buyU29Btn.addEventListener("click", () => tryBuyUpgrade("u29"));
-  if (buyU30Btn) buyU30Btn.addEventListener("click", () => tryBuyUpgrade("u30"));
-  if (buyU31Btn) buyU31Btn.addEventListener("click", () => tryBuyUpgrade("u31"));
+  // Automatically add event listeners for all upgrade buy buttons
+  Object.keys(UPGRADE_CONFIG).forEach(id => {
+    const buyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
+    if (buyBtn) {
+      buyBtn.addEventListener("click", () => tryBuyUpgrade(id));
+    }
+  });
 
   // Auto-invest toggle event listener
   if (autoInvestToggle) {
@@ -3091,7 +3031,7 @@
 
   // Game loop (1000 ms): compounding and leaderboard - reduced frequency for mobile performance
   const TICK_MS = 1000;
-  const BASE_COMPOUND_MULTIPLIER_PER_TICK = 1.008; // base multiply every 1000ms (1 second)
+  const BASE_COMPOUND_MULTIPLIER_PER_TICK = 1.004; // base multiply every 1000ms (1 second) - 0.4% per second
   function getCompoundMultiplierPerTick() {
     let rateBoost = 1;
     if (owned.u4) rateBoost *= 1.2; // +20%
@@ -3140,8 +3080,8 @@
     rows.sort((a, b) => {
       const aId = a.getAttribute('data-upgrade-id');
       const bId = b.getAttribute('data-upgrade-id');
-      const aCost = UPGRADE_COSTS[aId] ?? Number.MAX_SAFE_INTEGER;
-      const bCost = UPGRADE_COSTS[bId] ?? Number.MAX_SAFE_INTEGER;
+      const aCost = UPGRADE_CONFIG[aId]?.cost ?? Number.MAX_SAFE_INTEGER;
+      const bCost = UPGRADE_CONFIG[bId]?.cost ?? Number.MAX_SAFE_INTEGER;
       return aCost - bCost;
     });
     rows.forEach((row) => scrollableContent.appendChild(row));
@@ -3217,14 +3157,12 @@
     if (owned.u16) speedMultiplier *= 0.8; // 20% faster
     if (owned.u18) speedMultiplier *= 0.8; // 20% faster
     if (owned.u21) speedMultiplier *= 0.8; // 20% faster
-    if (owned.u23) speedMultiplier *= 0.5; // 50% faster
     
     // Calculate rate multipliers (stack multiplicatively)
     let rateMultiplier = 1;
     if (owned.u13) rateMultiplier *= 1.25; // 25% more
     if (owned.u14) rateMultiplier *= 1.2;  // 20% more
     if (owned.u17) rateMultiplier *= 1.25; // 25% more
-    if (owned.u24) rateMultiplier *= 1.5;  // 50% more
     
     const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     const rate = BASE_DIVIDEND_RATE * rateMultiplier;
@@ -3284,22 +3222,21 @@
       return;
     }
     
-    // Calculate speed multipliers (same as tickDividends)
-    let speedMultiplier = 1;
-    if (owned.u12) speedMultiplier *= 0.8;
-    if (owned.u15) speedMultiplier *= 0.8;
-    if (owned.u16) speedMultiplier *= 0.8;
-    if (owned.u18) speedMultiplier *= 0.8;
-    if (owned.u21) speedMultiplier *= 0.8;
-    if (owned.u23) speedMultiplier *= 0.5;
-    
-    const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
+      // Calculate speed multipliers (same as tickDividends)
+      let speedMultiplier = 1;
+      if (owned.u12) speedMultiplier *= 0.8;
+      if (owned.u15) speedMultiplier *= 0.8;
+      if (owned.u16) speedMultiplier *= 0.8;
+      if (owned.u18) speedMultiplier *= 0.8;
+      if (owned.u21) speedMultiplier *= 0.8;
+      
+      const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     
     // Use the same dividendElapsed variable as the payout logic for synchronization
     const timeInCycle = dividendElapsed % interval;
     const remaining = Math.ceil((interval - timeInCycle) / 1000);
     const percent = timeInCycle / interval;
-    const dashOffset = 100 - percent * 100;
+      const dashOffset = 100 - percent * 100;
     
     // Update countdown timer smoothly
     const countdownEl = document.getElementById('dividendCountdown');
@@ -3336,24 +3273,22 @@
     }
     
     // Calculate speed multipliers (same as tickDividends)
-    let speedMultiplier = 1;
-    if (owned.u12) speedMultiplier *= 0.8;
-    if (owned.u15) speedMultiplier *= 0.8;
-    if (owned.u16) speedMultiplier *= 0.8;
-    if (owned.u18) speedMultiplier *= 0.8;
-    if (owned.u21) speedMultiplier *= 0.8;
-    if (owned.u23) speedMultiplier *= 0.5;
-    
-    let rateMultiplier = 1;
-    if (owned.u13) rateMultiplier *= 1.25;
-    if (owned.u14) rateMultiplier *= 1.2;
-    if (owned.u17) rateMultiplier *= 1.25;
-    if (owned.u24) rateMultiplier *= 1.5;
-    
-    const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
-    const rate = BASE_DIVIDEND_RATE * rateMultiplier;
-    const intervalSeconds = Math.round(interval / 1000);
-    const ratePercent = (rate * 100).toFixed(2);
+      let speedMultiplier = 1;
+      if (owned.u12) speedMultiplier *= 0.8;
+      if (owned.u15) speedMultiplier *= 0.8;
+      if (owned.u16) speedMultiplier *= 0.8;
+      if (owned.u18) speedMultiplier *= 0.8;
+      if (owned.u21) speedMultiplier *= 0.8;
+      
+      let rateMultiplier = 1;
+      if (owned.u13) rateMultiplier *= 1.25;
+      if (owned.u14) rateMultiplier *= 1.2;
+      if (owned.u17) rateMultiplier *= 1.25;
+      
+      const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
+      const rate = BASE_DIVIDEND_RATE * rateMultiplier;
+      const intervalSeconds = Math.round(interval / 1000);
+      const ratePercent = (rate * 100).toFixed(2);
 
     // Update dividend rate display
     const rateEl = document.getElementById('dividendRate');
@@ -3515,7 +3450,7 @@
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
   updateToggleCompletedUI();
-  
+
   renderBalances();
   renderUpgradesOwned();
   renderRank();
@@ -3523,7 +3458,7 @@
   // Apply upgrade visibility rules now that hide-completed class is set
   // Use requestAnimationFrame to ensure DOM is fully rendered
   requestAnimationFrame(() => {
-    sortUpgradesByCost();
+  sortUpgradesByCost();
   });
   renderInvestmentUnlocked();
   renderPrestigeMultipliers();
@@ -3924,7 +3859,7 @@ if ('serviceWorker' in navigator) {
       autoInvestModal.classList.add('hidden');
     }
   });
-
+  
   // Initialize audio on first user interaction
   initAudio();
   
@@ -3972,9 +3907,9 @@ if ('serviceWorker' in navigator) {
   // Render interest per second from per-tick multiplier (dynamic)
   function renderInterestPerSecond() {
     if (!interestPerSecEl) return;
-    const m = getCompoundMultiplierPerTick();
-    const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
-    const percent = (perSecondMultiplier - 1) * 100;
+      const m = getCompoundMultiplierPerTick();
+      const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
+      const percent = (perSecondMultiplier - 1) * 100;
     
     // Calculate earnings per second
     const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
