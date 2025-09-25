@@ -583,9 +583,9 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.015,    // 1.5% chance
-      marketCrash: 0.015,   // 1.5% chance  
-      flashSale: 0.01       // 1% chance
+      marketBoom: 0.04,    // 1.5% chance
+      marketCrash: 0.04,   // 1.5% chance  
+      flashSale: 0.02       // 1% chance
     },
     
     // Event durations (milliseconds)
@@ -612,7 +612,7 @@
   
   // Event Functions
   function triggerMarketBoom() {
-    if (marketBoomActive) return; // Don't trigger if already active
+    if (marketBoomActive || marketCrashActive || flashSaleActive) return; // Don't trigger if any event is active
     
     marketBoomActive = true;
     marketBoomEndTime = Date.now() + EVENT_CONFIG.durations.marketBoom;
@@ -633,7 +633,7 @@
   }
   
   function triggerMarketCrash() {
-    if (marketCrashActive) return; // Don't trigger if already active
+    if (marketBoomActive || marketCrashActive || flashSaleActive) return; // Don't trigger if any event is active
     
     marketCrashActive = true;
     marketCrashEndTime = Date.now() + EVENT_CONFIG.durations.marketCrash;
@@ -668,7 +668,7 @@
   }
   
   function triggerFlashSale() {
-    if (flashSaleActive) return; // Don't trigger if already active
+    if (marketBoomActive || marketCrashActive || flashSaleActive) return; // Don't trigger if any event is active
     
     flashSaleActive = true;
     flashSaleEndTime = Date.now() + EVENT_CONFIG.durations.flashSale;
@@ -729,26 +729,68 @@
       }
     }
     
-    // Check for new events (independent probability for each event)
-    // Market Boom
-    if (!marketBoomActive && now >= EVENT_CONFIG.eventCooldowns.marketBoom) {
-      if (Math.random() < EVENT_CONFIG.probabilities.marketBoom) {
+    // Check for new events (only one event can be active at a time)
+    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive;
+    
+    console.log('🎲 Event Check:', {
+      anyEventActive,
+      marketBoomActive,
+      marketCrashActive,
+      flashSaleActive,
+      now,
+      cooldowns: {
+        marketBoom: EVENT_CONFIG.eventCooldowns.marketBoom,
+        marketCrash: EVENT_CONFIG.eventCooldowns.marketCrash,
+        flashSale: EVENT_CONFIG.eventCooldowns.flashSale
+      }
+    });
+    
+    if (!anyEventActive) {
+      // Only check for new events if no event is currently active
+      const eventRoll = Math.random();
+      
+      // Calculate cumulative probabilities
+      const boomProb = EVENT_CONFIG.probabilities.marketBoom;
+      const crashProb = EVENT_CONFIG.probabilities.marketCrash;
+      const saleProb = EVENT_CONFIG.probabilities.flashSale;
+      const totalProb = boomProb + crashProb + saleProb;
+      
+      console.log('🎲 Event Roll:', {
+        roll: eventRoll,
+        probabilities: {
+          marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
+          marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
+          flashSale: `${boomProb + crashProb}-${totalProb} (${(saleProb * 100).toFixed(1)}%)`,
+          nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
+        },
+        cooldownChecks: {
+          marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
+          marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
+          flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale
+        }
+      });
+      
+      // Market Boom
+      if (now >= EVENT_CONFIG.eventCooldowns.marketBoom && eventRoll < boomProb) {
+        console.log('🎯 TRIGGERING: Market Boom!');
         triggerMarketBoom();
       }
-    }
-    
-    // Market Crash
-    if (!marketCrashActive && now >= EVENT_CONFIG.eventCooldowns.marketCrash) {
-      if (Math.random() < EVENT_CONFIG.probabilities.marketCrash) {
+      // Market Crash  
+      else if (now >= EVENT_CONFIG.eventCooldowns.marketCrash && eventRoll >= boomProb && eventRoll < boomProb + crashProb) {
+        console.log('🎯 TRIGGERING: Market Crash!');
         triggerMarketCrash();
       }
-    }
-    
-    // Flash Sale
-    if (!flashSaleActive && now >= EVENT_CONFIG.eventCooldowns.flashSale) {
-      if (Math.random() < EVENT_CONFIG.probabilities.flashSale) {
+      // Flash Sale
+      else if (now >= EVENT_CONFIG.eventCooldowns.flashSale && eventRoll >= boomProb + crashProb && eventRoll < totalProb) {
+        console.log('🎯 TRIGGERING: Flash Sale!');
         triggerFlashSale();
       }
+      // Nothing happens
+      else {
+        console.log(`🎲 Result: Nothing triggered (${((1 - totalProb) * 100).toFixed(1)}% chance)`);
+      }
+    } else {
+      console.log('🎲 Skipping event check - event already active');
     }
   }
   
@@ -773,7 +815,6 @@
     notification.innerHTML = `
       <div class="event-title">${title}</div>
       <div class="event-message">${message}</div>
-      <div class="event-timer"></div>
     `;
     
     document.body.appendChild(notification);
@@ -3193,20 +3234,11 @@
       dividendElapsed -= interval;
       const payout = Math.floor(investmentAccountBalance * rate * 100) / 100;
       
-      console.log('🎯 DIVIDEND PAYOUT TRIGGERED!', {
-        investmentAccountBalance,
-        rate,
-        payout,
-        autoInvestEnabled,
-        currentAccountBefore: currentAccountBalance,
-        investmentAccountBefore: investmentAccountBalance
-      });
       
       if (payout > 0) {
         const cappedPayout = applyMoneyCap(payout);
         
         if (cappedPayout <= 0) {
-          console.log('❌ Capped payout is 0 or negative, skipping');
           return;
         }
         
@@ -3229,18 +3261,14 @@
         if (autoInvestEnabled) {
           // Auto-invest: add dividends to investment account
           investmentAccountBalance += cappedPayout;
-          console.log('💰 Added to investment account:', cappedPayout, 'New balance:', investmentAccountBalance);
         } else {
           // Normal: add dividends to current account
           currentAccountBalance += cappedPayout;
-          console.log('💰 Added to current account:', cappedPayout, 'New balance:', currentAccountBalance);
         }
         
         // Force UI update after dividend payout
         renderBalances();
         
-      } else {
-        console.log('❌ Payout is 0 or negative, skipping');
       }
     }
   }
