@@ -3047,9 +3047,9 @@
     });
   }
 
-  // Game loop (100 ms): compounding and leaderboard
-  const TICK_MS = 100;
-  const BASE_COMPOUND_MULTIPLIER_PER_TICK = 1.0008; // base multiply every 100ms 1.0008
+  // Game loop (1000 ms): compounding and leaderboard - reduced frequency for mobile performance
+  const TICK_MS = 1000;
+  const BASE_COMPOUND_MULTIPLIER_PER_TICK = 1.008; // base multiply every 1000ms (1 second)
   function getCompoundMultiplierPerTick() {
     let rateBoost = 1;
     if (owned.u4) rateBoost *= 1.2; // +20%
@@ -3372,10 +3372,10 @@
     checkPortfolioTour();
   }, TICK_MS);
   
-  // Events check every 5 seconds
+  // Events check every 10 seconds - reduced frequency for mobile performance
   setInterval(() => {
     checkEvents();
-  }, 5000);
+  }, 10000);
 
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
@@ -3835,8 +3835,8 @@ if ('serviceWorker' in navigator) {
       renderInterestPerSecond();
     };
     update();
-    // Recompute periodically to reflect upgrades
-    setInterval(update, 500);
+    // Recompute periodically to reflect upgrades - reduced frequency for mobile performance
+    setInterval(update, 2000);
   })();
 
   // Mobile horizontal scrolling enhancements
