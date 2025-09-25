@@ -756,7 +756,8 @@
     renderBalances();
   }
   
-  function checkEvents() {
+  // Check for expired events immediately (called every second)
+  function checkExpiredEvents() {
     const now = Date.now();
     
     // Check if events should end
@@ -799,6 +800,13 @@
       showEventNotification("💀 Depression Ended", "Interest rates returned to normal, dividends resumed", "depression-end");
       updateActiveEventDisplay();
     }
+  }
+
+  function checkEvents() {
+    const now = Date.now();
+    
+    // Check if events should end (this is now handled by checkExpiredEvents)
+    checkExpiredEvents();
     
     // Check for new events (only one event can be active at a time)
     const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive;
@@ -1996,35 +2004,8 @@
         // Restore auto-invest
         autoInvestEnabled = gameState.autoInvestEnabled || false;
         
-        // Restore game timing and calculate offline interest
-        if (gameState.gameStartTime && gameState.lastSaved) {
-          const offlineTime = Date.now() - gameState.lastSaved;
-          gameStartTime = gameState.gameStartTime + offlineTime;
-          
-          // Calculate offline interest if user was away for more than 1 second
-          if (offlineTime > 1000 && gameState.investmentAccountBalance > 0) {
-            const offlineSeconds = Math.floor(offlineTime / 1000);
-            const maxOfflineSeconds = 3600; // Cap at 1 hour of offline interest
-            
-            // Apply capped offline time
-            const cappedOfflineSeconds = Math.min(offlineSeconds, maxOfflineSeconds);
-            
-            // Calculate compound interest for offline time
-            const compoundMultiplier = getCompoundMultiplierPerTick();
-            const ticksPerSecond = 1000 / 50; // Assuming 50ms tick rate
-            const totalTicks = cappedOfflineSeconds * ticksPerSecond;
-            
-            // Apply compound growth
-            const offlineGrowth = gameState.investmentAccountBalance * Math.pow(compoundMultiplier, totalTicks) - gameState.investmentAccountBalance;
-            const cappedOfflineGrowth = applyMoneyCap(offlineGrowth);
-            
-            investmentAccountBalance += cappedOfflineGrowth;
-            
-            console.log(`Applied ${cappedOfflineSeconds}s of offline interest: +$${formatNumber(cappedOfflineGrowth)}`);
-          }
-        } else {
-          gameStartTime = gameState.gameStartTime || Date.now();
-        }
+        // Restore game timing (no offline earnings)
+        gameStartTime = gameState.gameStartTime || Date.now();
         
         // Restore audio settings
         musicEnabled = gameState.musicEnabled !== undefined ? gameState.musicEnabled : true;
@@ -3616,6 +3597,7 @@
     renderAutoInvestSection();
     renderClickStreak();
     updateActiveEventDisplay();
+    checkExpiredEvents(); // Check for expired events immediately
     checkStreakTimeout();
     updateUpgradeIndicator();
     updateProgressBars();
