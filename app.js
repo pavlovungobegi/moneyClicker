@@ -3848,8 +3848,31 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// Register Service Worker for PWA functionality
-if ('serviceWorker' in navigator) {
+  // Console debugging functions
+  function addMoney(amount) {
+    if (typeof amount !== 'number' || amount <= 0) {
+      console.log('❌ Invalid amount. Please provide a positive number.');
+      return;
+    }
+    
+    const cappedAmount = applyMoneyCap(amount);
+    currentAccountBalance += cappedAmount;
+    
+    // Force immediate UI update
+    renderBalances();
+    
+    console.log(`💰 Added €${formatNumberShort(cappedAmount)} to current account!`);
+    console.log(`💳 New balance: €${formatNumberShort(currentAccountBalance)}`);
+    
+    // Save game state
+    saveGameState();
+  }
+  
+  // Make function globally available
+  window.addMoney = addMoney;
+
+  // Register Service Worker for PWA functionality
+  if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     console.log('Attempting to register service worker...');
     navigator.serviceWorker.register('./sw.js')
