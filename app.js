@@ -574,45 +574,51 @@
   let marketBoomActive = false;
   let marketCrashActive = false;
   let flashSaleActive = false;
+  let greatDepressionActive = false;
   let marketBoomEndTime = 0;
   let marketCrashEndTime = 0;
   let flashSaleEndTime = 0;
+  let greatDepressionEndTime = 0;
   let eventCooldown = 0;
   
   // Event system configuration
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.04,    // 1.5% chance
-      marketCrash: 0.04,   // 1.5% chance  
-      flashSale: 0.02       // 1% chance
+      marketBoom: 0.04,    // 4% chance
+      marketCrash: 0.04,   // 4% chance  
+      flashSale: 0.02,     // 2% chance
+      greatDepression: 0.25 // 1% chance
     },
     
     // Event durations (milliseconds)
     durations: {
       marketBoom: 30000,    // 30 seconds
       marketCrash: 30000,   // 30 seconds
-      flashSale: 120000     // 2 minutes
+      flashSale: 120000,    // 2 minutes
+      greatDepression: 30000 // 30 seconds
     },
     
     // Event cooldowns (milliseconds)
     cooldowns: {
       marketBoom: 60000,    // 1 minute
       marketCrash: 60000,   // 1 minute
-      flashSale: 180000     // 3 minutes
+      flashSale: 180000,    // 3 minutes
+      greatDepression: 60000 // 1 minute
     },
     
     // Event-specific cooldowns
     eventCooldowns: {
       marketBoom: 0,
       marketCrash: 0,
-      flashSale: 0
+      flashSale: 0,
+      greatDepression: 0
     }
   };
   
   // Event Functions
   function triggerMarketBoom() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive) return; // Don't trigger if any event is active
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
     
     marketBoomActive = true;
     marketBoomEndTime = Date.now() + EVENT_CONFIG.durations.marketBoom;
@@ -634,7 +640,7 @@
   }
   
   function triggerMarketCrash() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive) return; // Don't trigger if any event is active
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
     
     marketCrashActive = true;
     marketCrashEndTime = Date.now() + EVENT_CONFIG.durations.marketCrash;
@@ -670,7 +676,7 @@
   }
   
   function triggerFlashSale() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive) return; // Don't trigger if any event is active
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
     
     flashSaleActive = true;
     flashSaleEndTime = Date.now() + EVENT_CONFIG.durations.flashSale;
@@ -701,6 +707,42 @@
     if (upgradesSection) {
       upgradesSection.classList.add('flash-sale-active');
     }
+  }
+  
+  function triggerGreatDepression() {
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
+    
+    greatDepressionActive = true;
+    greatDepressionEndTime = Date.now() + EVENT_CONFIG.durations.greatDepression;
+    EVENT_CONFIG.eventCooldowns.greatDepression = Date.now() + EVENT_CONFIG.cooldowns.greatDepression;
+    
+    // Calculate 50% loss
+    const lossAmount = investmentAccountBalance * 0.5;
+    investmentAccountBalance -= lossAmount;
+    
+    // Show notification
+    showEventNotification("💀 The Great Depression!", `Lost €${formatNumberShort(lossAmount)}! Interest rates decreased by 110% - money is shrinking! Dividends stopped!`, "great-depression");
+    
+    // Visual effects
+    screenFlash('#8B0000', 800); // Dark red flash
+    screenShake(12, 600); // Very strong shake
+    
+    // Sound effect (reuse crash sound for now)
+    playMarketCrashSound();
+    
+    // Create massive loss particles
+    if (particleSystem) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount * 2); // Double particles for dramatic effect
+    }
+    
+    // Update interest rate and dividend rate display colors
+    updateInterestRateColor();
+    updateDividendRateColor();
+    
+    // Update displays
+    renderBalances();
   }
   
   function checkEvents() {
@@ -735,8 +777,16 @@
       }
     }
     
+    if (greatDepressionActive && now >= greatDepressionEndTime) {
+      greatDepressionActive = false;
+      updateInterestRateColor();
+      updateDividendRateColor();
+      renderDividendUI(0); // Update dividend display
+      showEventNotification("💀 Depression Ended", "Interest rates returned to normal, dividends resumed", "depression-end");
+    }
+    
     // Check for new events (only one event can be active at a time)
-    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive;
+    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive;
     
     // console.log('🎲 Event Check:', {
     //   anyEventActive,
@@ -759,20 +809,23 @@
       const boomProb = EVENT_CONFIG.probabilities.marketBoom;
       const crashProb = EVENT_CONFIG.probabilities.marketCrash;
       const saleProb = EVENT_CONFIG.probabilities.flashSale;
-      const totalProb = boomProb + crashProb + saleProb;
+      const depressionProb = EVENT_CONFIG.probabilities.greatDepression;
+      const totalProb = boomProb + crashProb + saleProb + depressionProb;
       
       console.log('🎲 Event Roll:', {
         roll: eventRoll,
         probabilities: {
           marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
           marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
-          flashSale: `${boomProb + crashProb}-${totalProb} (${(saleProb * 100).toFixed(1)}%)`,
+          flashSale: `${boomProb + crashProb}-${boomProb + crashProb + saleProb} (${(saleProb * 100).toFixed(1)}%)`,
+          greatDepression: `${boomProb + crashProb + saleProb}-${totalProb} (${(depressionProb * 100).toFixed(1)}%)`,
           nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
         },
         cooldownChecks: {
           marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
           marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
-          flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale
+          flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale,
+          greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression
         }
       });
       
@@ -787,9 +840,14 @@
         triggerMarketCrash();
       }
       // Flash Sale
-      else if (now >= EVENT_CONFIG.eventCooldowns.flashSale && eventRoll >= boomProb + crashProb && eventRoll < totalProb) {
+      else if (now >= EVENT_CONFIG.eventCooldowns.flashSale && eventRoll >= boomProb + crashProb && eventRoll < boomProb + crashProb + saleProb) {
         console.log('🎯 TRIGGERING: Flash Sale!');
         triggerFlashSale();
+      }
+      // Great Depression
+      else if (now >= EVENT_CONFIG.eventCooldowns.greatDepression && eventRoll >= boomProb + crashProb + saleProb && eventRoll < totalProb) {
+        console.log('🎯 TRIGGERING: Great Depression!');
+        triggerGreatDepression();
       }
       // Nothing happens
       else {
@@ -805,13 +863,15 @@
     if (!interestEl) return;
     
     // Remove existing color classes
-    interestEl.classList.remove('market-boom', 'market-crash');
+    interestEl.classList.remove('market-boom', 'market-crash', 'great-depression');
     
     // Add appropriate color class
     if (marketBoomActive) {
       interestEl.classList.add('market-boom');
     } else if (marketCrashActive) {
       interestEl.classList.add('market-crash');
+    } else if (greatDepressionActive) {
+      interestEl.classList.add('great-depression');
     }
   }
   
@@ -820,13 +880,15 @@
     if (!dividendRateEl) return;
     
     // Remove existing color classes
-    dividendRateEl.classList.remove('market-boom', 'market-crash');
+    dividendRateEl.classList.remove('market-boom', 'market-crash', 'great-depression');
     
     // Add appropriate color class
     if (marketBoomActive) {
       dividendRateEl.classList.add('market-boom');
     } else if (marketCrashActive) {
       dividendRateEl.classList.add('market-crash');
+    } else if (greatDepressionActive) {
+      dividendRateEl.classList.add('great-depression');
     }
   }
   
@@ -1109,17 +1171,23 @@
 
   // Format numbers with k/m/b/t suffixes for better readability
   function formatNumberShort(num) {
-    if (num >= 1000000000000) {
-      return (num / 1000000000000).toFixed(2) + 't';
-    } else if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(2) + 'b';
-    } else if (num >= 1000000) {
-      return (num / 1000000).toFixed(2) + 'm';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(2) + 'k';
+    const isNegative = num < 0;
+    const absNum = Math.abs(num);
+    
+    let formatted;
+    if (absNum >= 1000000000000) {
+      formatted = (absNum / 1000000000000).toFixed(2) + 't';
+    } else if (absNum >= 1000000000) {
+      formatted = (absNum / 1000000000).toFixed(2) + 'b';
+    } else if (absNum >= 1000000) {
+      formatted = (absNum / 1000000).toFixed(2) + 'm';
+    } else if (absNum >= 1000) {
+      formatted = (absNum / 1000).toFixed(2) + 'k';
     } else {
-      return num.toFixed(2); // Show cents for amounts below 1000
+      formatted = absNum.toFixed(2); // Show cents for amounts below 1000
     }
+    
+    return isNegative ? '-' + formatted : formatted;
   }
 
   function renderUpgradePrices() {
@@ -1786,9 +1854,11 @@
         marketBoomActive,
         marketCrashActive,
         flashSaleActive,
+        greatDepressionActive,
         marketBoomEndTime,
         marketCrashEndTime,
         flashSaleEndTime,
+        greatDepressionEndTime,
         eventCooldown,
         eventConfig: EVENT_CONFIG,
         
@@ -1883,9 +1953,11 @@
         marketBoomActive = gameState.marketBoomActive || false;
         marketCrashActive = gameState.marketCrashActive || false;
         flashSaleActive = gameState.flashSaleActive || false;
+        greatDepressionActive = gameState.greatDepressionActive || false;
         marketBoomEndTime = gameState.marketBoomEndTime || 0;
         marketCrashEndTime = gameState.marketCrashEndTime || 0;
         flashSaleEndTime = gameState.flashSaleEndTime || 0;
+        greatDepressionEndTime = gameState.greatDepressionEndTime || 0;
         eventCooldown = gameState.eventCooldown || 0;
         
         // Restore event configuration
@@ -1956,15 +2028,18 @@
       marketBoomActive = false;
       marketCrashActive = false;
       flashSaleActive = false;
+      greatDepressionActive = false;
       marketBoomEndTime = 0;
       marketCrashEndTime = 0;
       flashSaleEndTime = 0;
+      greatDepressionEndTime = 0;
       eventCooldown = 0;
       
       // Reset event cooldowns
       EVENT_CONFIG.eventCooldowns.marketBoom = 0;
       EVENT_CONFIG.eventCooldowns.marketCrash = 0;
       EVENT_CONFIG.eventCooldowns.flashSale = 0;
+      EVENT_CONFIG.eventCooldowns.greatDepression = 0;
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
@@ -3068,6 +3143,8 @@
       rateBoost *= 1.5; // +50% during boom
     } else if (marketCrashActive) {
       rateBoost *= 0.3; // -70% during crash
+    } else if (greatDepressionActive) {
+      rateBoost *= -0.1; // -110% during depression (negative rate = money shrinking)
     }
     
     return 1 + (BASE_COMPOUND_MULTIPLIER_PER_TICK - 1) * rateBoost * prestigeInterestMultiplier;
@@ -3186,6 +3263,8 @@
       rateMultiplier *= 1.5; // +50% during boom
     } else if (marketCrashActive) {
       rateMultiplier *= 0.3; // -70% during crash
+    } else if (greatDepressionActive) {
+      rateMultiplier = 0; // No dividends during depression (0% rate)
     }
     
     const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
@@ -3308,6 +3387,8 @@
         rateMultiplier *= 1.5; // +50% during boom
       } else if (marketCrashActive) {
         rateMultiplier *= 0.3; // -70% during crash
+      } else if (greatDepressionActive) {
+        rateMultiplier = 0; // No dividends during depression (0% rate)
       }
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);

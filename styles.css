@@ -67,6 +67,17 @@
   border-color: rgba(255, 107, 53, 0.3);
 }
 
+.market-event-notification.great-depression {
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(75, 0, 0, 0.9) 100%);
+  border-color: rgba(139, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(139, 0, 0, 0.4);
+}
+
+.market-event-notification.depression-end {
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.85) 0%, rgba(73, 80, 87, 0.85) 100%);
+  border-color: rgba(108, 117, 125, 0.3);
+}
+
 .market-event-notification .event-title {
   font-size: 18px;
   font-weight: bold;
@@ -95,6 +106,13 @@
   animation: crashPulse 1s ease-in-out infinite alternate;
 }
 
+#interestPerSec.great-depression {
+  color: #8B0000 !important;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(139, 0, 0, 0.8);
+  animation: depressionPulse 0.8s ease-in-out infinite alternate;
+}
+
 /* Dividend Rate Color Changes */
 #dividendRate.market-boom {
   color: #00C851 !important;
@@ -108,6 +126,13 @@
   font-weight: bold;
   text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
   animation: crashPulse 1s ease-in-out infinite alternate;
+}
+
+#dividendRate.great-depression {
+  color: #8B0000 !important;
+  font-weight: bold;
+  text-shadow: 0 0 12px rgba(139, 0, 0, 0.8);
+  animation: depressionPulse 0.8s ease-in-out infinite alternate;
 }
 
 @keyframes boomPulse {
@@ -129,6 +154,17 @@
   100% { 
     color: #FF0000;
     text-shadow: 0 0 12px rgba(255, 0, 0, 0.8);
+  }
+}
+
+@keyframes depressionPulse {
+  0% { 
+    color: #8B0000;
+    text-shadow: 0 0 12px rgba(139, 0, 0, 0.8);
+  }
+  100% { 
+    color: #4B0000;
+    text-shadow: 0 0 16px rgba(75, 0, 0, 1);
   }
 }
 
