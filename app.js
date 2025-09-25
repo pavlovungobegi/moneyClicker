@@ -1377,6 +1377,8 @@
   const investSection = document.getElementById("investSection");
   const autoInvestSection = document.getElementById("autoInvestSection");
   const autoInvestToggle = document.getElementById("autoInvestToggle");
+  const autoRentSection = document.getElementById("autoRentSection");
+  const autoRentToggle = document.getElementById("autoRentToggle");
   const clickStreakSection = document.getElementById("clickStreakSection");
   const streakMultiplierEl = document.getElementById("streakMultiplier");
   const streakProgressFill = document.getElementById("streakProgressFill");
@@ -2406,6 +2408,9 @@
         // Auto-invest settings
         autoInvestEnabled,
         
+        // Auto-rent settings
+        autoRentEnabled,
+        
         // Game timing
         gameStartTime,
         
@@ -2489,6 +2494,19 @@
         
         // Restore auto-invest
         autoInvestEnabled = gameState.autoInvestEnabled || false;
+        
+        // Update auto-invest toggle UI
+        if (autoInvestToggle) {
+          autoInvestToggle.checked = autoInvestEnabled;
+        }
+        
+        // Restore auto-rent
+        autoRentEnabled = gameState.autoRentEnabled || false;
+        
+        // Update auto-rent toggle UI
+        if (autoRentToggle) {
+          autoRentToggle.checked = autoRentEnabled;
+        }
         
         // Restore game timing (no offline earnings)
         gameStartTime = gameState.gameStartTime || Date.now();
@@ -2646,6 +2664,7 @@
     streakCount = 0;
     streakMultiplier = 1;
     autoInvestEnabled = false;
+    autoRentEnabled = false;
     gameStartTime = Date.now();
     
     // Reset all upgrades
@@ -3100,6 +3119,9 @@
 
   // Automatic investments
   let autoInvestEnabled = false;
+  
+  // Automatic rent contribution
+  let autoRentEnabled = false;
 
   // Click streak system
   let lastClickTime = 0;
@@ -3464,7 +3486,8 @@
     u27: { cost: 750000000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
     u30: { cost: 50000, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
-    u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" }
+    u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" },
+    u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" }
   };
 
   // Generate upgrade costs and owned objects from config
@@ -3527,6 +3550,11 @@
         // Reset auto-invest toggle
         if (autoInvestToggle) {
           autoInvestToggle.checked = false;
+        }
+        
+        // Reset auto-rent toggle
+        if (autoRentToggle) {
+          autoRentToggle.checked = false;
         }
         
         // Update UI
@@ -3610,6 +3638,11 @@
   // Auto-invest toggle event listener
   if (autoInvestToggle) {
     autoInvestToggle.addEventListener("change", handleAutoInvestToggle);
+  }
+  
+  // Auto-rent toggle event listener
+  if (autoRentToggle) {
+    autoRentToggle.addEventListener("change", handleAutoRentToggle);
   }
   
   // Tour event listeners
@@ -3974,6 +4007,11 @@
     autoInvestSection.classList.toggle('hidden', !owned.u27);
   }
 
+  function renderAutoRentSection() {
+    if (!autoRentSection) return;
+    autoRentSection.classList.toggle('hidden', !owned.u32);
+  }
+
   function updateProgressBars() {
     // Update progress for all upgrades that have progress bars
     Object.keys(UPGRADE_COSTS).forEach(upgradeId => {
@@ -3998,6 +4036,12 @@
   function handleAutoInvestToggle() {
     if (!autoInvestToggle) return;
     autoInvestEnabled = autoInvestToggle.checked;
+    saveGameState();
+  }
+
+  function handleAutoRentToggle() {
+    if (!autoRentToggle) return;
+    autoRentEnabled = autoRentToggle.checked;
     saveGameState();
   }
 
@@ -4034,7 +4078,14 @@
     const propertyIncome = getTotalPropertyIncome();
     if (propertyIncome > 0) {
       const cappedPropertyIncome = applyMoneyCap(propertyIncome);
-      currentAccountBalance = Math.round((currentAccountBalance + cappedPropertyIncome) * 100) / 100;
+      
+      if (autoRentEnabled) {
+        // Auto-rent: add property income to investment account
+        investmentAccountBalance = Math.round((investmentAccountBalance + cappedPropertyIncome) * 100) / 100;
+      } else {
+        // Normal: add property income to current account
+        currentAccountBalance = Math.round((currentAccountBalance + cappedPropertyIncome) * 100) / 100;
+      }
     }
 
     // Dividends
@@ -4048,6 +4099,7 @@
     renderInvestmentUnlocked();
     renderPrestigeMultipliers();
     renderAutoInvestSection();
+    renderAutoRentSection();
     renderClickStreak();
     updateActiveEventDisplay();
     checkExpiredEvents(); // Check for expired events immediately
@@ -4116,6 +4168,11 @@
   const autoInvestHelpBtn = document.getElementById('autoInvestHelpBtn');
   const autoInvestModal = document.getElementById('autoInvestModal');
   const autoInvestModalClose = document.getElementById('autoInvestModalClose');
+  
+  // Auto Rent Help Modal functionality
+  const autoRentHelpBtn = document.getElementById('autoRentHelpBtn');
+  const autoRentModal = document.getElementById('autoRentModal');
+  const autoRentModalClose = document.getElementById('autoRentModalClose');
 
   // Load audio settings from localStorage
   function loadAudioSettings() {
@@ -4544,10 +4601,38 @@ window.addEventListener('beforeunload', () => {
     });
   }
 
+  // Auto Rent Help Modal functionality
+  if (autoRentHelpBtn && autoRentModal) {
+    autoRentHelpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      autoRentModal.classList.remove('hidden');
+    });
+  }
+
+  if (autoRentModalClose && autoRentModal) {
+    autoRentModalClose.addEventListener('click', () => {
+      autoRentModal.classList.add('hidden');
+    });
+  }
+
+  // Close modal when clicking outside
+  if (autoRentModal) {
+    autoRentModal.addEventListener('click', (e) => {
+      if (e.target === autoRentModal) {
+        autoRentModal.classList.add('hidden');
+      }
+    });
+  }
+
   // Close modal with Escape key
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && autoInvestModal && !autoInvestModal.classList.contains('hidden')) {
-      autoInvestModal.classList.add('hidden');
+    if (e.key === 'Escape') {
+      if (autoInvestModal && !autoInvestModal.classList.contains('hidden')) {
+        autoInvestModal.classList.add('hidden');
+      }
+      if (autoRentModal && !autoRentModal.classList.contains('hidden')) {
+        autoRentModal.classList.add('hidden');
+      }
     }
   });
   

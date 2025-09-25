@@ -195,8 +195,20 @@
                 <label class="toggle-label">
                   <input type="checkbox" id="autoInvestToggle" />
                   <span class="toggle-slider"></span>
-                  <span class="toggle-text">Automatic Investments</span>
-                  <button id="autoInvestHelpBtn" class="help-btn" aria-label="Learn about automatic investments">?</button>
+                  <span class="toggle-text">Auto Invest Dividends</span>
+                  <button id="autoInvestHelpBtn" class="help-btn" aria-label="Learn about auto invest dividends">?</button>
+                </label>
+              </div>
+            </div>
+
+            <!-- Auto Rent Section -->
+            <div class="auto-invest hidden" id="autoRentSection">
+              <div class="auto-invest-controls">
+                <label class="toggle-label">
+                  <input type="checkbox" id="autoRentToggle" />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-text">Auto Invest Rent</span>
+                  <button id="autoRentHelpBtn" class="help-btn" aria-label="Learn about auto invest rent">?</button>
                 </label>
               </div>
             </div>
@@ -605,6 +617,23 @@
             </div>
           </div>
 
+          <div class="upgrade" data-upgrade-id="u32">
+            <div class="upgrade-info">
+              <div class="upgrade-name">Automated Rent Collection</div>
+              <div class="upgrade-price" id="u32Price"></div>
+              <div class="upgrade-desc">Unlocks automatic investment of property income into investment account.</div>
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="u32Progress"></div>
+                </div>
+                <div class="progress-text" id="u32ProgressText">0%</div>
+              </div>
+            </div>
+            <div class="upgrade-actions">
+              <button id="buyU32Btn" class="buyBtn">Buy</button>
+            </div>
+          </div>
+
         </section>
 
         <section class="panel" id="leaderboardPanel" aria-labelledby="leaderboardTitle">
@@ -946,7 +975,7 @@
             <div id="autoInvestModal" class="modal-overlay hidden">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h3>Automatic Investments</h3>
+                  <h3>Auto Invest Dividends</h3>
                   <button id="autoInvestModalClose" class="modal-close-btn">×</button>
                 </div>
                 <div class="modal-body">
@@ -958,6 +987,26 @@
                     <li>You don't need to manually deposit dividends</li>
                   </ul>
                   <p><strong>Tip:</strong> This is especially useful for maximizing long-term growth!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Auto Rent Help Modal -->
+            <div id="autoRentModal" class="modal-overlay hidden">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h3>Auto Invest Rent</h3>
+                  <button id="autoRentModalClose" class="modal-close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                  <p>When enabled, property income is automatically invested instead of going to your current account.</p>
+                  <p>This means:</p>
+                  <ul>
+                    <li>Property rent will be added directly to your investment account</li>
+                    <li>Your investment will grow faster through compound interest</li>
+                    <li>You don't need to manually deposit property income</li>
+                  </ul>
+                  <p><strong>Tip:</strong> This is especially useful for maximizing long-term growth from your properties!</p>
                 </div>
               </div>
             </div>
