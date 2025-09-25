@@ -619,7 +619,7 @@
     EVENT_CONFIG.eventCooldowns.marketBoom = Date.now() + EVENT_CONFIG.cooldowns.marketBoom;
     
     // Show notification
-    showEventNotification("📈 Market Boom!", "Interest rates increased by 50%!", "boom");
+    showEventNotification("📈 Market Boom!", "Interest & dividend rates increased by 50%!", "boom");
     
     // Visual effects
     screenFlash('#00FF00', 500); // Green flash
@@ -628,8 +628,9 @@
     // Sound effect
     playMarketBoomSound();
     
-    // Update interest rate display color
+    // Update interest rate and dividend rate display colors
     updateInterestRateColor();
+    updateDividendRateColor();
   }
   
   function triggerMarketCrash() {
@@ -644,7 +645,7 @@
     investmentAccountBalance -= lossAmount;
     
     // Show notification
-    showEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest rates reduced by 50%!`, "crash");
+    showEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest & dividend rates reduced by 50%!`, "crash");
     
     // Visual effects
     screenFlash('#FF0000', 500); // Red flash
@@ -660,8 +661,9 @@
       particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount);
     }
     
-    // Update interest rate display color
+    // Update interest rate and dividend rate display colors
     updateInterestRateColor();
+    updateDividendRateColor();
     
     // Update displays
     renderBalances();
@@ -708,13 +710,17 @@
     if (marketBoomActive && now >= marketBoomEndTime) {
       marketBoomActive = false;
       updateInterestRateColor();
-      showEventNotification("📈 Boom Ended", "Interest rates returned to normal", "boom-end");
+      updateDividendRateColor();
+      renderDividendUI(0); // Update dividend display
+      showEventNotification("📈 Boom Ended", "Interest & dividend rates returned to normal", "boom-end");
     }
     
     if (marketCrashActive && now >= marketCrashEndTime) {
       marketCrashActive = false;
       updateInterestRateColor();
-      showEventNotification("📉 Crash Ended", "Interest rates returned to normal", "crash-end");
+      updateDividendRateColor();
+      renderDividendUI(0); // Update dividend display
+      showEventNotification("📉 Crash Ended", "Interest & dividend rates returned to normal", "crash-end");
     }
     
     if (flashSaleActive && now >= flashSaleEndTime) {
@@ -755,39 +761,39 @@
       const saleProb = EVENT_CONFIG.probabilities.flashSale;
       const totalProb = boomProb + crashProb + saleProb;
       
-      // console.log('🎲 Event Roll:', {
-      //   roll: eventRoll,
-      //   probabilities: {
-      //     marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
-      //     marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
-      //     flashSale: `${boomProb + crashProb}-${totalProb} (${(saleProb * 100).toFixed(1)}%)`,
-      //     nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
-      //   },
-      //   cooldownChecks: {
-      //     marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
-      //     marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
-      //     flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale
-      //   }
-      // });
+      console.log('🎲 Event Roll:', {
+        roll: eventRoll,
+        probabilities: {
+          marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
+          marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
+          flashSale: `${boomProb + crashProb}-${totalProb} (${(saleProb * 100).toFixed(1)}%)`,
+          nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
+        },
+        cooldownChecks: {
+          marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
+          marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
+          flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale
+        }
+      });
       
       // Market Boom
       if (now >= EVENT_CONFIG.eventCooldowns.marketBoom && eventRoll < boomProb) {
-        // console.log('🎯 TRIGGERING: Market Boom!');
+        console.log('🎯 TRIGGERING: Market Boom!');
         triggerMarketBoom();
       }
       // Market Crash  
       else if (now >= EVENT_CONFIG.eventCooldowns.marketCrash && eventRoll >= boomProb && eventRoll < boomProb + crashProb) {
-        // console.log('🎯 TRIGGERING: Market Crash!');
+        console.log('🎯 TRIGGERING: Market Crash!');
         triggerMarketCrash();
       }
       // Flash Sale
       else if (now >= EVENT_CONFIG.eventCooldowns.flashSale && eventRoll >= boomProb + crashProb && eventRoll < totalProb) {
-        // console.log('🎯 TRIGGERING: Flash Sale!');
+        console.log('🎯 TRIGGERING: Flash Sale!');
         triggerFlashSale();
       }
       // Nothing happens
       else {
-        // console.log(`🎲 Result: Nothing triggered (${((1 - totalProb) * 100).toFixed(1)}% chance)`);
+        console.log(`🎲 Result: Nothing triggered (${((1 - totalProb) * 100).toFixed(1)}% chance)`);
       }
     } else {
       // console.log('🎲 Skipping event check - event already active');
@@ -806,6 +812,21 @@
       interestEl.classList.add('market-boom');
     } else if (marketCrashActive) {
       interestEl.classList.add('market-crash');
+    }
+  }
+  
+  function updateDividendRateColor() {
+    const dividendRateEl = document.getElementById('dividendRate');
+    if (!dividendRateEl) return;
+    
+    // Remove existing color classes
+    dividendRateEl.classList.remove('market-boom', 'market-crash');
+    
+    // Add appropriate color class
+    if (marketBoomActive) {
+      dividendRateEl.classList.add('market-boom');
+    } else if (marketCrashActive) {
+      dividendRateEl.classList.add('market-crash');
     }
   }
   
@@ -3167,6 +3188,13 @@
     if (owned.u14) rateMultiplier *= 1.2;  // 20% more
     if (owned.u17) rateMultiplier *= 1.25; // 25% more
     
+    // Market event effects on dividend rate
+    if (marketBoomActive) {
+      rateMultiplier *= 1.5; // +50% during boom
+    } else if (marketCrashActive) {
+      rateMultiplier *= 0.5; // -50% during crash
+    }
+    
     const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     const rate = BASE_DIVIDEND_RATE * rateMultiplier;
     
@@ -3287,6 +3315,13 @@
       if (owned.u13) rateMultiplier *= 1.25;
       if (owned.u14) rateMultiplier *= 1.2;
       if (owned.u17) rateMultiplier *= 1.25;
+      
+      // Market event effects on dividend rate
+      if (marketBoomActive) {
+        rateMultiplier *= 1.5; // +50% during boom
+      } else if (marketCrashActive) {
+        rateMultiplier *= 0.5; // -50% during crash
+      }
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
       const rate = BASE_DIVIDEND_RATE * rateMultiplier;
@@ -3915,13 +3950,13 @@ if ('serviceWorker' in navigator) {
       const percent = (perSecondMultiplier - 1) * 100;
       
       // Debug logging
-      console.log('renderInterestPerSecond called:', {
-        multiplier: m,
-        perSecondMultiplier: perSecondMultiplier,
-        percent: percent,
-        owned_u4: owned.u4,
-        owned_u32: owned.u32
-      });
+      // console.log('renderInterestPerSecond called:', {
+      //   multiplier: m,
+      //   perSecondMultiplier: perSecondMultiplier,
+      //   percent: percent,
+      //   owned_u4: owned.u4,
+      //   owned_u32: owned.u32
+      // });
     
     // Calculate earnings per second
     const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);

@@ -95,6 +95,21 @@
   animation: crashPulse 1s ease-in-out infinite alternate;
 }
 
+/* Dividend Rate Color Changes */
+#dividendRate.market-boom {
+  color: #00C851 !important;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 200, 81, 0.5);
+  animation: boomPulse 1s ease-in-out infinite alternate;
+}
+
+#dividendRate.market-crash {
+  color: #FF4444 !important;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+  animation: crashPulse 1s ease-in-out infinite alternate;
+}
+
 @keyframes boomPulse {
   0% { 
     color: #00C851;
