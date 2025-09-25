@@ -1957,6 +1957,46 @@ button#withdrawHalfBtn:focus-visible {
   }
 }
 
+/* Net Worth Chart */
+.chart-container {
+  margin-top: 20px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+#netWorthChart {
+  width: 100% !important;
+  height: 200px !important;
+  max-width: 100%;
+}
+
+/* Mobile responsive for chart */
+@media (max-width: 768px) {
+  .chart-container {
+    margin-top: 16px;
+    padding: 12px;
+  }
+  
+  .chart-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  #netWorthChart {
+    height: 150px !important;
+  }
+}
+
 /* Achievement Notification Banner */
 .achievement-banner {
   position: fixed;
@@ -2775,8 +2815,8 @@ input#amountInput:focus {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 8px;
-  margin-bottom: 6px;
+  padding: 6px;
+  margin-bottom: 4px;
 }
 
 .earnings-metrics-container .earnings-metrics {
@@ -2788,8 +2828,8 @@ input#amountInput:focus {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 6px;
-  margin-bottom: 2px;
+  padding: 3px 6px;
+  margin-bottom: 1px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -2909,8 +2949,8 @@ input#amountInput:focus {
 /* Mobile optimizations for rate rows */
 @media (max-width: 768px) {
   .rate-row {
-    padding: 4px 6px;
-    margin-bottom: 3px;
+    padding: 3px 6px;
+    margin-bottom: 1px;
     gap: 6px;
   }
   
@@ -2968,7 +3008,7 @@ input#amountInput:focus {
 }
 
 .earn-content .invest {
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   width: 100%;
 }
 
@@ -2996,8 +3036,8 @@ input#amountInput:focus {
 }
 
 .earn-content .auto-invest {
-  margin: 0 0 4px 0;
-  padding: 6px;
+  margin: 0 0 2px 0;
+  padding: 4px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: #f8fafc;
@@ -3006,7 +3046,7 @@ input#amountInput:focus {
 .earn-content .auto-invest-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .earn-content .auto-invest-controls .toggle-label {
@@ -3155,8 +3195,8 @@ input#amountInput:focus {
 }
 
 .earn-content .click-streak {
-  margin: 0 0 4px 0;
-  padding: 6px;
+  margin: 0 0 2px 0;
+  padding: 4px;
   border: 1px solid #fbbf24;
   border-radius: 8px;
   background: #fffbeb;

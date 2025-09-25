@@ -124,7 +124,7 @@
         <div class="settings-section">
           <div class="version-info">
             <span class="version-label">Version:</span>
-            <span class="version-number">0.3.3</span>
+            <span class="version-number">0.4.1</span>
           </div>
         </div>
       </div>
@@ -839,14 +839,6 @@
               <div class="achievement-status" id="ach8Status">🔒</div>
             </div>
 
-            <div class="achievement" data-achievement-id="ach9">
-              <div class="achievement-icon">🎓</div>
-              <div class="achievement-info">
-                <div class="achievement-name">Educated</div>
-                <div class="achievement-desc">Buy your first 5 upgrades</div>
-              </div>
-              <div class="achievement-status" id="ach9Status">🔒</div>
-            </div>
 
             <div class="achievement" data-achievement-id="ach10">
               <div class="achievement-icon">💼</div>
@@ -866,14 +858,6 @@
               <div class="achievement-status" id="ach11Status">🔒</div>
             </div>
 
-            <div class="achievement" data-achievement-id="ach12">
-              <div class="achievement-icon">🌟</div>
-              <div class="achievement-info">
-                <div class="achievement-name">Prestige</div>
-                <div class="achievement-desc">Perform your first prestige reset</div>
-              </div>
-              <div class="achievement-status" id="ach12Status">🔒</div>
-            </div>
 
             <div class="achievement" data-achievement-id="ach13">
               <div class="achievement-icon">💳</div>
@@ -904,19 +888,17 @@
               <div class="stat-value" id="totalCriticalHitsDisplay">0</div>
             </div>
 
-            <div class="stat-item">
-              <div class="stat-label">Upgrades Bought</div>
-              <div class="stat-value" id="upgradesBoughtDisplay">0</div>
-            </div>
 
-            <div class="stat-item">
-              <div class="stat-label">Prestige Resets</div>
-              <div class="stat-value" id="prestigeResetsDisplay">0</div>
-            </div>
 
             <div class="stat-item">
               <div class="stat-label">Achievements Unlocked</div>
-              <div class="stat-value" id="achievementsUnlockedDisplay">0/12</div>
+              <div class="stat-value" id="achievementsUnlockedDisplay">0/11</div>
+            </div>
+
+            <!-- Net Worth Chart -->
+            <div class="chart-container">
+              <h3 class="chart-title">Net Worth Over Time</h3>
+              <canvas id="netWorthChart" width="400" height="200"></canvas>
             </div>
           </div>
         </section>
@@ -1016,6 +998,7 @@
               </div>
             </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js" defer></script>
   </body>
 </html>

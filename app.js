@@ -632,6 +632,12 @@
     officeBuilding: 0
   };
 
+  // Net worth chart data
+  let netWorthHistory = [];
+  let netWorthChart = null;
+  const MAX_DATA_POINTS = 60; // 10 minutes of data (60 * 10 seconds)
+  const DATA_COLLECTION_INTERVAL = 10000; // 10 seconds
+
   // Event system configuration
   const EVENT_CONFIG = {
     // Event probabilities (per check)
@@ -1922,6 +1928,149 @@
     return total;
   }
 
+  // Net worth calculation functions
+  function calculateTotalPropertyValue() {
+    let total = 0;
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      const owned = properties[propertyId];
+      const baseCost = PROPERTY_CONFIG[propertyId].baseCost;
+      const priceMultiplier = PROPERTY_CONFIG[propertyId].priceMultiplier;
+      
+      // Sum of all purchase prices (not current market value)
+      for (let i = 0; i < owned; i++) {
+        total += baseCost * Math.pow(priceMultiplier, i);
+      }
+    });
+    return total;
+  }
+
+  function calculateNetWorth() {
+    const currentBalance = currentAccountBalance;
+    const investmentBalance = investmentAccountBalance;
+    const propertyValue = calculateTotalPropertyValue();
+    return currentBalance + investmentBalance + propertyValue;
+  }
+
+  function addNetWorthDataPoint() {
+    const netWorth = calculateNetWorth();
+    const timestamp = Date.now();
+    
+    netWorthHistory.push({ timestamp, netWorth });
+    
+    // Keep only the last MAX_DATA_POINTS
+    if (netWorthHistory.length > MAX_DATA_POINTS) {
+      netWorthHistory.shift();
+    }
+    
+    // Update chart if it exists
+    updateNetWorthChart();
+  }
+
+  function initNetWorthChart() {
+    const ctx = document.getElementById('netWorthChart');
+    if (!ctx) return;
+
+    netWorthChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Net Worth',
+          data: [],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Net Worth: €' + formatNumberShort(context.parsed.y);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Time',
+              color: '#64748b',
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(100, 116, 139, 0.1)'
+            },
+            ticks: {
+              color: '#64748b',
+              maxTicksLimit: 6
+            }
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Net Worth (€)',
+              color: '#64748b',
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(100, 116, 139, 0.1)'
+            },
+            ticks: {
+              color: '#64748b',
+              callback: function(value) {
+                return formatNumberShort(value);
+              }
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      }
+    });
+  }
+
+  function updateNetWorthChart() {
+    if (!netWorthChart || netWorthHistory.length === 0) return;
+
+    const labels = netWorthHistory.map(point => {
+      const date = new Date(point.timestamp);
+      return date.toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    });
+
+    const data = netWorthHistory.map(point => point.netWorth);
+
+    netWorthChart.data.labels = labels;
+    netWorthChart.data.datasets[0].data = data;
+    netWorthChart.update('none'); // No animation for smoother updates
+  }
+
   function updateClickStreak() {
     const currentTime = Date.now();
     
@@ -2237,12 +2386,12 @@
         // Properties owned
         properties: { ...properties },
         
+        // Net worth chart data
+        netWorthHistory: [...netWorthHistory],
+        
         // Statistics
         totalClicks,
         totalCriticalHits,
-        totalUpgradesBought,
-        hasPerformedPrestige,
-        prestigeResets,
         totalDividendsReceived,
         hasMadeFirstInvestment,
         
@@ -2319,12 +2468,14 @@
           });
         }
         
+        // Restore net worth chart data
+        if (gameState.netWorthHistory) {
+          netWorthHistory = [...gameState.netWorthHistory];
+        }
+        
         // Restore statistics
         totalClicks = gameState.totalClicks || 0;
         totalCriticalHits = gameState.totalCriticalHits || 0;
-        totalUpgradesBought = gameState.totalUpgradesBought || 0;
-        hasPerformedPrestige = gameState.hasPerformedPrestige || false;
-        prestigeResets = gameState.prestigeResets || 0;
         totalDividendsReceived = gameState.totalDividendsReceived || 0;
         hasMadeFirstInvestment = gameState.hasMadeFirstInvestment || false;
         
@@ -2453,6 +2604,9 @@
         officeBuilding: 0
       };
       
+      // Reset net worth chart data
+      netWorthHistory = [];
+      
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
       console.warn('Could not reset game state:', error);
@@ -2488,9 +2642,6 @@
     investmentAccountBalance = 0;
     totalClicks = 0;
     totalCriticalHits = 0;
-    totalUpgradesBought = 0;
-    hasPerformedPrestige = false;
-    prestigeResets = 0;
     totalDividendsReceived = 0;
     streakCount = 0;
     streakMultiplier = 1;
@@ -2818,8 +2969,6 @@
   }
 
   function renderStatistics() {
-    // Recalculate upgrades bought to ensure accuracy
-    recalculateUpgradesBought();
     
     // Time played
     const timePlayed = Math.floor((Date.now() - gameStartTime) / 1000);
@@ -2852,35 +3001,17 @@
       totalCriticalHitsEl.textContent = new Intl.NumberFormat("en-US").format(totalCriticalHits);
     }
 
-    // Upgrades bought
-    const upgradesBoughtEl = document.getElementById('upgradesBoughtDisplay');
-    if (upgradesBoughtEl && numberAnimator) {
-      const totalUpgrades = Object.keys(UPGRADE_COSTS).length;
-      const currentBought = parseInt(upgradesBoughtEl.textContent.split('/')[0]) || 0;
-      numberAnimator.animateValue(upgradesBoughtEl, currentBought, totalUpgradesBought, 600, (value) => `${Math.floor(value)}/${totalUpgrades}`);
-    } else if (upgradesBoughtEl) {
-      const totalUpgrades = Object.keys(UPGRADE_COSTS).length;
-      upgradesBoughtEl.textContent = `${totalUpgradesBought}/${totalUpgrades}`;
-    }
 
-    // Prestige resets
-    const prestigeResetsEl = document.getElementById('prestigeResetsDisplay');
-    if (prestigeResetsEl && numberAnimator) {
-      const currentResets = parseInt(prestigeResetsEl.textContent.replace(/,/g, '')) || 0;
-      numberAnimator.animateValue(prestigeResetsEl, currentResets, prestigeResets, 600, (value) => new Intl.NumberFormat("en-US").format(Math.floor(value)));
-    } else if (prestigeResetsEl) {
-      prestigeResetsEl.textContent = new Intl.NumberFormat("en-US").format(prestigeResets);
-    }
 
     // Achievements unlocked
     const achievementsUnlockedEl = document.getElementById('achievementsUnlockedDisplay');
     if (achievementsUnlockedEl && numberAnimator) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
       const currentUnlocked = parseInt(achievementsUnlockedEl.textContent.split('/')[0]) || 0;
-      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/13`);
+      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/11`);
     } else if (achievementsUnlockedEl) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
-      achievementsUnlockedEl.textContent = `${unlockedCount}/13`;
+      achievementsUnlockedEl.textContent = `${unlockedCount}/11`;
     }
   }
 
@@ -2984,14 +3115,11 @@
   // Achievement system
   let totalClicks = 0;
   let totalCriticalHits = 0;
-  let totalUpgradesBought = 0;
-  let hasPerformedPrestige = false;
   let maxStreakReached = false;
   let totalDividendsReceived = 0;
 
   // Statistics tracking
   let gameStartTime = Date.now();
-  let prestigeResets = 0;
   let hasMadeFirstInvestment = false;
   
   const achievements = {
@@ -3003,10 +3131,8 @@
     ach6: { unlocked: false, condition: () => totalClicks >= 1000 },
     ach7: { unlocked: false, condition: () => totalCriticalHits >= 100 },
     ach8: { unlocked: false, condition: () => maxStreakReached },
-    ach9: { unlocked: false, condition: () => totalUpgradesBought >= 5 },
     ach10: { unlocked: false, condition: () => investmentAccountBalance >= 100000 },
     ach11: { unlocked: false, condition: () => totalDividendsReceived >= 1000000 }, // Receive €1,000,000 in dividends
-    ach12: { unlocked: false, condition: () => hasPerformedPrestige },
     ach13: { unlocked: false, condition: () => hasMadeFirstInvestment } // First investment
   };
 
@@ -3370,8 +3496,6 @@
         // Apply permanent multipliers
         prestigeClickMultiplier *= 1.25;
         prestigeInterestMultiplier *= 1.25;
-        hasPerformedPrestige = true;
-        prestigeResets++;
         
         // Create prestige reset particle effects
         if (particleSystem) {
@@ -3423,7 +3547,6 @@
 
     currentAccountBalance -= cost;
     owned[key] = true;
-    totalUpgradesBought++;
     
     // Create upgrade particle effects
     if (particleSystem) {
@@ -3942,6 +4065,11 @@
     // Check portfolio tour (independent)
     checkPortfolioTour();
   }, TICK_MS);
+
+  // Net worth data collection (every 10 seconds)
+  setInterval(() => {
+    addNetWorthDataPoint();
+  }, DATA_COLLECTION_INTERVAL);
   
   // Events check every 10 seconds - reduced frequency for mobile performance
   setInterval(() => {
@@ -3967,6 +4095,12 @@
   renderAutoInvestSection();
   renderClickStreak();
   updateProgressBars();
+  
+  // Initialize net worth chart
+  initNetWorthChart();
+  
+  // Add initial data point
+  addNetWorthDataPoint();
   renderAchievements();
   renderStatistics();
   renderStickFigure();
@@ -4312,10 +4446,6 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-  // Function to recalculate total upgrades bought based on current owned state
-  function recalculateUpgradesBought() {
-    totalUpgradesBought = Object.values(owned).filter(owned => owned === true).length;
-  }
   
   // Console debugging functions
   function addMoney(amount) {
@@ -4366,30 +4496,10 @@ window.addEventListener('beforeunload', () => {
   }
   
   // Console function to check upgrade statistics
-  function checkUpgradeStats() {
-    recalculateUpgradesBought();
-    const totalUpgrades = Object.keys(UPGRADE_COSTS).length;
-    const ownedUpgrades = Object.values(owned).filter(owned => owned === true).length;
-    
-    console.log('📊 Upgrade Statistics:');
-    console.log(`Total upgrades available: ${totalUpgrades}`);
-    console.log(`Upgrades owned: ${ownedUpgrades}`);
-    console.log(`Total upgrades bought counter: ${totalUpgradesBought}`);
-    console.log(`Display should show: ${ownedUpgrades}/${totalUpgrades}`);
-    
-    // List all owned upgrades
-    const ownedUpgradeList = Object.entries(owned)
-      .filter(([id, isOwned]) => isOwned)
-      .map(([id, isOwned]) => `${id}: ${UPGRADE_CONFIG[id]?.name || 'Unknown'}`)
-      .join(', ');
-    
-    console.log(`Owned upgrades: ${ownedUpgradeList}`);
-  }
   
   // Make functions globally available
   window.addMoney = addMoney;
   window.setBalance = setBalance;
-  window.checkUpgradeStats = checkUpgradeStats;
 
   // Register Service Worker for PWA functionality
   if ('serviceWorker' in navigator) {
