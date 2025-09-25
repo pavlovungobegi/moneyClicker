@@ -607,7 +607,7 @@
       baseCost: 30000,
       incomePerSecond: 100,
       priceMultiplier: 1.05, // 5% increase per purchase
-      icon: "fas fa-building"
+      icon: "fas fa-car"
     },
     apartment: {
       name: "Apartment",
