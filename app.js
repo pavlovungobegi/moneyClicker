@@ -2862,15 +2862,11 @@
     u12: { cost: 25000, name: "Dividends 2", effect: "Speed up dividends by 20%", type: "dividend_speed" },
     u13: { cost: 30000, name: "Dividends 3", effect: "Increase dividend rate by 25%", type: "dividend_rate" },
     u14: { cost: 300000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate" },
-    u15: { cost: 400000, name: "Fast Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
-    u16: { cost: 1000000, name: "Turbo Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
     u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate" },
-    u18: { cost: 5000000, name: "Hyper Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
     u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u20: { cost: 25000000, name: "Master Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u21: { cost: 40000000, name: "Ultra Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
     u22: { cost: 75000000, name: "Legendary Interest", effect: "Increases interest rate by 15%", type: "interest" },
-    u25: { cost: 1000000000, name: "Supreme Interest", effect: "Increases interest rate by 20%", type: "interest" },
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
     u27: { cost: 750000000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
     u29: { cost: 1250, name: "Critical Hits", effect: "15% chance for 5x click damage", type: "special" },
@@ -3063,7 +3059,6 @@
     if (owned.u19) rateBoost *= 1.15; // +15%
     if (owned.u20) rateBoost *= 1.15; // +15%
     if (owned.u22) rateBoost *= 1.15; // +15%
-    if (owned.u25) rateBoost *= 1.2; // +20%
     if (owned.u31) rateBoost *= 1.1; // +10%
     if (owned.u32) rateBoost *= 1.1; // +10% (Negotiation)
     
@@ -3177,9 +3172,6 @@
     // Calculate speed multipliers (stack multiplicatively)
     let speedMultiplier = 1;
     if (owned.u12) speedMultiplier *= 0.8; // 20% faster
-    if (owned.u15) speedMultiplier *= 0.8; // 20% faster
-    if (owned.u16) speedMultiplier *= 0.8; // 20% faster
-    if (owned.u18) speedMultiplier *= 0.8; // 20% faster
     if (owned.u21) speedMultiplier *= 0.8; // 20% faster
     
     // Calculate rate multipliers (stack multiplicatively)
@@ -3256,9 +3248,6 @@
       // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
       if (owned.u12) speedMultiplier *= 0.8;
-      if (owned.u15) speedMultiplier *= 0.8;
-      if (owned.u16) speedMultiplier *= 0.8;
-      if (owned.u18) speedMultiplier *= 0.8;
       if (owned.u21) speedMultiplier *= 0.8;
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
@@ -3306,9 +3295,6 @@
     // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
       if (owned.u12) speedMultiplier *= 0.8;
-      if (owned.u15) speedMultiplier *= 0.8;
-      if (owned.u16) speedMultiplier *= 0.8;
-      if (owned.u18) speedMultiplier *= 0.8;
       if (owned.u21) speedMultiplier *= 0.8;
       
       let rateMultiplier = 1;
