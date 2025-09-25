@@ -119,7 +119,7 @@
     }
     
     createMoneyGainParticles(x, y, amount) {
-      const count = Math.min(20, Math.max(5, Math.floor(amount / 1000)));
+      const count = Math.min(8, Math.max(5, Math.floor(amount / 1000)));
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -134,7 +134,7 @@
       }
     }
     
-    createFireworkParticles(x, y, count = 25) {
+    createFireworkParticles(x, y, count = 15) {
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
         const speed = 8 + Math.random() * 4;
