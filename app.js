@@ -588,14 +588,14 @@
       marketBoom: 0.04,    // 4% chance
       marketCrash: 0.04,   // 4% chance  
       flashSale: 0.02,     // 2% chance
-      greatDepression: 0.25 // 1% chance
+      greatDepression: 0.01 // 1% chance
     },
     
     // Event durations (milliseconds)
     durations: {
       marketBoom: 30000,    // 30 seconds
       marketCrash: 30000,   // 30 seconds
-      flashSale: 120000,    // 2 minutes
+      flashSale: 30000,     // 30 seconds
       greatDepression: 30000 // 30 seconds
     },
     
@@ -683,7 +683,7 @@
     EVENT_CONFIG.eventCooldowns.flashSale = Date.now() + EVENT_CONFIG.cooldowns.flashSale;
     
     // Show notification
-    showEventNotification("🏷️ Flash Sale!", "25% off all upgrades for 2 minutes!", "flash-sale");
+    showEventNotification("🏷️ Flash Sale!", "25% off all upgrades for 30 seconds!", "flash-sale");
     
     // Visual effects
     screenFlash('#FF6B35', 500); // Orange flash
@@ -721,7 +721,7 @@
     investmentAccountBalance -= lossAmount;
     
     // Show notification
-    showEventNotification("💀 The Great Depression!", `Lost €${formatNumberShort(lossAmount)}! Interest rates decreased by 110% - money is shrinking! Dividends stopped!`, "great-depression");
+    showEventNotification("💀 The Great Depression!", `Lost €${formatNumberShort(lossAmount)}! Interest rates decreased by 120% - money is shrinking! Dividends stopped!`, "great-depression");
     
     // Visual effects
     screenFlash('#8B0000', 800); // Dark red flash
@@ -3144,7 +3144,7 @@
     } else if (marketCrashActive) {
       rateBoost *= 0.3; // -70% during crash
     } else if (greatDepressionActive) {
-      rateBoost *= -0.1; // -110% during depression (negative rate = money shrinking)
+      rateBoost *= -0.2; // -120% during depression (negative rate = money shrinking)
     }
     
     return 1 + (BASE_COMPOUND_MULTIPLIER_PER_TICK - 1) * rateBoost * prestigeInterestMultiplier;
