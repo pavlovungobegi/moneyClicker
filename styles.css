@@ -933,8 +933,8 @@ main {
   /* Mobile active event display */
   .active-event-display {
     position: absolute;
-    top: 8px;
-    right: 60px; /* Move left to avoid overlapping with settings button */
+    top: 12px;
+    right: 70px; /* Move left to avoid overlapping with settings button */
     min-width: 100px;
     max-width: 140px;
     padding: 4px 8px;

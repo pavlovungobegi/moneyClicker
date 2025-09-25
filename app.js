@@ -591,10 +591,10 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.08,    // 4% chance
-      marketCrash: 0.08,   // 4% chance  
-      flashSale: 0.03,     // 2% chance
-      greatDepression: 0.03 // 1% chance
+      marketBoom: 0.05,    // 4% chance
+      marketCrash: 0.2,   // 4% chance  
+      flashSale: 0.05,     // 2% chance
+      greatDepression: 0.2 // 1% chance
     },
     
     // Event durations (milliseconds)
