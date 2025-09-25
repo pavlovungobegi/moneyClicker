@@ -2434,6 +2434,9 @@
   }
 
   function renderStatistics() {
+    // Recalculate upgrades bought to ensure accuracy
+    recalculateUpgradesBought();
+    
     // Time played
     const timePlayed = Math.floor((Date.now() - gameStartTime) / 1000);
     const timePlayedEl = document.getElementById('timePlayedDisplay');
@@ -2866,7 +2869,6 @@
     u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u20: { cost: 25000000, name: "Master Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u21: { cost: 40000000, name: "Ultra Dividends", effect: "Increases dividend speed by 20%", type: "dividend_speed" },
-    u22: { cost: 75000000, name: "Legendary Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
     u27: { cost: 750000000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
     u29: { cost: 1250, name: "Critical Hits", effect: "15% chance for 5x click damage", type: "special" },
@@ -3058,7 +3060,6 @@
     if (owned.u9) rateBoost *= 1.15; // +15%
     if (owned.u19) rateBoost *= 1.15; // +15%
     if (owned.u20) rateBoost *= 1.15; // +15%
-    if (owned.u22) rateBoost *= 1.15; // +15%
     if (owned.u31) rateBoost *= 1.1; // +10%
     if (owned.u32) rateBoost *= 1.1; // +10% (Negotiation)
     
@@ -3834,6 +3835,11 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
+  // Function to recalculate total upgrades bought based on current owned state
+  function recalculateUpgradesBought() {
+    totalUpgradesBought = Object.values(owned).filter(owned => owned === true).length;
+  }
+  
   // Console debugging functions
   function addMoney(amount) {
     if (typeof amount !== 'number' || amount <= 0) {
@@ -3854,8 +3860,59 @@ window.addEventListener('beforeunload', () => {
     saveGameState();
   }
   
-  // Make function globally available
+  function setBalance(amount) {
+    if (typeof amount !== 'number' || amount < 0) {
+      console.log('❌ Invalid amount. Please provide a non-negative number.');
+      return;
+    }
+    
+    const oldBalance = currentAccountBalance;
+    // Cap the amount to the maximum allowed money cap
+    const cappedAmount = Math.min(amount, MAX_TOTAL_MONEY);
+    currentAccountBalance = cappedAmount;
+    
+    // Force immediate UI update
+    renderBalances();
+    
+    console.log(`💳 Balance set to €${formatNumberShort(cappedAmount)}!`);
+    if (oldBalance !== cappedAmount) {
+      const difference = cappedAmount - oldBalance;
+      if (difference > 0) {
+        console.log(`📈 Increased by €${formatNumberShort(difference)}`);
+      } else {
+        console.log(`📉 Decreased by €${formatNumberShort(Math.abs(difference))}`);
+      }
+    }
+    
+    // Save game state
+    saveGameState();
+  }
+  
+  // Console function to check upgrade statistics
+  function checkUpgradeStats() {
+    recalculateUpgradesBought();
+    const totalUpgrades = Object.keys(UPGRADE_COSTS).length;
+    const ownedUpgrades = Object.values(owned).filter(owned => owned === true).length;
+    
+    console.log('📊 Upgrade Statistics:');
+    console.log(`Total upgrades available: ${totalUpgrades}`);
+    console.log(`Upgrades owned: ${ownedUpgrades}`);
+    console.log(`Total upgrades bought counter: ${totalUpgradesBought}`);
+    console.log(`Display should show: ${ownedUpgrades}/${totalUpgrades}`);
+    
+    // List all owned upgrades
+    const ownedUpgradeList = Object.entries(owned)
+      .filter(([id, isOwned]) => isOwned)
+      .map(([id, isOwned]) => `${id}: ${UPGRADE_CONFIG[id]?.name || 'Unknown'}`)
+      .join(', ');
+    
+    console.log(`Owned upgrades: ${ownedUpgradeList}`);
+  }
+  
+  // Make functions globally available
   window.addMoney = addMoney;
+  window.setBalance = setBalance;
+  window.checkUpgradeStats = checkUpgradeStats;
 
   // Register Service Worker for PWA functionality
   if ('serviceWorker' in navigator) {
