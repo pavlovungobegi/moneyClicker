@@ -991,12 +991,29 @@
     // Set cooldown
     EVENT_CONFIG.eventCooldowns.robbery = Date.now() + EVENT_CONFIG.cooldowns.robbery;
     
-    // Steal all money from current account
-    const stolenAmount = currentAccountBalance;
-    currentAccountBalance = 0;
+    let stolenAmount = 0;
+    let notificationMessage = "";
+    
+    // Check if current account has money
+    if (currentAccountBalance > 0) {
+      // Steal all money from current account
+      stolenAmount = currentAccountBalance;
+      currentAccountBalance = 0;
+      notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
+    } else {
+      // If current account is empty, steal 1% from investment account
+      stolenAmount = Math.floor(investmentAccountBalance * 0.01);
+      if (stolenAmount > 0) {
+        investmentAccountBalance -= stolenAmount;
+        notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your investment account!`;
+      } else {
+        // If investment account is also empty or very small, steal nothing
+        notificationMessage = "A thief tried to rob you, but you have no money to steal!";
+      }
+    }
     
     // Show notification
-    showEventNotification(" You are robbed!", `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`, "robbery");
+    showEventNotification(" You are robbed!", notificationMessage, "robbery");
     
     // Visual effects
     screenFlash('#8B0000', 600); // Dark red flash
@@ -1005,8 +1022,8 @@
     // Sound effect (reuse error sound for robbery)
     playErrorSound();
     
-    // Create robbery particles
-    if (particleSystem) {
+    // Create robbery particles (only if money was actually stolen)
+    if (particleSystem && stolenAmount > 0) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
       particleSystem.createMoneyLossParticles(centerX, centerY, stolenAmount);
