@@ -838,16 +838,56 @@
       fastFingers: 15000    // 15 seconds
     },
     
-    // Event cooldowns (milliseconds)
+    // Event cooldowns (milliseconds) - different for each difficulty
     cooldowns: {
-      marketBoom: 60000,    // 1 minute
-      marketCrash: 60000,   // 1 minute
-      flashSale: 180000,    // 3 minutes
-      greatDepression: 60000, // 1 minute
-      fastFingers: 60000,   // 1 minute
-      taxCollection: 60000,   // 1 minute
-      robbery: 60000,          // 1 minute
-      divorce: 90000            // 1.5 minutes
+      marketBoom: {
+        easy: 60000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 60000,      // 45 seconds (harder)
+        extreme: 60000    // 30 seconds (extreme)
+      },
+      marketCrash: {
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 30000    // 30 seconds (extreme)
+      },
+      flashSale: {
+        easy: 180000,     // 4 minutes (easier)
+        normal: 180000,   // 3 minutes (original)
+        hard: 180000,     // 2 minutes (harder)
+        extreme: 180000    // 1.5 minutes (extreme)
+      },
+      greatDepression: {
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 30000    // 30 seconds (extreme)
+      },
+      fastFingers: {
+        easy: 60000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 60000,      // 45 seconds (harder)
+        extreme: 60000    // 30 seconds (extreme)
+      },
+      taxCollection: {
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 30000    // 30 seconds (extreme)
+      },
+      robbery: {
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 30000    // 30 seconds (extreme)
+      },
+      divorce: {
+        easy: 120000,     // 2 minutes (easier)
+        normal: 90000,    // 1.5 minutes (original)
+        hard: 60000,      // 1 minute (harder)
+        extreme: 45000    // 45 seconds (extreme)
+      }
     },
     
     // Event-specific cooldowns
@@ -894,6 +934,14 @@
     // Return the probability for the current difficulty
     return eventProbs[gameDifficulty] || eventProbs.normal;
   }
+
+  function getEventCooldown(eventName) {
+    const eventCooldowns = EVENT_CONFIG.cooldowns[eventName];
+    if (!eventCooldowns) return 60000; // Default 1 minute
+    
+    // Return the cooldown for the current difficulty
+    return eventCooldowns[gameDifficulty] || eventCooldowns.normal;
+  }
   
   // Event Functions
   function triggerMarketBoom() {
@@ -901,7 +949,7 @@
     
     marketBoomActive = true;
     marketBoomEndTime = Date.now() + EVENT_CONFIG.durations.marketBoom;
-    EVENT_CONFIG.eventCooldowns.marketBoom = Date.now() + EVENT_CONFIG.cooldowns.marketBoom;
+    EVENT_CONFIG.eventCooldowns.marketBoom = Date.now() + getEventCooldown('marketBoom');
     
     // Show notification
     showEventNotification("📈 Market Boom!", "Interest & dividend rates increased by 50%!", "boom");
@@ -927,10 +975,11 @@
     
     marketCrashActive = true;
     marketCrashEndTime = Date.now() + EVENT_CONFIG.durations.marketCrash;
-    EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + EVENT_CONFIG.cooldowns.marketCrash;
+    EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + getEventCooldown('marketCrash');
     
-    // Calculate 20% loss
-    const lossAmount = investmentAccountBalance * 0.2;
+    // Calculate loss based on difficulty
+    const lossRate = gameDifficulty === 'extreme' ? 0.35 : 0.2; // 35% for extreme, 20% for others
+    const lossAmount = investmentAccountBalance * lossRate;
     investmentAccountBalance -= lossAmount;
     
     // Show notification
@@ -967,7 +1016,7 @@
     
     flashSaleActive = true;
     flashSaleEndTime = Date.now() + EVENT_CONFIG.durations.flashSale;
-    EVENT_CONFIG.eventCooldowns.flashSale = Date.now() + EVENT_CONFIG.cooldowns.flashSale;
+    EVENT_CONFIG.eventCooldowns.flashSale = Date.now() + getEventCooldown('flashSale');
     
     // Show notification
     showEventNotification("🏷️ Flash Sale!", "25% off all upgrades for 30 seconds!", "flash-sale");
@@ -1006,7 +1055,7 @@
     
     greatDepressionActive = true;
     greatDepressionEndTime = Date.now() + EVENT_CONFIG.durations.greatDepression;
-    EVENT_CONFIG.eventCooldowns.greatDepression = Date.now() + EVENT_CONFIG.cooldowns.greatDepression;
+    EVENT_CONFIG.eventCooldowns.greatDepression = Date.now() + getEventCooldown('greatDepression');
     
     // Calculate 50% loss
     const lossAmount = investmentAccountBalance * 0.5;
@@ -1044,7 +1093,7 @@
   function triggerTaxCollection() {
     // Tax collection is an instant event (no duration) but follows the same "one event at a time" rule
     // Set cooldown
-    EVENT_CONFIG.eventCooldowns.taxCollection = Date.now() + EVENT_CONFIG.cooldowns.taxCollection;
+    EVENT_CONFIG.eventCooldowns.taxCollection = Date.now() + getEventCooldown('taxCollection');
     
     // Calculate 8% tax on investment account
     const taxAmount = investmentAccountBalance * 0.08;
@@ -1077,7 +1126,7 @@
   function triggerRobbery() {
     // Robbery is an instant event (no duration) but follows the same "one event at a time" rule
     // Set cooldown
-    EVENT_CONFIG.eventCooldowns.robbery = Date.now() + EVENT_CONFIG.cooldowns.robbery;
+    EVENT_CONFIG.eventCooldowns.robbery = Date.now() + getEventCooldown('robbery');
     
     let stolenAmount = 0;
     let notificationMessage = "";
@@ -1089,8 +1138,9 @@
       currentAccountBalance = 0;
       notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
     } else {
-      // If current account is empty, steal 1% from investment account
-      stolenAmount = Math.floor(investmentAccountBalance * 0.01);
+      // If current account is empty, steal from investment account based on difficulty
+      const investmentStealRate = gameDifficulty === 'extreme' ? 0.10 : 0.01; // 10% for extreme, 1% for others
+      stolenAmount = Math.floor(investmentAccountBalance * investmentStealRate);
       if (stolenAmount > 0) {
         investmentAccountBalance -= stolenAmount;
         notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your investment account!`;
@@ -1127,7 +1177,7 @@
   function triggerDivorce() {
     // Divorce is an instant event (no duration) but follows the same "one event at a time" rule
     // Set cooldown
-    EVENT_CONFIG.eventCooldowns.divorce = Date.now() + EVENT_CONFIG.cooldowns.divorce;
+    EVENT_CONFIG.eventCooldowns.divorce = Date.now() + getEventCooldown('divorce');
     
     // Calculate total net worth and 50% loss
     const totalNetWorth = currentAccountBalance + investmentAccountBalance;
@@ -1169,7 +1219,7 @@
     
     fastFingersActive = true;
     fastFingersEndTime = Date.now() + EVENT_CONFIG.durations.fastFingers;
-    EVENT_CONFIG.eventCooldowns.fastFingers = Date.now() + EVENT_CONFIG.cooldowns.fastFingers;
+    EVENT_CONFIG.eventCooldowns.fastFingers = Date.now() + getEventCooldown('fastFingers');
     
     // Show notification
     showEventNotification("⚡ Fast Fingers!", "Click income boosted by 3x for 15 seconds!", "fast-fingers");
