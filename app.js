@@ -1,6 +1,14 @@
 (() => {
   let currentAccountBalance = 0;
   let investmentAccountBalance = 0;
+  
+  // Mobile detection for particle optimization
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   ('ontouchstart' in window) || 
+                   (navigator.maxTouchPoints > 0);
+  
+  // Debug log for mobile detection
+  console.log('Mobile device detected:', isMobile, 'User Agent:', navigator.userAgent);
 
   // Particle System
   class ParticleSystem {
@@ -49,7 +57,9 @@
     }
     
     createCoinParticles(x, y, count = 1) {
-      for (let i = 0; i < count; i++) {
+      // Reduce particles on mobile
+      const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.5)) : count;
+      for (let i = 0; i < actualCount; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
           vy: -Math.random() * 4 - 2,
@@ -74,7 +84,9 @@
     }
     
     createSparkleParticles(x, y, count = 2) {
-      for (let i = 0; i < count; i++) {
+      // Reduce particles on mobile
+      const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.5)) : count;
+      for (let i = 0; i < actualCount; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
           vy: (Math.random() - 0.5) * 8,
@@ -119,7 +131,8 @@
     }
     
     createMoneyGainParticles(x, y, amount) {
-      const count = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
+      const baseCount = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
+      const count = isMobile ? Math.max(1, Math.floor(baseCount * 0.5)) : baseCount;
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -1912,9 +1925,15 @@
         particleSystem.createCriticalCoin(centerX, centerY);
         screenShake(8, 300);
       } else {
-        // Normal click: regular particles based on income (reduced by 50% from original)
-        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.15), 1), 1);
-        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.25), 1), 2);
+        // Normal click: regular particles based on income (mobile gets even fewer particles)
+        const particleMultiplier = isMobile ? 0.5 : 1; // Mobile gets 50% fewer particles
+        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.15 * particleMultiplier), 1), 1);
+        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.25 * particleMultiplier), 1), isMobile ? 1 : 2);
+        
+        // Debug log for mobile particles
+        if (isMobile) {
+          console.log('Mobile click particles:', { income, particleMultiplier, baseCoinCount, baseSparkleCount });
+        }
         
         // Create coin particles
         particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
