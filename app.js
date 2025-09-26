@@ -1511,7 +1511,6 @@
   const buyManufacturingPlantBtn = document.getElementById("buyManufacturingPlantBtn");
   const buyOfficeBuildingBtn = document.getElementById("buyOfficeBuildingBtn");
   const buySkyscraperBtn = document.getElementById("buySkyscraperBtn");
-  const rankDisplay = document.getElementById("rankDisplay");
   const interestPerSecEl = document.getElementById("interestPerSec");
   const interestContainer = document.getElementById("interestContainer");
   const toggleCompletedBtn = document.getElementById("toggleCompletedBtn");
@@ -2825,7 +2824,7 @@
     {
       target: 'leaderboardPanel',
       title: 'Your Portfolio',
-      message: 'Check out your Portfolio! The stick figure represents your education progress, and the global rank shows your wealth ranking worldwide.',
+      message: 'Check out your Portfolio! View and manage all your properties and investments.',
       position: 'right'
     }
   ];
@@ -4220,25 +4219,6 @@
     saveGameState();
   }
 
-  // Leaderboard model
-  const WORLD_POPULATION = 8200000000; // 8.2B starting rank
-  const RICH_LIST_TOP = 1; // rank upper bound
-  const WEALTH_FOR_TOP_100 = 10000000000000; // 10T ~ top rank scale
-
-  function computeRank(totalWealth) {
-    // Simple model: map wealth logarithmically to rank improvement
-    if (totalWealth <= 0) return WORLD_POPULATION;
-    const logBase = 10;
-    const scaled = Math.log10(1 + totalWealth) / Math.log10(1 + WEALTH_FOR_TOP_100);
-    const rankGain = Math.floor((WORLD_POPULATION - RICH_LIST_TOP) * Math.min(1, scaled));
-    return Math.max(RICH_LIST_TOP, WORLD_POPULATION - rankGain);
-  }
-
-  function renderRank() {
-    const totalWealth = currentAccountBalance + investmentAccountBalance;
-    const rank = computeRank(totalWealth);
-    if (rankDisplay) rankDisplay.textContent = new Intl.NumberFormat("en-US").format(rank);
-  }
 
   setInterval(() => {
     // Investment compounding: multiply per tick, boosted by upgrades
@@ -4268,7 +4248,6 @@
 
     renderBalances();
     renderUpgradesOwned();
-    renderRank();
     renderDividendUI(TICK_MS);
     renderAllProperties();
     renderInvestmentUnlocked();
@@ -4308,7 +4287,6 @@
 
   renderBalances();
   renderUpgradesOwned();
-  renderRank();
   renderUpgradePrices();
   renderAllProperties();
   // Apply upgrade visibility rules now that hide-completed class is set
