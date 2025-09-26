@@ -2357,10 +2357,17 @@
   }
 
   function addNetWorthDataPoint() {
-    const netWorth = calculateNetWorth();
+    const liquidAssets = currentAccountBalance + investmentAccountBalance;
+    const propertyValue = calculateTotalPropertyValue();
+    const netWorth = liquidAssets + propertyValue;
     const timestamp = Date.now();
     
-    netWorthHistory.push({ timestamp, netWorth });
+    netWorthHistory.push({ 
+      timestamp, 
+      netWorth,
+      liquidAssets,
+      propertyValue
+    });
     
     // Keep only the last MAX_DATA_POINTS
     if (netWorthHistory.length > MAX_DATA_POINTS) {
@@ -2380,15 +2387,28 @@
       data: {
         labels: [],
         datasets: [{
-          label: 'Net Worth',
+          label: 'Property Values',
+          data: [],
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245, 158, 11, 0.4)',
+          borderWidth: 2,
+          fill: true, // Fill to the bottom (base layer)
+          tension: 0.4,
+          pointRadius: 0, // Hide points by default
+          pointHoverRadius: 5, // Show points on hover
+          pointBackgroundColor: '#f59e0b',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }, {
+          label: 'Liquid Assets',
           data: [],
           borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.4)',
           borderWidth: 2,
-          fill: true,
+          fill: true, // Fill to the bottom (creates area under the line)
           tension: 0.4,
-          pointRadius: 3,
-          pointHoverRadius: 5,
+          pointRadius: 0, // Hide points by default
+          pointHoverRadius: 5, // Show points on hover
           pointBackgroundColor: '#10b981',
           pointBorderColor: '#ffffff',
           pointBorderWidth: 2
@@ -2399,12 +2419,31 @@
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false
+            display: true,
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: {
+                size: 11
+              }
+            }
           },
           tooltip: {
+            mode: 'index',
+            intersect: false,
             callbacks: {
+              title: function(context) {
+                return context[0].label;
+              },
               label: function(context) {
-                return 'Net Worth: €' + formatNumberShort(context.parsed.y);
+                const value = context.parsed.y;
+                const label = context.dataset.label;
+                return label + ': €' + formatNumberShort(value);
+              },
+              footer: function(context) {
+                const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
+                return 'Total Net Worth: €' + formatNumberShort(total);
               }
             }
           }
@@ -2421,7 +2460,8 @@
             ticks: {
               color: '#64748b',
               maxTicksLimit: 6
-            }
+            },
+            stacked: true
           },
           y: {
             display: true,
@@ -2441,7 +2481,8 @@
               callback: function(value) {
                 return formatNumberShort(value);
               }
-            }
+            },
+            stacked: true
           }
         },
         interaction: {
@@ -2464,10 +2505,29 @@
       });
     });
 
-    const data = netWorthHistory.map(point => point.netWorth);
+    const liquidAssetsData = netWorthHistory.map(point => {
+      // Handle legacy data points that only have netWorth
+      if (point.liquidAssets !== undefined) {
+        return point.liquidAssets;
+      } else {
+        // For legacy data, estimate liquid assets as 70% of net worth
+        return point.netWorth * 0.7;
+      }
+    });
+    
+    const propertyValuesData = netWorthHistory.map(point => {
+      // Handle legacy data points that only have netWorth
+      if (point.propertyValue !== undefined) {
+        return point.propertyValue;
+      } else {
+        // For legacy data, estimate property values as 30% of net worth
+        return point.netWorth * 0.3;
+      }
+    });
 
     netWorthChart.data.labels = labels;
-    netWorthChart.data.datasets[0].data = data;
+    netWorthChart.data.datasets[0].data = propertyValuesData; // Property Values (base layer)
+    netWorthChart.data.datasets[1].data = liquidAssetsData;   // Liquid Assets (stacked on top)
     netWorthChart.update('none'); // No animation for smoother updates
   }
 
@@ -3885,7 +3945,7 @@
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
     u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
-    u30: { cost: 50000, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
+    u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
     u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" },
     u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" }
   };
@@ -4473,34 +4533,64 @@
     checkEvents();
   }, 10000);
 
-  // Initialize upgrade visibility state before rendering
-  initUpgradeVisibility();
-  updateToggleCompletedUI();
+  // Loading screen functionality
+  function showLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+      loadingScreen.classList.remove('hidden');
+    }
+  }
 
-  renderBalances();
-  renderUpgradesOwned();
-  renderUpgradePrices();
-  renderAllProperties();
-  // Apply upgrade visibility rules now that hide-completed class is set
-  // Use requestAnimationFrame to ensure DOM is fully rendered
-  requestAnimationFrame(() => {
-  sortUpgradesByCost();
-  });
-  renderInvestmentUnlocked();
-  renderPrestigeMultipliers();
-  renderAutoInvestSection();
-  renderClickStreak();
-  updateProgressBars();
-  
-  // Initialize net worth chart
-  initNetWorthChart();
-  
-  // Add initial data point
-  addNetWorthDataPoint();
-  renderAchievements();
-  renderStatistics();
-  renderEventLogs();
-  updateUpgradeIndicator();
+  function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+      loadingScreen.classList.add('hidden');
+      // Remove from DOM after animation completes
+      setTimeout(() => {
+        if (loadingScreen.parentNode) {
+          loadingScreen.parentNode.removeChild(loadingScreen);
+        }
+      }, 500);
+    }
+  }
+
+  function initializeGame() {
+    // Initialize upgrade visibility state before rendering
+    initUpgradeVisibility();
+    updateToggleCompletedUI();
+
+    renderBalances();
+    renderUpgradesOwned();
+    renderUpgradePrices();
+    renderAllProperties();
+    // Apply upgrade visibility rules now that hide-completed class is set
+    // Use requestAnimationFrame to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+    sortUpgradesByCost();
+    });
+    renderInvestmentUnlocked();
+    renderPrestigeMultipliers();
+    renderAutoInvestSection();
+    renderClickStreak();
+    updateProgressBars();
+    
+    // Initialize net worth chart
+    initNetWorthChart();
+    
+    // Add initial data point
+    addNetWorthDataPoint();
+    renderAchievements();
+    renderStatistics();
+    renderEventLogs();
+    updateUpgradeIndicator();
+  }
+
+  // Show loading screen and initialize game after 2 seconds
+  showLoadingScreen();
+  setTimeout(() => {
+    initializeGame();
+    hideLoadingScreen();
+  }, 2000);
   
   // Settings panel functionality
   const settingsToggle = document.getElementById('settingsToggle');
