@@ -645,13 +645,13 @@
     // Event probabilities (per check)
     probabilities: {
       marketBoom: 0.05,    // 5% chance
-      marketCrash: 0.40,   // 4% chance  
+      marketCrash: 0.04,   // 4% chance  
       flashSale: 0.03,     // 3% chance
-      greatDepression: 0.15, // 1% chance
+      greatDepression: 0.01, // 1% chance
       fastFingers: 0.02,   // 2% chance
       taxCollection: 0.02,   // 2% chance
-      robbery: 0.05,          // 2% chance
-      divorce: 0.15             // 1% chance
+      robbery: 0.02,          // 2% chance
+      divorce: 0.01             // 1% chance
     },
     
     // Event durations (milliseconds)
@@ -672,7 +672,7 @@
       fastFingers: 60000,   // 1 minute
       taxCollection: 60000,   // 1 minute
       robbery: 60000,          // 1 minute
-      divorce: 60000            // 1 minute
+      divorce: 90000            // 1.5 minutes
     },
     
     // Event-specific cooldowns
@@ -689,13 +689,13 @@
     
     // Net worth thresholds (minimum net worth required for events to trigger)
     netWorthThresholds: {
-      marketBoom: 0,        // No threshold
+      marketBoom: 500,        // No threshold
       marketCrash: 100000,       // No threshold
-      flashSale: 0,         // No threshold
+      flashSale: 1000,         // No threshold
       greatDepression: 2000000,   // No threshold
       fastFingers: 0,       // No threshold
-      taxCollection: 150000,     // No threshold
-      robbery: 100000,           // No threshold
+      taxCollection: 250000,     // No threshold
+      robbery: 150000,           // No threshold
       divorce: 1000000      // 1 million euro threshold
     }
   };
