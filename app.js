@@ -1731,6 +1731,7 @@
           renderClickStreak();
           renderPrestigeMultipliers();
           updateUpgradeIndicator();
+          updatePortfolioIndicator();
         } else {
           // Regular money cheat codes
           currentAccountBalance += reward;
@@ -1957,6 +1958,7 @@
     
     renderBalances();
     updateUpgradeIndicator();
+    updatePortfolioIndicator();
     
     // Create flying money number with critical hit styling (show actual amount added)
     createFlyingMoney(cappedIncome, isCritical);
@@ -2225,6 +2227,7 @@
     // Update displays
     renderBalances();
     renderPropertyUI(propertyId);
+    updatePortfolioIndicator();
     saveGameState();
     
     return true;
@@ -3019,6 +3022,7 @@
     renderStatistics();
     renderEventLogs();
     updateUpgradeIndicator();
+    updatePortfolioIndicator();
         
         // Apply audio settings after loading game state
         applyAudioSettings();
@@ -4089,6 +4093,7 @@
     renderUpgradePrices();
     sortUpgradesByCost();
     updateUpgradeIndicator();
+    updatePortfolioIndicator();
     
     // Play buy sound
     playBuySound();
@@ -4180,6 +4185,25 @@
     });
     
     if (hasAffordableUpgrade) {
+      indicator.classList.remove('hidden');
+    } else {
+      indicator.classList.add('hidden');
+    }
+  }
+
+  // Check if any buildings are available and update portfolio indicator
+  function updatePortfolioIndicator() {
+    const indicator = document.getElementById('portfolioIndicator');
+    if (!indicator) return;
+    
+    // Check if any building is affordable using only current account balance
+    const hasAffordableBuilding = Object.entries(PROPERTY_CONFIG).some(([propertyId, config]) => {
+      const owned = properties[propertyId];
+      const cost = config.baseCost * Math.pow(config.priceMultiplier, owned);
+      return currentAccountBalance >= cost;
+    });
+    
+    if (hasAffordableBuilding) {
       indicator.classList.remove('hidden');
     } else {
       indicator.classList.add('hidden');
@@ -4524,6 +4548,7 @@
     checkExpiredEvents(); // Check for expired events immediately
     checkStreakTimeout();
     updateUpgradeIndicator();
+    updatePortfolioIndicator();
     updateProgressBars();
     checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
     renderStatistics();
@@ -4596,6 +4621,7 @@
     renderStatistics();
     renderEventLogs();
     updateUpgradeIndicator();
+    updatePortfolioIndicator();
   }
 
   // Show loading screen and initialize game after 2 seconds
