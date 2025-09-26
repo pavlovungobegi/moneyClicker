@@ -2572,7 +2572,7 @@
         // Click achievements - sparkles + confetti
         particleSystem.createSparkleParticles(centerX, centerY, 10);
         particleSystem.createConfettiParticles(centerX, centerY, 13);
-        screenFlash('#FF6B6B', 300); // Red flash
+        screenFlash('#FFD700', 300); // Golden flash
         
       } else if (rareAchievements.includes(achievementId)) {
         // Rare achievements - multiple bursts + screen effects
