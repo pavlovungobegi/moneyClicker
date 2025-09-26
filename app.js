@@ -801,7 +801,7 @@
         easy: 0.005,    // 0.5% chance (easier)
         normal: 0.01,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
-        extreme: 0.04   // 2% chance (extreme)
+        extreme: 0.045   // 2% chance (extreme)
       },
       fastFingers: {
         easy: 0.04,     // 4% chance (easier)
@@ -813,19 +813,19 @@
         easy: 0.01,     // 1% chance (easier)
         normal: 0.02,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
-        extreme: 0.08   // 4% chance (extreme)
+        extreme: 0.095   // 4% chance (extreme)
       },
       robbery: {
         easy: 0.01,     // 1% chance (easier)
         normal: 0.02,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
-        extreme: 0.085   // 4% chance (extreme)
+        extreme: 0.095   // 4% chance (extreme)
       },
       divorce: {
         easy: 0.005,    // 0.5% chance (easier)
         normal: 0.01,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
-        extreme: 0.035   // 2% chance (extreme)
+        extreme: 0.045   // 2% chance (extreme)
       }
     },
     
@@ -874,19 +874,19 @@
         easy: 90000,      // 1.5 minutes (easier)
         normal: 60000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
-        extreme: 15000    // 30 seconds (extreme)
+        extreme: 10000    // 30 seconds (extreme)
       },
       robbery: {
         easy: 90000,      // 1.5 minutes (easier)
         normal: 60000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
-        extreme: 15000    // 30 seconds (extreme)
+        extreme: 10000    // 30 seconds (extreme)
       },
       divorce: {
         easy: 120000,     // 2 minutes (easier)
         normal: 90000,    // 1.5 minutes (original)
         hard: 60000,      // 1 minute (harder)
-        extreme: 30000    // 45 seconds (extreme)
+        extreme: 20000    // 45 seconds (extreme)
       }
     },
     
@@ -978,7 +978,7 @@
     EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + getEventCooldown('marketCrash');
     
     // Calculate loss based on difficulty
-    const lossRate = gameDifficulty === 'extreme' ? 0.35 : 0.2; // 35% for extreme, 20% for others
+    const lossRate = gameDifficulty === 'extreme' ? 0.4 : 0.2; // 40% for extreme, 20% for others
     const lossAmount = investmentAccountBalance * lossRate;
     investmentAccountBalance -= lossAmount;
     
@@ -1139,7 +1139,7 @@
       notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
     } else {
       // If current account is empty, steal from investment account based on difficulty
-      const investmentStealRate = gameDifficulty === 'extreme' ? 0.10 : 0.01; // 10% for extreme, 1% for others
+      const investmentStealRate = gameDifficulty === 'extreme' ? 0.15 : 0.01; // 15% for extreme, 1% for others
       stolenAmount = Math.floor(investmentAccountBalance * investmentStealRate);
       if (stolenAmount > 0) {
         investmentAccountBalance -= stolenAmount;
