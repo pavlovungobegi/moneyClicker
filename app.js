@@ -604,12 +604,33 @@
   
   // Property system configuration
   const PROPERTY_CONFIG = {
+    foodStand: {
+      name: "Food Stand",
+      baseCost: 500,
+      incomePerSecond: 2,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-utensils"
+    },
+    newsstand: {
+      name: "Newsstand",
+      baseCost: 8000,
+      incomePerSecond: 25,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-newspaper"
+    },
     parkingGarage: {
       name: "Parking Garage",
       baseCost: 30000,
       incomePerSecond: 100,
       priceMultiplier: 1.05, // 5% increase per purchase
       icon: "fas fa-car"
+    },
+    convenienceStore: {
+      name: "Convenience Store",
+      baseCost: 150000,
+      incomePerSecond: 500,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-store"
     },
     apartment: {
       name: "Apartment",
@@ -618,20 +639,39 @@
       priceMultiplier: 1.05, // 5% increase per purchase
       icon: "fas fa-home"
     },
+    manufacturingPlant: {
+      name: "Manufacturing Plant",
+      baseCost: 2500000,
+      incomePerSecond: 6250,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-industry"
+    },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
       incomePerSecond: 15000,
       priceMultiplier: 1.05, // 5% increase per purchase
       icon: "fas fa-building"
+    },
+    skyscraper: {
+      name: "Skyscraper",
+      baseCost: 50000000,
+      incomePerSecond: 75000,
+      priceMultiplier: 1.05, // 5% increase per purchase
+      icon: "fas fa-city"
     }
   };
 
   // Property ownership tracking
   let properties = {
+    foodStand: 0,
+    newsstand: 0,
     parkingGarage: 0,
+    convenienceStore: 0,
     apartment: 0,
-    officeBuilding: 0
+    manufacturingPlant: 0,
+    officeBuilding: 0,
+    skyscraper: 0
   };
 
   // Net worth chart data
@@ -1463,9 +1503,14 @@
   const buyU30Btn = document.getElementById("buyU30Btn");
   const buyU31Btn = document.getElementById("buyU31Btn");
   const buyU32Btn = document.getElementById("buyU32Btn");
+  const buyFoodStandBtn = document.getElementById("buyFoodStandBtn");
+  const buyNewsstandBtn = document.getElementById("buyNewsstandBtn");
   const buyParkingGarageBtn = document.getElementById("buyParkingGarageBtn");
+  const buyConvenienceStoreBtn = document.getElementById("buyConvenienceStoreBtn");
   const buyApartmentBtn = document.getElementById("buyApartmentBtn");
+  const buyManufacturingPlantBtn = document.getElementById("buyManufacturingPlantBtn");
   const buyOfficeBuildingBtn = document.getElementById("buyOfficeBuildingBtn");
+  const buySkyscraperBtn = document.getElementById("buySkyscraperBtn");
   const rankDisplay = document.getElementById("rankDisplay");
   const interestPerSecEl = document.getElementById("interestPerSec");
   const interestContainer = document.getElementById("interestContainer");
@@ -3141,6 +3186,32 @@
   }
 
   // Property system event listeners
+  if (buyFoodStandBtn) {
+    buyFoodStandBtn.addEventListener("click", () => buyProperty("foodStand"));
+    
+    // Add touch-specific animation handling
+    buyFoodStandBtn.addEventListener("touchstart", (e) => {
+      buyFoodStandBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyFoodStandBtn.addEventListener("touchend", (e) => {
+      buyFoodStandBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
+  if (buyNewsstandBtn) {
+    buyNewsstandBtn.addEventListener("click", () => buyProperty("newsstand"));
+    
+    // Add touch-specific animation handling
+    buyNewsstandBtn.addEventListener("touchstart", (e) => {
+      buyNewsstandBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyNewsstandBtn.addEventListener("touchend", (e) => {
+      buyNewsstandBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
   if (buyParkingGarageBtn) {
     buyParkingGarageBtn.addEventListener("click", () => buyProperty("parkingGarage"));
     
@@ -3167,6 +3238,32 @@
     }, { passive: true });
   }
 
+  if (buyConvenienceStoreBtn) {
+    buyConvenienceStoreBtn.addEventListener("click", () => buyProperty("convenienceStore"));
+    
+    // Add touch-specific animation handling
+    buyConvenienceStoreBtn.addEventListener("touchstart", (e) => {
+      buyConvenienceStoreBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyConvenienceStoreBtn.addEventListener("touchend", (e) => {
+      buyConvenienceStoreBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
+  if (buyManufacturingPlantBtn) {
+    buyManufacturingPlantBtn.addEventListener("click", () => buyProperty("manufacturingPlant"));
+    
+    // Add touch-specific animation handling
+    buyManufacturingPlantBtn.addEventListener("touchstart", (e) => {
+      buyManufacturingPlantBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyManufacturingPlantBtn.addEventListener("touchend", (e) => {
+      buyManufacturingPlantBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
   if (buyOfficeBuildingBtn) {
     buyOfficeBuildingBtn.addEventListener("click", () => buyProperty("officeBuilding"));
     
@@ -3177,6 +3274,19 @@
     
     buyOfficeBuildingBtn.addEventListener("touchend", (e) => {
       buyOfficeBuildingBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
+  if (buySkyscraperBtn) {
+    buySkyscraperBtn.addEventListener("click", () => buyProperty("skyscraper"));
+    
+    // Add touch-specific animation handling
+    buySkyscraperBtn.addEventListener("touchstart", (e) => {
+      buySkyscraperBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buySkyscraperBtn.addEventListener("touchend", (e) => {
+      buySkyscraperBtn.classList.remove("touch-active");
     }, { passive: true });
   }
 
