@@ -124,7 +124,7 @@
         <div class="settings-section">
           <div class="version-info">
             <span class="version-label">Version:</span>
-            <span class="version-number">0.5.2</span>
+            <span class="version-number">0.6.0</span>
           </div>
         </div>
       </div>
@@ -881,32 +881,43 @@
         <section class="panel" aria-labelledby="statsTitle">
           <h2 id="statsTitle">Statistics</h2>
           <div class="stats-section scrollable-content" id="statsSection">
-            <div class="stat-item">
-              <div class="stat-label">Time Played</div>
-              <div class="stat-value" id="timePlayedDisplay">0s</div>
-            </div>
+            <!-- Compact 2x2 grid for main stats -->
+            <div class="stats-grid">
+              <div class="stat-item compact">
+                <div class="stat-label">Time Played</div>
+                <div class="stat-value" id="timePlayedDisplay">0s</div>
+              </div>
 
-            <div class="stat-item">
-              <div class="stat-label">Total Clicks</div>
-              <div class="stat-value" id="totalClicksDisplay">0</div>
-            </div>
+              <div class="stat-item compact">
+                <div class="stat-label">Total Clicks</div>
+                <div class="stat-value" id="totalClicksDisplay">0</div>
+              </div>
 
-            <div class="stat-item">
-              <div class="stat-label">Total Critical Hits</div>
-              <div class="stat-value" id="totalCriticalHitsDisplay">0</div>
-            </div>
+              <div class="stat-item compact">
+                <div class="stat-label">Critical Hits</div>
+                <div class="stat-value" id="totalCriticalHitsDisplay">0</div>
+              </div>
 
-
-
-            <div class="stat-item">
-              <div class="stat-label">Achievements Unlocked</div>
-              <div class="stat-value" id="achievementsUnlockedDisplay">0/11</div>
+              <div class="stat-item compact">
+                <div class="stat-label">Achievements</div>
+                <div class="stat-value" id="achievementsUnlockedDisplay">0/11</div>
+              </div>
             </div>
 
             <!-- Net Worth Chart -->
             <div class="chart-container">
-              <h3 class="chart-title">Net Worth Over Time</h3>
               <canvas id="netWorthChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Event Logs -->
+            <div class="event-logs-container">
+              <h3 class="event-logs-title">Event Logs</h3>
+              <div class="event-logs-content" id="eventLogsContent">
+                <div class="event-log-item">
+                  <span class="event-time">No events yet</span>
+                  <span class="event-name">Start playing to see events!</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -747,6 +747,7 @@
 
   // Net worth chart data
   let netWorthHistory = [];
+  let eventLogs = [];
   let netWorthChart = null;
   const MAX_DATA_POINTS = 60; // 10 minutes of data (60 * 10 seconds)
   const DATA_COLLECTION_INTERVAL = 10000; // 10 seconds
@@ -755,11 +756,11 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.05,    // 5% chance
+      marketBoom: 0.055,    // 5.5% chance
       marketCrash: 0.04,   // 4% chance  
       flashSale: 0.03,     // 3% chance
       greatDepression: 0.01, // 1% chance
-      fastFingers: 0.45,   // 2% chance
+      fastFingers: 0.02,   // 2% chance
       taxCollection: 0.02,   // 2% chance
       robbery: 0.02,          // 2% chance
       divorce: 0.01             // 1% chance
@@ -844,6 +845,9 @@
     updateInterestRateColor();
     updateDividendRateColor();
     updateActiveEventDisplay();
+    
+    // Log the event
+    logEvent("📈 Market Boom", "market-boom");
   }
   
   function triggerMarketCrash() {
@@ -881,6 +885,9 @@
     
     // Update displays
     renderBalances();
+    
+    // Log the event
+    logEvent("📉 Market Crash", "market-crash");
   }
   
   function triggerFlashSale() {
@@ -917,6 +924,9 @@
     }
     
     updateActiveEventDisplay();
+    
+    // Log the event
+    logEvent("🏷️ Flash Sale", "flash-sale");
   }
   
   function triggerGreatDepression() {
@@ -954,6 +964,9 @@
     
     // Update displays
     renderBalances();
+    
+    // Log the event
+    logEvent("💀 Great Depression", "great-depression");
   }
   
   function triggerTaxCollection() {
@@ -984,6 +997,9 @@
     
     // Update displays
     renderBalances();
+    
+    // Log the event
+    logEvent("💰 Tax Collection", "tax-collection");
   }
   
   function triggerRobbery() {
@@ -1031,6 +1047,9 @@
     
     // Update displays
     renderBalances();
+    
+    // Log the event
+    logEvent("🔫 Robbery", "robbery");
   }
   
   function triggerDivorce() {
@@ -1068,6 +1087,9 @@
     
     // Update displays
     renderBalances();
+    
+    // Log the event
+    logEvent("💔 Divorce", "divorce");
   }
   
   function triggerFastFingers() {
@@ -1090,6 +1112,9 @@
     }
     
     updateActiveEventDisplay();
+    
+    // Log the event
+    logEvent("⚡ Fast Fingers", "fast-fingers");
   }
   
   // Check for expired events immediately (called every second)
@@ -2388,12 +2413,7 @@
           x: {
             display: true,
             title: {
-              display: true,
-              text: 'Time',
-              color: '#64748b',
-              font: {
-                size: 12
-              }
+              display: false
             },
             grid: {
               color: 'rgba(100, 116, 139, 0.1)'
@@ -2726,6 +2746,9 @@
         // Net worth chart data
         netWorthHistory: [...netWorthHistory],
         
+        // Event logs
+        eventLogs: [...eventLogs],
+        
         // Statistics
         totalClicks,
         totalCriticalHits,
@@ -2816,6 +2839,11 @@
         // Restore net worth chart data
         if (gameState.netWorthHistory) {
           netWorthHistory = [...gameState.netWorthHistory];
+        }
+        
+        // Restore event logs
+        if (gameState.eventLogs) {
+          eventLogs = [...gameState.eventLogs];
         }
         
         // Restore statistics
@@ -2910,6 +2938,7 @@
     renderInterestPerSecond();
     renderAutoInvestSection();
     renderStatistics();
+    renderEventLogs();
     updateUpgradeIndicator();
         
         // Apply audio settings after loading game state
@@ -3382,6 +3411,54 @@
     }
   }
 
+  // Event logging functions
+  function logEvent(eventName, eventType) {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+    
+    // Add new event to the beginning of the array
+    eventLogs.unshift({
+      time: timeString,
+      name: eventName,
+      type: eventType
+    });
+    
+    // Keep only the last 20 events
+    if (eventLogs.length > 20) {
+      eventLogs = eventLogs.slice(0, 20);
+    }
+    
+    // Render the updated event logs
+    renderEventLogs();
+  }
+
+  function renderEventLogs() {
+    const eventLogsContent = document.getElementById('eventLogsContent');
+    if (!eventLogsContent) return;
+    
+    if (eventLogs.length === 0) {
+      eventLogsContent.innerHTML = `
+        <div class="event-log-item">
+          <span class="event-time">No events yet</span>
+          <span class="event-name">Start playing to see events!</span>
+        </div>
+      `;
+      return;
+    }
+    
+    eventLogsContent.innerHTML = eventLogs.map(event => `
+      <div class="event-log-item ${event.type}">
+        <span class="event-time">${event.time}</span>
+        <span class="event-name">${event.name}</span>
+      </div>
+    `).join('');
+  }
+
   if (depositAllBtn) {
     depositAllBtn.addEventListener("click", depositAll);
     
@@ -3806,7 +3883,7 @@
     u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u20: { cost: 25000000, name: "Master Interest", effect: "Increases interest rate by 15%", type: "interest" },
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
-    u27: { cost: 750000000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
+    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
     u30: { cost: 50000, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
     u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" },
@@ -4422,6 +4499,7 @@
   addNetWorthDataPoint();
   renderAchievements();
   renderStatistics();
+  renderEventLogs();
   updateUpgradeIndicator();
   
   // Settings panel functionality
