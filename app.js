@@ -587,10 +587,12 @@
   let marketCrashActive = false;
   let flashSaleActive = false;
   let greatDepressionActive = false;
+  let fastFingersActive = false;
   let marketBoomEndTime = 0;
   let marketCrashEndTime = 0;
   let flashSaleEndTime = 0;
   let greatDepressionEndTime = 0;
+  let fastFingersEndTime = 0;
   let eventCooldown = 0;
   let skipNextEventCheck = false; // Skip next event check to give breathing room
   
@@ -642,13 +644,14 @@
   const EVENT_CONFIG = {
     // Event probabilities (per check)
     probabilities: {
-      marketBoom: 0.04,    // 3% chance
-      marketCrash: 0.06,   // 4% chance  
-      flashSale: 0.03,     // 2% chance
-      greatDepression: 0.02, // 1% chance
-      taxCollection: 0.05,   // 2% chance
-      robbery: 0.03,          // 1% chance
-      divorce: 0.02             // 1% chance
+      marketBoom: 0.05,    // 5% chance
+      marketCrash: 0.40,   // 4% chance  
+      flashSale: 0.03,     // 3% chance
+      greatDepression: 0.15, // 1% chance
+      fastFingers: 0.02,   // 2% chance
+      taxCollection: 0.02,   // 2% chance
+      robbery: 0.05,          // 2% chance
+      divorce: 0.15             // 1% chance
     },
     
     // Event durations (milliseconds)
@@ -656,7 +659,8 @@
       marketBoom: 30000,    // 30 seconds
       marketCrash: 30000,   // 30 seconds
       flashSale: 30000,     // 30 seconds
-      greatDepression: 30000 // 30 seconds
+      greatDepression: 30000, // 30 seconds
+      fastFingers: 15000    // 15 seconds
     },
     
     // Event cooldowns (milliseconds)
@@ -665,6 +669,7 @@
       marketCrash: 60000,   // 1 minute
       flashSale: 180000,    // 3 minutes
       greatDepression: 60000, // 1 minute
+      fastFingers: 60000,   // 1 minute
       taxCollection: 60000,   // 1 minute
       robbery: 60000,          // 1 minute
       divorce: 60000            // 1 minute
@@ -676,11 +681,35 @@
       marketCrash: 0,
       flashSale: 0,
       greatDepression: 0,
+      fastFingers: 0,
       taxCollection: 0,
       robbery: 0,
       divorce: 0
+    },
+    
+    // Net worth thresholds (minimum net worth required for events to trigger)
+    netWorthThresholds: {
+      marketBoom: 0,        // No threshold
+      marketCrash: 100000,       // No threshold
+      flashSale: 0,         // No threshold
+      greatDepression: 2000000,   // No threshold
+      fastFingers: 0,       // No threshold
+      taxCollection: 150000,     // No threshold
+      robbery: 100000,           // No threshold
+      divorce: 1000000      // 1 million euro threshold
     }
   };
+  
+  // Helper function to calculate current net worth
+  function getCurrentNetWorth() {
+    return currentAccountBalance + investmentAccountBalance;
+  }
+  
+  // Helper function to check if event meets net worth threshold
+  function meetsNetWorthThreshold(eventName) {
+    const threshold = EVENT_CONFIG.netWorthThresholds[eventName] || 0;
+    return getCurrentNetWorth() >= threshold;
+  }
   
   // Event Functions
   function triggerMarketBoom() {
@@ -913,6 +942,28 @@
     renderBalances();
   }
   
+  function triggerFastFingers() {
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive) return; // Don't trigger if any event is active
+    
+    fastFingersActive = true;
+    fastFingersEndTime = Date.now() + EVENT_CONFIG.durations.fastFingers;
+    EVENT_CONFIG.eventCooldowns.fastFingers = Date.now() + EVENT_CONFIG.cooldowns.fastFingers;
+    
+    // Show notification
+    showEventNotification("⚡ Fast Fingers!", "Click income boosted by 3x for 15 seconds!", "fast-fingers");
+    
+    // Visual effects
+    screenFlash('#FFD700', 500); // Gold flash
+    screenShake(2, 200); // Light shake
+    
+    // Play sound effect
+    if (soundEnabled) {
+      playEventSound('fast-fingers');
+    }
+    
+    updateActiveEventDisplay();
+  }
+  
   // Check for expired events immediately (called every second)
   function checkExpiredEvents() {
     const now = Date.now();
@@ -961,6 +1012,13 @@
       updateActiveEventDisplay();
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
+    
+    if (fastFingersActive && now >= fastFingersEndTime) {
+      fastFingersActive = false;
+      showEventNotification("⚡ Fast Fingers Ended", "Click income returned to normal", "fast-fingers-end");
+      updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
+    }
   }
 
   function checkEvents() {
@@ -977,7 +1035,7 @@
     }
     
     // Check for new events (only one event can be active at a time)
-    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive;
+    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive;
     
     // console.log('🎲 Event Check:', {
     //   anyEventActive,
@@ -996,77 +1054,115 @@
       // Only check for new events if no event is currently active
       const eventRoll = Math.random();
       
-      // Calculate cumulative probabilities
-      const boomProb = EVENT_CONFIG.probabilities.marketBoom;
-      const crashProb = EVENT_CONFIG.probabilities.marketCrash;
-      const saleProb = EVENT_CONFIG.probabilities.flashSale;
-      const depressionProb = EVENT_CONFIG.probabilities.greatDepression;
-      const taxProb = EVENT_CONFIG.probabilities.taxCollection;
-      const robberyProb = EVENT_CONFIG.probabilities.robbery;
-      const divorceProb = EVENT_CONFIG.probabilities.divorce;
-      const totalProb = boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb + divorceProb;
+      // Calculate which events can actually trigger (meet thresholds and cooldowns)
+      const availableEvents = [];
+      const eventConfigs = [
+        { name: 'marketBoom', prob: EVENT_CONFIG.probabilities.marketBoom },
+        { name: 'marketCrash', prob: EVENT_CONFIG.probabilities.marketCrash },
+        { name: 'flashSale', prob: EVENT_CONFIG.probabilities.flashSale },
+        { name: 'greatDepression', prob: EVENT_CONFIG.probabilities.greatDepression },
+        { name: 'fastFingers', prob: EVENT_CONFIG.probabilities.fastFingers },
+        { name: 'taxCollection', prob: EVENT_CONFIG.probabilities.taxCollection },
+        { name: 'robbery', prob: EVENT_CONFIG.probabilities.robbery },
+        { name: 'divorce', prob: EVENT_CONFIG.probabilities.divorce }
+      ];
+      
+      // Filter events that can actually trigger
+      eventConfigs.forEach(event => {
+        const canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && meetsNetWorthThreshold(event.name);
+        if (canTrigger) {
+          availableEvents.push(event);
+        }
+      });
+      
+      // Calculate total probability of available events
+      const totalAvailableProb = availableEvents.reduce((sum, event) => sum + event.prob, 0);
+      
+      // Calculate cumulative probabilities for available events only
+      let cumulativeProb = 0;
+      const eventRanges = {};
+      availableEvents.forEach(event => {
+        const startRange = cumulativeProb;
+        cumulativeProb += event.prob;
+        eventRanges[event.name] = {
+          start: startRange,
+          end: cumulativeProb,
+          probability: event.prob,
+          percentage: (event.prob * 100).toFixed(1) + '%'
+        };
+      });
       
       console.log('🎲 Event Roll:', {
         roll: eventRoll,
-        probabilities: {
-          marketBoom: `0.00-${boomProb} (${(boomProb * 100).toFixed(1)}%)`,
-          marketCrash: `${boomProb}-${boomProb + crashProb} (${(crashProb * 100).toFixed(1)}%)`,
-          flashSale: `${boomProb + crashProb}-${boomProb + crashProb + saleProb} (${(saleProb * 100).toFixed(1)}%)`,
-          greatDepression: `${boomProb + crashProb + saleProb}-${boomProb + crashProb + saleProb + depressionProb} (${(depressionProb * 100).toFixed(1)}%)`,
-          taxCollection: `${boomProb + crashProb + saleProb + depressionProb}-${boomProb + crashProb + saleProb + depressionProb + taxProb} (${(taxProb * 100).toFixed(1)}%)`,
-          robbery: `${boomProb + crashProb + saleProb + depressionProb + taxProb}-${boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb} (${(robberyProb * 100).toFixed(1)}%)`,
-          divorce: `${boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb}-${totalProb} (${(divorceProb * 100).toFixed(1)}%)`,
-          nothing: `${totalProb}-1.00 (${((1 - totalProb) * 100).toFixed(1)}%)`
-        },
+        availableEvents: availableEvents.map(e => e.name),
+        totalAvailableProbability: (totalAvailableProb * 100).toFixed(1) + '%',
+        eventRanges: eventRanges,
+        nothingProbability: ((1 - totalAvailableProb) * 100).toFixed(1) + '%',
         cooldownChecks: {
           marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
           marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
           flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale,
           greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression,
+          fastFingers: now >= EVENT_CONFIG.eventCooldowns.fastFingers,
           taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection,
           robbery: now >= EVENT_CONFIG.eventCooldowns.robbery,
           divorce: now >= EVENT_CONFIG.eventCooldowns.divorce
+        },
+        netWorthChecks: {
+          currentNetWorth: getCurrentNetWorth(),
+          marketBoom: meetsNetWorthThreshold('marketBoom'),
+          marketCrash: meetsNetWorthThreshold('marketCrash'),
+          flashSale: meetsNetWorthThreshold('flashSale'),
+          greatDepression: meetsNetWorthThreshold('greatDepression'),
+          fastFingers: meetsNetWorthThreshold('fastFingers'),
+          taxCollection: meetsNetWorthThreshold('taxCollection'),
+          robbery: meetsNetWorthThreshold('robbery'),
+          divorce: meetsNetWorthThreshold('divorce')
         }
       });
       
-      // Market Boom
-      if (now >= EVENT_CONFIG.eventCooldowns.marketBoom && eventRoll < boomProb) {
-        console.log('🎯 TRIGGERING: Market Boom!');
-        triggerMarketBoom();
+      // Check which event should trigger based on the roll
+      let eventTriggered = false;
+      for (const event of availableEvents) {
+        const range = eventRanges[event.name];
+        if (eventRoll >= range.start && eventRoll < range.end) {
+          console.log(`🎯 TRIGGERING: ${event.name}!`);
+          
+          // Trigger the appropriate event
+          switch (event.name) {
+            case 'marketBoom':
+              triggerMarketBoom();
+              break;
+            case 'marketCrash':
+              triggerMarketCrash();
+              break;
+            case 'flashSale':
+              triggerFlashSale();
+              break;
+            case 'greatDepression':
+              triggerGreatDepression();
+              break;
+            case 'fastFingers':
+              triggerFastFingers();
+              break;
+            case 'taxCollection':
+              triggerTaxCollection();
+              break;
+            case 'robbery':
+              triggerRobbery();
+              break;
+            case 'divorce':
+              triggerDivorce();
+              break;
+          }
+          eventTriggered = true;
+          break;
+        }
       }
-      // Market Crash  
-      else if (now >= EVENT_CONFIG.eventCooldowns.marketCrash && eventRoll >= boomProb && eventRoll < boomProb + crashProb) {
-        console.log('🎯 TRIGGERING: Market Crash!');
-        triggerMarketCrash();
-      }
-      // Flash Sale
-      else if (now >= EVENT_CONFIG.eventCooldowns.flashSale && eventRoll >= boomProb + crashProb && eventRoll < boomProb + crashProb + saleProb) {
-        console.log('🎯 TRIGGERING: Flash Sale!');
-        triggerFlashSale();
-      }
-      // Great Depression
-      else if (now >= EVENT_CONFIG.eventCooldowns.greatDepression && eventRoll >= boomProb + crashProb + saleProb && eventRoll < boomProb + crashProb + saleProb + depressionProb) {
-        console.log('🎯 TRIGGERING: Great Depression!');
-        triggerGreatDepression();
-      }
-      // Tax Collection
-      else if (now >= EVENT_CONFIG.eventCooldowns.taxCollection && eventRoll >= boomProb + crashProb + saleProb + depressionProb && eventRoll < boomProb + crashProb + saleProb + depressionProb + taxProb) {
-        console.log('🎯 TRIGGERING: Tax Collection!');
-        triggerTaxCollection();
-      }
-      // Robbery
-      else if (now >= EVENT_CONFIG.eventCooldowns.robbery && eventRoll >= boomProb + crashProb + saleProb + depressionProb + taxProb && eventRoll < boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb) {
-        console.log('🎯 TRIGGERING: Robbery!');
-        triggerRobbery();
-      }
-      // Divorce
-      else if (now >= EVENT_CONFIG.eventCooldowns.divorce && eventRoll >= boomProb + crashProb + saleProb + depressionProb + taxProb + robberyProb && eventRoll < totalProb) {
-        console.log('🎯 TRIGGERING: Divorce!');
-        triggerDivorce();
-      }
+      
       // Nothing happens
-      else {
-        console.log(`🎲 Result: Nothing triggered (${((1 - totalProb) * 100).toFixed(1)}% chance)`);
+      if (!eventTriggered) {
+        console.log(`🎲 Result: Nothing triggered (${((1 - totalAvailableProb) * 100).toFixed(1)}% chance)`);
       }
     } else {
       // console.log('🎲 Skipping event check - event already active');
@@ -1137,6 +1233,11 @@
       endTime = greatDepressionEndTime;
       eventType = 'great-depression';
       totalDuration = EVENT_CONFIG.durations.greatDepression;
+    } else if (fastFingersActive && now < fastFingersEndTime) {
+      activeEvent = { name: 'Fast Fingers', icon: '⚡', type: 'fast-fingers' };
+      endTime = fastFingersEndTime;
+      eventType = 'fast-fingers';
+      totalDuration = EVENT_CONFIG.durations.fastFingers;
     }
     
     if (activeEvent) {
@@ -1576,14 +1677,16 @@
     let base = 1;
     let bonus = 0;
     if (owned.u1) bonus += 1;      // elementary school
-    if (owned.u2) bonus += 2;      // secondary school
-    if (owned.u3) bonus += 4;      // high school
-    if (owned.u5) bonus += 10;     // bachelor's
-    if (owned.u6) bonus += 20;     // master's
-    if (owned.u7) bonus += 40;     // PhD
+    if (owned.u3) bonus += 6;      // high school
+    if (owned.u5) bonus += 30;     // higher education
     
     
     let totalIncome = (base + bonus) * prestigeClickMultiplier;
+    
+    // Apply Fast Fingers 3x boost
+    if (fastFingersActive) {
+      totalIncome *= 3;
+    }
     
     return totalIncome;
   }
@@ -2281,49 +2384,6 @@
     });
   }
 
-  function renderStickFigure() {
-    // Show/hide items based on upgrades
-    const pencil = document.getElementById('pencil');
-    const book = document.getElementById('book');
-    const calculator = document.getElementById('calculator');
-    const glasses = document.getElementById('glasses');
-    const trophy = document.getElementById('trophy');
-    const nobelPrize = document.getElementById('nobelPrize');
-    
-    if (pencil) pencil.style.display = owned.u1 ? 'block' : 'none';
-    // Book is only shown if calculator is not owned (to avoid overlap)
-    if (book) book.style.display = (owned.u2 && !owned.u3) ? 'block' : 'none';
-    if (calculator) calculator.style.display = owned.u3 ? 'block' : 'none';
-    if (glasses) glasses.style.display = owned.u5 ? 'block' : 'none';
-    if (trophy) trophy.style.display = owned.u6 ? 'block' : 'none';
-    if (nobelPrize) nobelPrize.style.display = owned.u7 ? 'block' : 'none';
-    
-    // Update education display
-    renderEducationDisplay();
-  }
-
-  function renderEducationDisplay() {
-    const educationDisplay = document.getElementById('educationDisplay');
-    if (!educationDisplay) return;
-    
-    let educationLevel = 'None';
-    
-    if (owned.u7) {
-      educationLevel = 'PhD';
-    } else if (owned.u6) {
-      educationLevel = 'Master\'s';
-    } else if (owned.u5) {
-      educationLevel = 'Bachelor\'s';
-    } else if (owned.u3) {
-      educationLevel = 'High School';
-    } else if (owned.u2) {
-      educationLevel = 'Secondary School';
-    } else if (owned.u1) {
-      educationLevel = 'Elementary School';
-    }
-    
-    educationDisplay.innerHTML = `<span>Education:</span><span>${educationLevel}</span>`;
-  }
 
   
   // Tour system (disabled - keeping for future use)
@@ -2426,10 +2486,12 @@
         marketCrashActive,
         flashSaleActive,
         greatDepressionActive,
+        fastFingersActive,
         marketBoomEndTime,
         marketCrashEndTime,
         flashSaleEndTime,
         greatDepressionEndTime,
+        fastFingersEndTime,
         eventCooldown,
         skipNextEventCheck,
         eventConfig: EVENT_CONFIG,
@@ -2523,10 +2585,12 @@
         marketCrashActive = gameState.marketCrashActive || false;
         flashSaleActive = gameState.flashSaleActive || false;
         greatDepressionActive = gameState.greatDepressionActive || false;
+        fastFingersActive = gameState.fastFingersActive || false;
         marketBoomEndTime = gameState.marketBoomEndTime || 0;
         marketCrashEndTime = gameState.marketCrashEndTime || 0;
         flashSaleEndTime = gameState.flashSaleEndTime || 0;
         greatDepressionEndTime = gameState.greatDepressionEndTime || 0;
+        fastFingersEndTime = gameState.fastFingersEndTime || 0;
         eventCooldown = gameState.eventCooldown || 0;
         skipNextEventCheck = gameState.skipNextEventCheck || false;
         
@@ -2599,10 +2663,12 @@
       marketCrashActive = false;
       flashSaleActive = false;
       greatDepressionActive = false;
+      fastFingersActive = false;
       marketBoomEndTime = 0;
       marketCrashEndTime = 0;
       flashSaleEndTime = 0;
       greatDepressionEndTime = 0;
+      fastFingersEndTime = 0;
       eventCooldown = 0;
       skipNextEventCheck = false;
       
@@ -2611,6 +2677,7 @@
       EVENT_CONFIG.eventCooldowns.marketCrash = 0;
       EVENT_CONFIG.eventCooldowns.flashSale = 0;
       EVENT_CONFIG.eventCooldowns.greatDepression = 0;
+      EVENT_CONFIG.eventCooldowns.fastFingers = 0;
       EVENT_CONFIG.eventCooldowns.taxCollection = 0;
       EVENT_CONFIG.eventCooldowns.robbery = 0;
       EVENT_CONFIG.eventCooldowns.divorce = 0;
@@ -3027,10 +3094,10 @@
     if (achievementsUnlockedEl && numberAnimator) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
       const currentUnlocked = parseInt(achievementsUnlockedEl.textContent.split('/')[0]) || 0;
-      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/11`);
+      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/12`);
     } else if (achievementsUnlockedEl) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
-      achievementsUnlockedEl.textContent = `${unlockedCount}/11`;
+      achievementsUnlockedEl.textContent = `${unlockedCount}/12`;
     }
   }
 
@@ -3153,6 +3220,7 @@
     ach6: { unlocked: false, condition: () => totalClicks >= 1000 },
     ach7: { unlocked: false, condition: () => totalCriticalHits >= 100 },
     ach8: { unlocked: false, condition: () => maxStreakReached },
+    ach9: { unlocked: false, condition: () => owned.u5 }, // Educated - Higher Education
     ach10: { unlocked: false, condition: () => investmentAccountBalance >= 100000 },
     ach11: { unlocked: false, condition: () => totalDividendsReceived >= 1000000 }, // Receive €1,000,000 in dividends
     ach13: { unlocked: false, condition: () => hasMadeFirstInvestment } // First investment
@@ -3466,17 +3534,14 @@
   // That's it! Everything else is automatic.
   const UPGRADE_CONFIG = {
     u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click" },
-    u2: { cost: 20, name: "Finish secondary school", effect: "Adds +2 euros per click", type: "click" },
-    u3: { cost: 50, name: "Finish high school", effect: "Adds +4 euros per click", type: "click" },
+    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click" },
     u4: { cost: 6000, name: "Better credit score", effect: "Increases investment interest by 20%", type: "interest" },
-    u5: { cost: 100, name: "Finish bachelor's", effect: "Adds +10 euros per click", type: "click" },
-    u6: { cost: 250, name: "Finish master's", effect: "Adds +20 euros per click", type: "click" },
-    u7: { cost: 500, name: "Do a PhD", effect: "Adds +40 euros per click", type: "click" },
-    u8: { cost: 20000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest" },
+    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click" },
+    u8: { cost: 15000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest" },
     u9: { cost: 250000, name: "Befriend a banker", effect: "Increases investment interest by 15%", type: "interest" },
     u10: { cost: 4000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend" },
     u11: { cost: 50, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
-    u12: { cost: 10000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed" },
+    u12: { cost: 8000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed" },
     u13: { cost: 30000, name: "Mega Dividends", effect: "Increase dividend rate by 25%", type: "dividend_rate" },
     u14: { cost: 300000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate" },
     u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate" },
@@ -4108,7 +4173,6 @@
     updateProgressBars();
     checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
     renderStatistics();
-    renderStickFigure();
     
     
     // Check tour triggers
@@ -4155,7 +4219,6 @@
   addNetWorthDataPoint();
   renderAchievements();
   renderStatistics();
-  renderStickFigure();
   updateUpgradeIndicator();
   
   // Settings panel functionality
