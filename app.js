@@ -3185,15 +3185,12 @@
       if (panelsContainer) {
         // Calculate scroll position to show upgrades panel (second panel)
         const panelWidth = window.innerWidth - 32; // Account for padding
-        panelsContainer.scrollTo({
-          left: panelWidth,
-          behavior: 'smooth'
-        });
+        panelsContainer.scrollLeft = panelWidth;
         
         // Wait for scroll to complete before showing tooltip
         setTimeout(() => {
           showTourTooltip(step, targetElement);
-        }, 500);
+        }, 10);
         return;
       }
     }
@@ -3389,15 +3386,12 @@
       if (panelsContainer) {
         // Calculate scroll position to show portfolio panel (third panel)
         const panelWidth = window.innerWidth - 32; // Account for padding
-        panelsContainer.scrollTo({
-          left: panelWidth * 2, // Third panel (index 2)
-          behavior: 'smooth'
-        });
+        panelsContainer.scrollLeft = panelWidth * 2; // Third panel (index 2)
         
         // Wait for scroll to complete before showing tooltip
         setTimeout(() => {
           showPortfolioTooltip(step, targetElement);
-        }, 600);
+        }, 10);
         return;
       }
     }
@@ -4736,15 +4730,12 @@
           
           // Scroll to panel
           const panelWidth = window.innerWidth - 32; // Account for padding
-          panelsContainer.scrollTo({
-            left: panelWidth * panelIndex,
-            behavior: 'smooth'
-          });
+          panelsContainer.scrollLeft = panelWidth * panelIndex;
           
-          // Clear scrolling flag after animation completes
+          // Clear scrolling flag after instant scroll completes
           setTimeout(() => {
             isScrolling = false;
-          }, 500); // Match the smooth scroll duration
+          }, 10); // Minimal timeout for instant scrolling
         }
       });
     });

@@ -1278,8 +1278,8 @@ main {
     gap: 12px;
     padding-bottom: calc(6vh + 36px); /* Add padding to prevent panels from going under nav + spacing */
     margin-bottom: 0;
-    /* Enhanced smooth scrolling for small mobile */
-    scroll-behavior: smooth;
+    /* Fast smooth scrolling for small mobile */
+    scroll-behavior: auto; /* Changed from smooth to auto for instant scrolling */
     overscroll-behavior-x: contain;
     overscroll-behavior-y: none;
   }
