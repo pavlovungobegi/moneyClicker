@@ -674,6 +674,55 @@
     skyscraper: 0
   };
 
+  // Buy multiplier system (1x, 10x, 100x, MAX)
+  let buyMultiplier = 1;
+  const BUY_MULTIPLIERS = [1, 10, 100, 'MAX'];
+
+  function cycleBuyMultiplier() {
+    const currentIndex = BUY_MULTIPLIERS.indexOf(buyMultiplier);
+    const nextIndex = (currentIndex + 1) % BUY_MULTIPLIERS.length;
+    buyMultiplier = BUY_MULTIPLIERS[nextIndex];
+    updateBuyMultiplierDisplay();
+    saveGameState();
+  }
+
+  function updateBuyMultiplierDisplay() {
+    // Update the toggle button
+    if (buyMultiplierBtn) {
+      buyMultiplierBtn.textContent = buyMultiplier === 'MAX' ? 'MAX' : `${buyMultiplier}x`;
+    }
+    
+    // Update all property buy buttons to show current multiplier
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
+      if (buyBtn) {
+        buyBtn.textContent = buyMultiplier === 'MAX' ? 'Buy MAX' : `Buy ${buyMultiplier}x`;
+      }
+    });
+  }
+
+  function setupPropertyButtonEvents(propertyId, buyBtn) {
+    if (!buyBtn) return;
+    
+    // Click event - buy property
+    buyBtn.addEventListener("click", () => {
+      buyProperty(propertyId);
+    });
+    
+    // Touch events for visual feedback
+    buyBtn.addEventListener("touchstart", (e) => {
+      buyBtn.classList.add("touch-active");
+    }, { passive: true });
+    
+    buyBtn.addEventListener("touchend", (e) => {
+      buyBtn.classList.remove("touch-active");
+    }, { passive: true });
+    
+    buyBtn.addEventListener("touchcancel", (e) => {
+      buyBtn.classList.remove("touch-active");
+    }, { passive: true });
+  }
+
   // Net worth chart data
   let netWorthHistory = [];
   let netWorthChart = null;
@@ -1511,6 +1560,7 @@
   const buyManufacturingPlantBtn = document.getElementById("buyManufacturingPlantBtn");
   const buyOfficeBuildingBtn = document.getElementById("buyOfficeBuildingBtn");
   const buySkyscraperBtn = document.getElementById("buySkyscraperBtn");
+  const buyMultiplierBtn = document.getElementById("buyMultiplierBtn");
   const interestPerSecEl = document.getElementById("interestPerSec");
   const interestContainer = document.getElementById("interestContainer");
   const toggleCompletedBtn = document.getElementById("toggleCompletedBtn");
@@ -1994,16 +2044,53 @@
   }
 
   function buyProperty(propertyId) {
-    const cost = getPropertyCost(propertyId);
+    const config = PROPERTY_CONFIG[propertyId];
+    let totalCost = 0;
+    let purchases = 0;
     
-    if (currentAccountBalance < cost) {
-      console.log('Insufficient funds for property purchase:', { propertyId, cost, currentBalance: currentAccountBalance });
+    // Calculate how many properties to buy
+    let propertiesToBuy = buyMultiplier;
+    if (buyMultiplier === 'MAX') {
+      // Calculate maximum affordable properties
+      let currentOwned = properties[propertyId];
+      let runningCost = 0;
+      propertiesToBuy = 0;
+      
+      while (runningCost <= currentAccountBalance) {
+        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
+        if (runningCost + cost > currentAccountBalance) break;
+        runningCost += cost;
+        propertiesToBuy++;
+      }
+      
+      if (propertiesToBuy === 0) {
+        console.log('Insufficient funds for any property purchase:', { propertyId, currentBalance: currentAccountBalance });
+        playErrorSound();
+        return false;
+      }
+    }
+    
+    // Calculate total cost for multiple purchases
+    for (let i = 0; i < propertiesToBuy; i++) {
+      const currentOwned = properties[propertyId] + i;
+      const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned);
+      totalCost += cost;
+    }
+    
+    if (currentAccountBalance < totalCost) {
+      console.log('Insufficient funds for property purchase:', { propertyId, totalCost, currentBalance: currentAccountBalance, multiplier: buyMultiplier });
       playErrorSound();
       return false;
     }
     
-    currentAccountBalance -= cost;
-    properties[propertyId]++;
+    // Make multiple purchases
+    for (let i = 0; i < propertiesToBuy; i++) {
+      const currentOwned = properties[propertyId] + i;
+      const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned);
+      currentAccountBalance -= cost;
+      properties[propertyId]++;
+      purchases++;
+    }
     
     // Create purchase particle effects
     if (particleSystem) {
@@ -2013,11 +2100,11 @@
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         
-        // Create upgrade particles
-        particleSystem.createUpgradeParticles(centerX, centerY, 4);
+        // Create upgrade particles (more particles for multiple purchases)
+        particleSystem.createUpgradeParticles(centerX, centerY, Math.min(8, purchases * 2));
         
         // Create money gain particles
-        particleSystem.createMoneyGainParticles(centerX, centerY, cost);
+        particleSystem.createMoneyGainParticles(centerX, centerY, totalCost);
       }
     }
     
@@ -2035,8 +2122,34 @@
   function renderPropertyUI(propertyId) {
     const config = PROPERTY_CONFIG[propertyId];
     const owned = properties[propertyId];
-    const cost = getPropertyCost(propertyId);
+    const singleCost = getPropertyCost(propertyId);
     const totalIncome = getPropertyTotalIncome(propertyId);
+    
+    // Calculate total cost for multiple purchases
+    let totalCost = 0;
+    let propertiesToBuy = buyMultiplier;
+    
+    if (buyMultiplier === 'MAX') {
+      // Calculate maximum affordable properties
+      let currentOwned = owned;
+      let runningCost = 0;
+      propertiesToBuy = 0;
+      
+      while (runningCost <= currentAccountBalance) {
+        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
+        if (runningCost + cost > currentAccountBalance) break;
+        runningCost += cost;
+        propertiesToBuy++;
+      }
+      
+      totalCost = runningCost;
+    } else {
+      for (let i = 0; i < buyMultiplier; i++) {
+        const currentOwned = owned + i;
+        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned);
+        totalCost += cost;
+      }
+    }
     
     // Update owned count
     const ownedEl = document.getElementById(`${propertyId}Owned`);
@@ -2044,10 +2157,16 @@
       ownedEl.textContent = owned;
     }
     
-    // Update cost
+    // Update cost (show total cost for multiple purchases)
     const costEl = document.getElementById(`${propertyId}Cost`);
     if (costEl) {
-      costEl.textContent = `€${formatNumberShort(cost)}`;
+      if (buyMultiplier === 'MAX') {
+        costEl.textContent = `€${formatNumberShort(totalCost)}`;
+      } else if (buyMultiplier > 1) {
+        costEl.textContent = `€${formatNumberShort(totalCost)}`;
+      } else {
+        costEl.textContent = `€${formatNumberShort(singleCost)}`;
+      }
     }
     
     // Update total income
@@ -2056,10 +2175,11 @@
       totalIncomeEl.textContent = `€${formatNumberShort(totalIncome)}/sec total`;
     }
     
-    // Update buy button state
+    // Update buy button state and text
     const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
     if (buyBtn) {
-      buyBtn.disabled = currentAccountBalance < cost;
+      buyBtn.disabled = currentAccountBalance < totalCost;
+      buyBtn.textContent = buyMultiplier === 'MAX' ? 'Buy MAX' : `Buy ${buyMultiplier}x`;
     }
   }
 
@@ -2515,6 +2635,9 @@
         // Auto-rent settings
         autoRentEnabled,
         
+        // Buy multiplier
+        buyMultiplier,
+        
         // Game timing
         gameStartTime,
         
@@ -2613,6 +2736,9 @@
         if (autoRentToggle) {
           autoRentToggle.checked = autoRentEnabled;
         }
+        
+        // Restore buy multiplier
+        buyMultiplier = gameState.buyMultiplier || 1;
         
         // Restore game timing (no offline earnings)
         gameStartTime = gameState.gameStartTime || Date.now();
@@ -3185,108 +3311,20 @@
   }
 
   // Property system event listeners
-  if (buyFoodStandBtn) {
-    buyFoodStandBtn.addEventListener("click", () => buyProperty("foodStand"));
-    
-    // Add touch-specific animation handling
-    buyFoodStandBtn.addEventListener("touchstart", (e) => {
-      buyFoodStandBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyFoodStandBtn.addEventListener("touchend", (e) => {
-      buyFoodStandBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
+  setupPropertyButtonEvents("foodStand", buyFoodStandBtn);
+  setupPropertyButtonEvents("newsstand", buyNewsstandBtn);
+  setupPropertyButtonEvents("parkingGarage", buyParkingGarageBtn);
+  setupPropertyButtonEvents("convenienceStore", buyConvenienceStoreBtn);
+  setupPropertyButtonEvents("apartment", buyApartmentBtn);
+  setupPropertyButtonEvents("manufacturingPlant", buyManufacturingPlantBtn);
+  setupPropertyButtonEvents("officeBuilding", buyOfficeBuildingBtn);
+  setupPropertyButtonEvents("skyscraper", buySkyscraperBtn);
 
-  if (buyNewsstandBtn) {
-    buyNewsstandBtn.addEventListener("click", () => buyProperty("newsstand"));
-    
-    // Add touch-specific animation handling
-    buyNewsstandBtn.addEventListener("touchstart", (e) => {
-      buyNewsstandBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyNewsstandBtn.addEventListener("touchend", (e) => {
-      buyNewsstandBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
-
-  if (buyParkingGarageBtn) {
-    buyParkingGarageBtn.addEventListener("click", () => buyProperty("parkingGarage"));
-    
-    // Add touch-specific animation handling
-    buyParkingGarageBtn.addEventListener("touchstart", (e) => {
-      buyParkingGarageBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyParkingGarageBtn.addEventListener("touchend", (e) => {
-      buyParkingGarageBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
-
-  if (buyApartmentBtn) {
-    buyApartmentBtn.addEventListener("click", () => buyProperty("apartment"));
-    
-    // Add touch-specific animation handling
-    buyApartmentBtn.addEventListener("touchstart", (e) => {
-      buyApartmentBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyApartmentBtn.addEventListener("touchend", (e) => {
-      buyApartmentBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
-
-  if (buyConvenienceStoreBtn) {
-    buyConvenienceStoreBtn.addEventListener("click", () => buyProperty("convenienceStore"));
-    
-    // Add touch-specific animation handling
-    buyConvenienceStoreBtn.addEventListener("touchstart", (e) => {
-      buyConvenienceStoreBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyConvenienceStoreBtn.addEventListener("touchend", (e) => {
-      buyConvenienceStoreBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
-
-  if (buyManufacturingPlantBtn) {
-    buyManufacturingPlantBtn.addEventListener("click", () => buyProperty("manufacturingPlant"));
-    
-    // Add touch-specific animation handling
-    buyManufacturingPlantBtn.addEventListener("touchstart", (e) => {
-      buyManufacturingPlantBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyManufacturingPlantBtn.addEventListener("touchend", (e) => {
-      buyManufacturingPlantBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
-
-  if (buyOfficeBuildingBtn) {
-    buyOfficeBuildingBtn.addEventListener("click", () => buyProperty("officeBuilding"));
-    
-    // Add touch-specific animation handling
-    buyOfficeBuildingBtn.addEventListener("touchstart", (e) => {
-      buyOfficeBuildingBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buyOfficeBuildingBtn.addEventListener("touchend", (e) => {
-      buyOfficeBuildingBtn.classList.remove("touch-active");
-    }, { passive: true });
-  }
-
-  if (buySkyscraperBtn) {
-    buySkyscraperBtn.addEventListener("click", () => buyProperty("skyscraper"));
-    
-    // Add touch-specific animation handling
-    buySkyscraperBtn.addEventListener("touchstart", (e) => {
-      buySkyscraperBtn.classList.add("touch-active");
-    }, { passive: true });
-    
-    buySkyscraperBtn.addEventListener("touchend", (e) => {
-      buySkyscraperBtn.classList.remove("touch-active");
-    }, { passive: true });
+  // Buy multiplier toggle button
+  if (buyMultiplierBtn) {
+    buyMultiplierBtn.addEventListener("click", () => {
+      cycleBuyMultiplier();
+    });
   }
 
   // Prestige system
@@ -4816,6 +4854,9 @@ window.addEventListener('beforeunload', () => {
   
   // Load saved game state
   const gameStateLoaded = loadGameState();
+  
+  // Update buy multiplier display after game state is loaded
+  updateBuyMultiplierDisplay();
   
   // Try to start music after a short delay if it was enabled (fallback for autoplay restrictions)
   if (gameStateLoaded && musicEnabled) {
