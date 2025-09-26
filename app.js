@@ -48,7 +48,7 @@
       this.particles.push(particle);
     }
     
-    createCoinParticles(x, y, count = 3) {
+    createCoinParticles(x, y, count = 2) {
       for (let i = 0; i < count; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -73,7 +73,7 @@
       });
     }
     
-    createSparkleParticles(x, y, count = 4) {
+    createSparkleParticles(x, y, count = 3) {
       for (let i = 0; i < count; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -119,7 +119,7 @@
     }
     
     createMoneyGainParticles(x, y, amount) {
-      const count = Math.min(4, Math.max(3, Math.floor(amount / 2000)));
+      const count = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -1912,9 +1912,9 @@
         particleSystem.createCriticalCoin(centerX, centerY);
         screenShake(8, 300);
       } else {
-        // Normal click: regular particles based on income
-        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.3), 1), 3);
-        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.5), 1), 5);
+        // Normal click: regular particles based on income (reduced by 30%)
+        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.21), 1), 2);
+        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.35), 1), 3);
         
         // Create coin particles
         particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
@@ -2052,7 +2052,7 @@
         particleSystem.createMoneyGainParticles(centerX, centerY, depositAmount);
         
         // Create upgrade particles for investment
-        particleSystem.createUpgradeParticles(centerX, centerY, 4);
+        particleSystem.createUpgradeParticles(centerX, centerY, 3);
       }
     }
     
@@ -2081,7 +2081,7 @@
         particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
         
         // Create sparkle particles for withdrawal
-        particleSystem.createSparkleParticles(centerX, centerY, 3);
+        particleSystem.createSparkleParticles(centerX, centerY, 2);
       }
     }
     
@@ -2110,7 +2110,7 @@
         particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
         
         // Create sparkle particles for withdrawal
-        particleSystem.createSparkleParticles(centerX, centerY, 2);
+        particleSystem.createSparkleParticles(centerX, centerY, 1);
       }
     }
     
@@ -2193,7 +2193,7 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create upgrade particles (more particles for multiple purchases)
-        particleSystem.createUpgradeParticles(centerX, centerY, Math.min(8, purchases * 2));
+        particleSystem.createUpgradeParticles(centerX, centerY, Math.min(6, purchases * 1));
         
         // Create money gain particles
         particleSystem.createMoneyGainParticles(centerX, centerY, totalCost);
@@ -4039,11 +4039,11 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create upgrade particles
-        particleSystem.createUpgradeParticles(centerX, centerY, 5);
+        particleSystem.createUpgradeParticles(centerX, centerY, 3);
         
         // Create confetti for expensive upgrades
         if (cost >= 10000) {
-          particleSystem.createConfettiParticles(centerX, centerY, 8);
+          particleSystem.createConfettiParticles(centerX, centerY, 6);
         }
         
         // Create money gain particles
@@ -4260,7 +4260,7 @@
             const centerY = rect.top + rect.height / 2;
             
             // Create money particles from the dividend circle
-            particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(cappedPayout / 2000000, 8));
+            particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(cappedPayout / 2000000, 6));
           }
         }
         
