@@ -2070,14 +2070,13 @@
     let totalCost = 0;
     let purchases = 0;
     
-    // Calculate how many properties to buy
-    let propertiesToBuy = buyMultiplier;
+    // Calculate how many properties to buy based on available funds
+    let propertiesToBuy = 0;
+    let currentOwned = properties[propertyId];
+    let runningCost = 0;
+    
     if (buyMultiplier === 'MAX') {
       // Calculate maximum affordable properties
-      let currentOwned = properties[propertyId];
-      let runningCost = 0;
-      propertiesToBuy = 0;
-      
       while (runningCost <= currentAccountBalance) {
         const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
         if (runningCost + cost > currentAccountBalance) break;
@@ -2090,25 +2089,28 @@
         playErrorSound();
         return false;
       }
+    } else {
+      // For fixed multipliers (1x, 10x, 100x), calculate how many we can actually afford
+      const requestedCount = buyMultiplier;
+      while (propertiesToBuy < requestedCount && runningCost <= currentAccountBalance) {
+        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
+        if (runningCost + cost > currentAccountBalance) break;
+        runningCost += cost;
+        propertiesToBuy++;
+      }
+      
+      if (propertiesToBuy === 0) {
+        console.log('Insufficient funds for any property purchase:', { propertyId, currentBalance: currentAccountBalance, requested: requestedCount });
+        playErrorSound();
+        return false;
+      }
     }
     
-    // Calculate total cost for multiple purchases
-    for (let i = 0; i < propertiesToBuy; i++) {
-      const currentOwned = properties[propertyId] + i;
-      const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned);
-      totalCost += cost;
-    }
-    
-    if (currentAccountBalance < totalCost) {
-      console.log('Insufficient funds for property purchase:', { propertyId, totalCost, currentBalance: currentAccountBalance, multiplier: buyMultiplier });
-      playErrorSound();
-      return false;
-    }
+    totalCost = runningCost;
     
     // Make multiple purchases
     for (let i = 0; i < propertiesToBuy; i++) {
-      const currentOwned = properties[propertyId] + i;
-      const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned);
+      const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + i);
       currentAccountBalance -= cost;
       properties[propertyId]++;
       purchases++;
