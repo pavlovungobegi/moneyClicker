@@ -10,6 +10,16 @@
   // Debug log for mobile detection
   console.log('Mobile device detected:', isMobile, 'User Agent:', navigator.userAgent);
 
+  // Game difficulty system
+  const DIFFICULTY_MODES = {
+    EASY: 'easy',
+    NORMAL: 'normal',
+    HARD: 'hard',
+    EXTREME: 'extreme'
+  };
+  
+  let gameDifficulty = DIFFICULTY_MODES.NORMAL; // Default difficulty
+
   // Particle System
   class ParticleSystem {
     constructor() {
@@ -762,21 +772,61 @@
   let netWorthHistory = [];
   let eventLogs = [];
   let netWorthChart = null;
-  const MAX_DATA_POINTS = 60; // 10 minutes of data (60 * 10 seconds)
-  const DATA_COLLECTION_INTERVAL = 10000; // 10 seconds
+  const MAX_DATA_POINTS = 120; // 10 minutes of data (120 * 5 seconds)
+  const DATA_COLLECTION_INTERVAL = 5000; // 5 seconds
 
   // Event system configuration
   const EVENT_CONFIG = {
-    // Event probabilities (per check)
+    // Event probabilities (per check) - different for each difficulty
     probabilities: {
-      marketBoom: 0.055,    // 5.5% chance
-      marketCrash: 0.04,   // 4% chance  
-      flashSale: 0.03,     // 3% chance
-      greatDepression: 0.01, // 1% chance
-      fastFingers: 0.02,   // 2% chance
-      taxCollection: 0.02,   // 2% chance
-      robbery: 0.02,          // 2% chance
-      divorce: 0.01             // 1% chance
+      marketBoom: {
+        easy: 0.075,     // 7.5% chance (easier)
+        normal: 0.055,  // 5.5% chance (original)
+        hard: 0.04,     // 4% chance (harder)
+        extreme: 0.005   // 2% chance (extreme)
+      },
+      marketCrash: {
+        easy: 0.02,     // 2% chance (easier)
+        normal: 0.04,   // 4% chance (original)
+        hard: 0.06,     // 6% chance (harder)
+        extreme: 0.08   // 8% chance (extreme)
+      },
+      flashSale: {
+        easy: 0.05,     // 5% chance (easier)
+        normal: 0.03,   // 3% chance (original)
+        hard: 0.02,     // 2% chance (harder)
+        extreme: 0.005   // 1% chance (extreme)
+      },
+      greatDepression: {
+        easy: 0.005,    // 0.5% chance (easier)
+        normal: 0.01,   // 1% chance (original)
+        hard: 0.015,    // 1.5% chance (harder)
+        extreme: 0.04   // 2% chance (extreme)
+      },
+      fastFingers: {
+        easy: 0.04,     // 4% chance (easier)
+        normal: 0.02,   // 2% chance (original)
+        hard: 0.01,     // 1% chance (harder)
+        extreme: 0.005  // 0.5% chance (extreme)
+      },
+      taxCollection: {
+        easy: 0.01,     // 1% chance (easier)
+        normal: 0.02,   // 2% chance (original)
+        hard: 0.03,     // 3% chance (harder)
+        extreme: 0.07   // 4% chance (extreme)
+      },
+      robbery: {
+        easy: 0.01,     // 1% chance (easier)
+        normal: 0.02,   // 2% chance (original)
+        hard: 0.03,     // 3% chance (harder)
+        extreme: 0.075   // 4% chance (extreme)
+      },
+      divorce: {
+        easy: 0.005,    // 0.5% chance (easier)
+        normal: 0.01,   // 1% chance (original)
+        hard: 0.015,    // 1.5% chance (harder)
+        extreme: 0.035   // 2% chance (extreme)
+      }
     },
     
     // Event durations (milliseconds)
@@ -834,6 +884,15 @@
   function meetsNetWorthThreshold(eventName) {
     const threshold = EVENT_CONFIG.netWorthThresholds[eventName] || 0;
     return getCurrentNetWorth() >= threshold;
+  }
+  
+  // Helper function to get event probability based on current difficulty
+  function getEventProbability(eventName) {
+    const eventProbs = EVENT_CONFIG.probabilities[eventName];
+    if (!eventProbs) return 0;
+    
+    // Return the probability for the current difficulty
+    return eventProbs[gameDifficulty] || eventProbs.normal;
   }
   
   // Event Functions
@@ -1223,14 +1282,14 @@
       // Calculate which events can actually trigger (meet thresholds and cooldowns)
       const availableEvents = [];
       const eventConfigs = [
-        { name: 'marketBoom', prob: EVENT_CONFIG.probabilities.marketBoom },
-        { name: 'marketCrash', prob: EVENT_CONFIG.probabilities.marketCrash },
-        { name: 'flashSale', prob: EVENT_CONFIG.probabilities.flashSale },
-        { name: 'greatDepression', prob: EVENT_CONFIG.probabilities.greatDepression },
-        { name: 'fastFingers', prob: EVENT_CONFIG.probabilities.fastFingers },
-        { name: 'taxCollection', prob: EVENT_CONFIG.probabilities.taxCollection },
-        { name: 'robbery', prob: EVENT_CONFIG.probabilities.robbery },
-        { name: 'divorce', prob: EVENT_CONFIG.probabilities.divorce }
+        { name: 'marketBoom', prob: getEventProbability('marketBoom') },
+        { name: 'marketCrash', prob: getEventProbability('marketCrash') },
+        { name: 'flashSale', prob: getEventProbability('flashSale') },
+        { name: 'greatDepression', prob: getEventProbability('greatDepression') },
+        { name: 'fastFingers', prob: getEventProbability('fastFingers') },
+        { name: 'taxCollection', prob: getEventProbability('taxCollection') },
+        { name: 'robbery', prob: getEventProbability('robbery') },
+        { name: 'divorce', prob: getEventProbability('divorce') }
       ];
       
       // Filter events that can actually trigger
@@ -2861,6 +2920,9 @@
         musicEnabled,
         soundEffectsEnabled,
         
+        // Game difficulty
+        gameDifficulty,
+        
         // Achievement banner tracking
         achievementsBannerShown: { ...achievementsBannerShown },
         
@@ -2967,6 +3029,14 @@
         // Restore audio settings
         musicEnabled = gameState.musicEnabled !== undefined ? gameState.musicEnabled : true;
         soundEffectsEnabled = gameState.soundEffectsEnabled !== undefined ? gameState.soundEffectsEnabled : true;
+        
+        // Restore game difficulty
+        gameDifficulty = gameState.gameDifficulty || DIFFICULTY_MODES.NORMAL;
+        
+        // Update difficulty selector UI
+        if (difficultySelect) {
+          difficultySelect.value = gameDifficulty;
+        }
         
         // Restore achievement banner tracking
         achievementsBannerShown = gameState.achievementsBannerShown || {};
@@ -4575,7 +4645,7 @@
     checkPortfolioTour();
   }, TICK_MS);
 
-  // Net worth data collection (every 10 seconds)
+  // Net worth data collection (every 5 seconds)
   setInterval(() => {
     addNetWorthDataPoint();
   }, DATA_COLLECTION_INTERVAL);
@@ -4736,6 +4806,16 @@
     soundEffectsToggle.addEventListener('change', (e) => {
       soundEffectsEnabled = e.target.checked;
       saveAudioSettings();
+    });
+  }
+
+  // Difficulty selector functionality
+  const difficultySelect = document.getElementById('difficultySelect');
+  if (difficultySelect) {
+    difficultySelect.addEventListener('change', (e) => {
+      gameDifficulty = e.target.value;
+      saveGameState();
+      console.log('Game difficulty changed to:', gameDifficulty);
     });
   }
 
