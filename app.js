@@ -696,7 +696,29 @@
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
       const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
       if (buyBtn) {
-        buyBtn.textContent = buyMultiplier === 'MAX' ? 'Buy MAX' : `Buy ${buyMultiplier}x`;
+        if (buyMultiplier === 'MAX') {
+          // Calculate how many properties can be bought for this specific property
+          const config = PROPERTY_CONFIG[propertyId];
+          const owned = properties[propertyId];
+          let propertiesToBuy = 0;
+          let runningCost = 0;
+          
+          while (runningCost <= currentAccountBalance) {
+            const cost = config.baseCost * Math.pow(config.priceMultiplier, owned + propertiesToBuy);
+            if (runningCost + cost > currentAccountBalance) break;
+            runningCost += cost;
+            propertiesToBuy++;
+          }
+          
+          // If can't buy any, show 1x to indicate they can't even afford one
+          if (propertiesToBuy === 0) {
+            buyBtn.textContent = 'Buy 1x';
+          } else {
+            buyBtn.textContent = `Buy ${propertiesToBuy}x`;
+          }
+        } else {
+          buyBtn.textContent = `Buy ${buyMultiplier}x`;
+        }
       }
     });
   }
@@ -2142,7 +2164,13 @@
         propertiesToBuy++;
       }
       
-      totalCost = runningCost;
+      // If can't buy any, fall back to showing cost of 1 property
+      if (propertiesToBuy === 0) {
+        totalCost = singleCost;
+        propertiesToBuy = 1; // Show as if trying to buy 1
+      } else {
+        totalCost = runningCost;
+      }
     } else {
       for (let i = 0; i < buyMultiplier; i++) {
         const currentOwned = owned + i;
@@ -2161,7 +2189,24 @@
     const costEl = document.getElementById(`${propertyId}Cost`);
     if (costEl) {
       if (buyMultiplier === 'MAX') {
-        costEl.textContent = `€${formatNumberShort(totalCost)}`;
+        // If MAX mode can't buy any, show single cost to indicate they can't afford even one
+        const config = PROPERTY_CONFIG[propertyId];
+        const owned = properties[propertyId];
+        let maxPropertiesToBuy = 0;
+        let runningCost = 0;
+        
+        while (runningCost <= currentAccountBalance) {
+          const cost = config.baseCost * Math.pow(config.priceMultiplier, owned + maxPropertiesToBuy);
+          if (runningCost + cost > currentAccountBalance) break;
+          runningCost += cost;
+          maxPropertiesToBuy++;
+        }
+        
+        if (maxPropertiesToBuy === 0) {
+          costEl.textContent = `€${formatNumberShort(singleCost)}`;
+        } else {
+          costEl.textContent = `€${formatNumberShort(totalCost)}`;
+        }
       } else if (buyMultiplier > 1) {
         costEl.textContent = `€${formatNumberShort(totalCost)}`;
       } else {
@@ -2179,7 +2224,28 @@
     const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
     if (buyBtn) {
       buyBtn.disabled = currentAccountBalance < totalCost;
-      buyBtn.textContent = buyMultiplier === 'MAX' ? 'Buy MAX' : `Buy ${buyMultiplier}x`;
+      if (buyMultiplier === 'MAX') {
+        // If MAX mode can't buy any, show 1x to indicate they can't afford even one
+        const config = PROPERTY_CONFIG[propertyId];
+        const owned = properties[propertyId];
+        let maxPropertiesToBuy = 0;
+        let runningCost = 0;
+        
+        while (runningCost <= currentAccountBalance) {
+          const cost = config.baseCost * Math.pow(config.priceMultiplier, owned + maxPropertiesToBuy);
+          if (runningCost + cost > currentAccountBalance) break;
+          runningCost += cost;
+          maxPropertiesToBuy++;
+        }
+        
+        if (maxPropertiesToBuy === 0) {
+          buyBtn.textContent = 'Buy 1x';
+        } else {
+          buyBtn.textContent = `Buy ${maxPropertiesToBuy}x`;
+        }
+      } else {
+        buyBtn.textContent = `Buy ${buyMultiplier}x`;
+      }
     }
   }
 
