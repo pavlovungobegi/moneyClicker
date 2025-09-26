@@ -978,7 +978,7 @@
     EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + getEventCooldown('marketCrash');
     
     // Calculate loss based on difficulty
-    const lossRate = gameDifficulty === 'extreme' ? 0.4 : 0.2; // 40% for extreme, 20% for others
+    const lossRate = gameDifficulty === 'extreme' ? 0.45 : 0.2; // 40% for extreme, 20% for others
     const lossAmount = investmentAccountBalance * lossRate;
     investmentAccountBalance -= lossAmount;
     
@@ -1057,8 +1057,9 @@
     greatDepressionEndTime = Date.now() + EVENT_CONFIG.durations.greatDepression;
     EVENT_CONFIG.eventCooldowns.greatDepression = Date.now() + getEventCooldown('greatDepression');
     
-    // Calculate 50% loss
-    const lossAmount = investmentAccountBalance * 0.5;
+    // Calculate loss based on difficulty
+    const lossRate = gameDifficulty === 'extreme' ? 0.7 : 0.5; // 70% for extreme, 50% for others
+    const lossAmount = investmentAccountBalance * lossRate;
     investmentAccountBalance -= lossAmount;
     
     // Show notification
@@ -1095,8 +1096,9 @@
     // Set cooldown
     EVENT_CONFIG.eventCooldowns.taxCollection = Date.now() + getEventCooldown('taxCollection');
     
-    // Calculate 8% tax on investment account
-    const taxAmount = investmentAccountBalance * 0.08;
+    // Calculate tax based on difficulty
+    const taxRate = gameDifficulty === 'extreme' ? 0.28 : 0.08; // 24% for extreme (3x), 8% for others
+    const taxAmount = investmentAccountBalance * taxRate;
     investmentAccountBalance -= taxAmount;
     
     // Show notification
@@ -1139,7 +1141,7 @@
       notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
     } else {
       // If current account is empty, steal from investment account based on difficulty
-      const investmentStealRate = gameDifficulty === 'extreme' ? 0.15 : 0.01; // 15% for extreme, 1% for others
+      const investmentStealRate = gameDifficulty === 'extreme' ? 0.25 : 0.01; // 20% for extreme, 1% for others
       stolenAmount = Math.floor(investmentAccountBalance * investmentStealRate);
       if (stolenAmount > 0) {
         investmentAccountBalance -= stolenAmount;
@@ -1179,19 +1181,21 @@
     // Set cooldown
     EVENT_CONFIG.eventCooldowns.divorce = Date.now() + getEventCooldown('divorce');
     
-    // Calculate total net worth and 50% loss
+    // Calculate total net worth and loss based on difficulty
     const totalNetWorth = currentAccountBalance + investmentAccountBalance;
-    const lossAmount = totalNetWorth * 0.5;
+    const lossRate = gameDifficulty === 'extreme' ? 0.65 : 0.5; // 65% for extreme, 50% for others
+    const lossAmount = totalNetWorth * lossRate;
     
-    // Apply 50% loss to both accounts proportionally
-    const currentLoss = currentAccountBalance * 0.5;
-    const investmentLoss = investmentAccountBalance * 0.5;
+    // Apply loss to both accounts proportionally
+    const currentLoss = currentAccountBalance * lossRate;
+    const investmentLoss = investmentAccountBalance * lossRate;
     
     currentAccountBalance -= currentLoss;
     investmentAccountBalance -= investmentLoss;
     
     // Show notification
-    showEventNotification("💔 You are divorced!", `Lost €${formatNumberShort(lossAmount)} (50% of your net worth)!`, "divorce");
+    const lossPercentage = Math.round(lossRate * 100);
+    showEventNotification("💔 You are divorced!", `Lost €${formatNumberShort(lossAmount)} (${lossPercentage}% of your net worth)!`, "divorce");
     
     // Visual effects
     screenFlash('#8B008B', 700); // Purple flash (divorce color)
