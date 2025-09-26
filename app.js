@@ -813,13 +813,13 @@
         easy: 0.01,     // 1% chance (easier)
         normal: 0.02,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
-        extreme: 0.07   // 4% chance (extreme)
+        extreme: 0.08   // 4% chance (extreme)
       },
       robbery: {
         easy: 0.01,     // 1% chance (easier)
         normal: 0.02,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
-        extreme: 0.075   // 4% chance (extreme)
+        extreme: 0.085   // 4% chance (extreme)
       },
       divorce: {
         easy: 0.005,    // 0.5% chance (easier)
@@ -874,19 +874,19 @@
         easy: 90000,      // 1.5 minutes (easier)
         normal: 60000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
-        extreme: 30000    // 30 seconds (extreme)
+        extreme: 15000    // 30 seconds (extreme)
       },
       robbery: {
         easy: 90000,      // 1.5 minutes (easier)
         normal: 60000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
-        extreme: 30000    // 30 seconds (extreme)
+        extreme: 15000    // 30 seconds (extreme)
       },
       divorce: {
         easy: 120000,     // 2 minutes (easier)
         normal: 90000,    // 1.5 minutes (original)
         hard: 60000,      // 1 minute (harder)
-        extreme: 45000    // 45 seconds (extreme)
+        extreme: 30000    // 45 seconds (extreme)
       }
     },
     
