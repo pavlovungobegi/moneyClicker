@@ -48,7 +48,7 @@
       this.particles.push(particle);
     }
     
-    createCoinParticles(x, y, count = 2) {
+    createCoinParticles(x, y, count = 1) {
       for (let i = 0; i < count; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -73,7 +73,7 @@
       });
     }
     
-    createSparkleParticles(x, y, count = 3) {
+    createSparkleParticles(x, y, count = 2) {
       for (let i = 0; i < count; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -1912,9 +1912,9 @@
         particleSystem.createCriticalCoin(centerX, centerY);
         screenShake(8, 300);
       } else {
-        // Normal click: regular particles based on income (reduced by 30%)
-        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.21), 1), 2);
-        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.35), 1), 3);
+        // Normal click: regular particles based on income (reduced by 50% from original)
+        const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.15), 1), 1);
+        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.25), 1), 2);
         
         // Create coin particles
         particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
