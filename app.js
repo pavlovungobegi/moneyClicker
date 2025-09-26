@@ -4024,6 +4024,11 @@
           owned[upgradeKey] = false;
         });
         
+        // Reset all properties
+        Object.keys(properties).forEach(propertyKey => {
+          properties[propertyKey] = 0;
+        });
+        
         // Reset auto-invest toggle
         if (autoInvestToggle) {
           autoInvestToggle.checked = false;
@@ -4043,6 +4048,15 @@
         renderInterestPerSecond();
         renderDividendUI(0);
         renderAutoInvestSection();
+        
+        // Update property UI for all properties
+        Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+          renderPropertyUI(propertyId);
+        });
+        
+        // Update indicators
+        updateUpgradeIndicator();
+        updatePortfolioIndicator();
         
         // Check achievements after prestige
         checkAchievementsOptimized();
