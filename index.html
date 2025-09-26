@@ -607,11 +607,66 @@
             </div>
           </div>
 
+          <div class="upgrade" data-upgrade-id="u33">
+            <div class="upgrade-info">
+              <div class="upgrade-name">Real Estate Connections</div>
+              <div class="upgrade-price" id="u33Price"></div>
+              <div class="upgrade-desc">Reduces building purchase costs by 15%.</div>
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="u33Progress"></div>
+                </div>
+                <div class="progress-text" id="u33ProgressText">0%</div>
+              </div>
+            </div>
+            <div class="upgrade-actions">
+              <button id="buyU33Btn" class="buyBtn">Buy</button>
+            </div>
+          </div>
+
+          <div class="upgrade" data-upgrade-id="u34">
+            <div class="upgrade-info">
+              <div class="upgrade-name">Hire a contractor</div>
+              <div class="upgrade-price" id="u34Price"></div>
+              <div class="upgrade-desc">Reduces building purchase costs by an additional 20%.</div>
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="u34Progress"></div>
+                </div>
+                <div class="progress-text" id="u34ProgressText">0%</div>
+              </div>
+            </div>
+            <div class="upgrade-actions">
+              <button id="buyU34Btn" class="buyBtn">Buy</button>
+            </div>
+          </div>
+
+          <div class="upgrade" data-upgrade-id="u35">
+            <div class="upgrade-info">
+              <div class="upgrade-name">Property Management</div>
+              <div class="upgrade-price" id="u35Price"></div>
+              <div class="upgrade-desc">Increases rent income from properties by 35%.</div>
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="u35Progress"></div>
+                </div>
+                <div class="progress-text" id="u35ProgressText">0%</div>
+              </div>
+            </div>
+            <div class="upgrade-actions">
+              <button id="buyU35Btn" class="buyBtn">Buy</button>
+            </div>
+          </div>
+
         </section>
 
         <section class="panel" id="leaderboardPanel" aria-labelledby="leaderboardTitle">
           <div class="panel-header">
             <h2 id="leaderboardTitle">Portfolio</h2>
+            <div class="total-rent-income">
+              <span class="rent-label">Total Rent:</span>
+              <span id="totalRentPerSecond" class="rent-value">€0/sec</span>
+            </div>
             <button id="buyMultiplierBtn" class="buy-multiplier-btn" aria-label="Toggle buy multiplier">1x</button>
           </div>
           
@@ -938,7 +993,7 @@
               <div class="event-logs-content" id="eventLogsContent">
                 <div class="event-log-item">
                   <span class="event-time">No events yet</span>
-                  <span class="event-name">Start playing to see events!</span>
+                  <span class="event-name">Continue playing to see events!</span>
                 </div>
               </div>
             </div>

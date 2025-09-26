@@ -727,7 +727,7 @@
           let runningCost = 0;
           
           while (runningCost <= currentAccountBalance) {
-            const cost = config.baseCost * Math.pow(config.priceMultiplier, owned + propertiesToBuy);
+            const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, owned + propertiesToBuy);
             if (runningCost + cost > currentAccountBalance) break;
             runningCost += cost;
             propertiesToBuy++;
@@ -2255,16 +2255,32 @@
   }
 
   // Property system functions
+  function getEffectiveBaseCost(config) {
+    // Apply building discount upgrades
+    let totalDiscount = 0;
+    if (owned.u33) totalDiscount += 0.15; // Real Estate Connections: 15% off
+    if (owned.u34) totalDiscount += 0.20; // Hire a contractor: additional 20% off
+    
+    return config.baseCost * (1 - totalDiscount);
+  }
+
   function getPropertyCost(propertyId) {
     const config = PROPERTY_CONFIG[propertyId];
     const owned = properties[propertyId];
-    return Math.floor(config.baseCost * Math.pow(config.priceMultiplier, owned));
+    return Math.floor(getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, owned));
   }
 
   function getPropertyTotalIncome(propertyId) {
     const config = PROPERTY_CONFIG[propertyId];
-    const owned = properties[propertyId];
-    return owned * config.incomePerSecond;
+    const ownedCount = properties[propertyId];
+    let baseIncome = ownedCount * config.incomePerSecond;
+    
+    // Apply Property Management boost (35% increase)
+    if (owned.u35) {
+      baseIncome *= 1.35;
+    }
+    
+    return Math.floor(baseIncome);
   }
 
   function buyProperty(propertyId) {
@@ -2280,7 +2296,7 @@
     if (buyMultiplier === 'MAX') {
       // Calculate maximum affordable properties
       while (runningCost <= currentAccountBalance) {
-        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
+        const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
         if (runningCost + cost > currentAccountBalance) break;
         runningCost += cost;
         propertiesToBuy++;
@@ -2295,7 +2311,7 @@
       // For fixed multipliers (1x, 10x, 100x), calculate how many we can actually afford
       const requestedCount = buyMultiplier;
       while (propertiesToBuy < requestedCount && runningCost <= currentAccountBalance) {
-        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
+        const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
         if (runningCost + cost > currentAccountBalance) break;
         runningCost += cost;
         propertiesToBuy++;
@@ -2312,7 +2328,7 @@
     
     // Make multiple purchases
     for (let i = 0; i < propertiesToBuy; i++) {
-      const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + i);
+      const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned + i);
       currentAccountBalance -= cost;
       properties[propertyId]++;
       purchases++;
@@ -2340,6 +2356,7 @@
     // Update displays
     renderBalances();
     renderPropertyUI(propertyId);
+    updateTotalRentDisplay();
     updatePortfolioIndicator();
     saveGameState();
     
@@ -2348,7 +2365,7 @@
 
   function renderPropertyUI(propertyId) {
     const config = PROPERTY_CONFIG[propertyId];
-    const owned = properties[propertyId];
+    const ownedCount = properties[propertyId];
     const singleCost = getPropertyCost(propertyId);
     const totalIncome = getPropertyTotalIncome(propertyId);
     
@@ -2358,12 +2375,12 @@
     
     if (buyMultiplier === 'MAX') {
       // Calculate maximum affordable properties
-      let currentOwned = owned;
+      let currentOwned = ownedCount;
       let runningCost = 0;
       propertiesToBuy = 0;
       
       while (runningCost <= currentAccountBalance) {
-        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
+        const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
         if (runningCost + cost > currentAccountBalance) break;
         runningCost += cost;
         propertiesToBuy++;
@@ -2378,8 +2395,8 @@
       }
     } else {
       for (let i = 0; i < buyMultiplier; i++) {
-        const currentOwned = owned + i;
-        const cost = config.baseCost * Math.pow(config.priceMultiplier, currentOwned);
+        const currentOwned = ownedCount + i;
+        const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned);
         totalCost += cost;
       }
     }
@@ -2387,7 +2404,7 @@
     // Update owned count
     const ownedEl = document.getElementById(`${propertyId}Owned`);
     if (ownedEl) {
-      ownedEl.textContent = owned;
+      ownedEl.textContent = ownedCount;
     }
     
     // Update cost (show total cost for multiple purchases)
@@ -2396,12 +2413,12 @@
       if (buyMultiplier === 'MAX') {
         // If MAX mode can't buy any, show single cost to indicate they can't afford even one
         const config = PROPERTY_CONFIG[propertyId];
-        const owned = properties[propertyId];
+        const ownedCount = properties[propertyId];
         let maxPropertiesToBuy = 0;
         let runningCost = 0;
         
         while (runningCost <= currentAccountBalance) {
-          const cost = config.baseCost * Math.pow(config.priceMultiplier, owned + maxPropertiesToBuy);
+          const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, ownedCount + maxPropertiesToBuy);
           if (runningCost + cost > currentAccountBalance) break;
           runningCost += cost;
           maxPropertiesToBuy++;
@@ -2419,6 +2436,16 @@
       }
     }
     
+    // Update individual income per unit (with Property Management boost)
+    const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
+    if (individualIncomeEl) {
+      let individualIncome = config.incomePerSecond;
+      if (owned.u35) {
+        individualIncome *= 1.35; // Apply Property Management boost
+      }
+      individualIncomeEl.textContent = `€${formatNumberShort(Math.floor(individualIncome))}/sec each`;
+    }
+    
     // Update total income
     const totalIncomeEl = document.getElementById(`${propertyId}TotalIncome`);
     if (totalIncomeEl) {
@@ -2432,12 +2459,12 @@
       if (buyMultiplier === 'MAX') {
         // If MAX mode can't buy any, show 1x to indicate they can't afford even one
         const config = PROPERTY_CONFIG[propertyId];
-        const owned = properties[propertyId];
+        const ownedCount = properties[propertyId];
         let maxPropertiesToBuy = 0;
         let runningCost = 0;
         
         while (runningCost <= currentAccountBalance) {
-          const cost = config.baseCost * Math.pow(config.priceMultiplier, owned + maxPropertiesToBuy);
+          const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, ownedCount + maxPropertiesToBuy);
           if (runningCost + cost > currentAccountBalance) break;
           runningCost += cost;
           maxPropertiesToBuy++;
@@ -2458,6 +2485,7 @@
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
       renderPropertyUI(propertyId);
     });
+    updateTotalRentDisplay();
   }
 
   function getTotalPropertyIncome() {
@@ -2466,6 +2494,15 @@
       total += getPropertyTotalIncome(propertyId);
     });
     return total;
+  }
+
+  function updateTotalRentDisplay() {
+    const totalRentElement = document.getElementById('totalRentPerSecond');
+    if (!totalRentElement) return;
+    
+    const totalRent = getTotalPropertyIncome();
+    const formattedRent = formatNumberShort(totalRent);
+    totalRentElement.textContent = `€${formattedRent}/sec`;
   }
 
   // Net worth calculation functions
@@ -4088,7 +4125,10 @@
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
     u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
     u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" },
-    u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" }
+    u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
+    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount" },
+    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount" },
+    u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost" }
   };
 
   // Generate upgrade costs and owned objects from config
@@ -4232,6 +4272,8 @@
     sortUpgradesByCost();
     updateUpgradeIndicator();
     updatePortfolioIndicator();
+    // Update property displays in case upgrade affects property income
+    renderAllProperties();
     
     // Play buy sound
     playBuySound();
@@ -4289,7 +4331,16 @@
 
   // Game loop (1000 ms): compounding and leaderboard - reduced frequency for mobile performance
   const TICK_MS = 1000;
-  const BASE_COMPOUND_MULTIPLIER_PER_TICK = 1.004; // base multiply every 1000ms (1 second) - 0.4% per second
+  // Base compound multiplier per tick - varies by difficulty
+  function getBaseCompoundMultiplierPerTick() {
+    switch (gameDifficulty) {
+      case 'easy': return 1.005;    // 0.5% per second (easier)
+      case 'normal': return 1.004;  // 0.4% per second (original)
+      case 'hard': return 1.0033;   // 0.35% per second (harder)
+      case 'extreme': return 1.0027; // 0.3% per second (extreme)
+      default: return 1.004;        // fallback to normal
+    }
+  }
   function getCompoundMultiplierPerTick() {
     let rateBoost = 1;
     if (owned.u4) rateBoost *= 1.2; // +20%
@@ -4309,7 +4360,7 @@
       rateBoost *= -0.2; // -120% during depression (negative rate = money shrinking)
     }
     
-    return 1 + (BASE_COMPOUND_MULTIPLIER_PER_TICK - 1) * rateBoost * prestigeInterestMultiplier;
+    return 1 + (getBaseCompoundMultiplierPerTick() - 1) * rateBoost * prestigeInterestMultiplier;
   }
 
   // Check if any upgrades are available and update indicator
@@ -4337,7 +4388,7 @@
     // Check if any building is affordable using only current account balance
     const hasAffordableBuilding = Object.entries(PROPERTY_CONFIG).some(([propertyId, config]) => {
       const owned = properties[propertyId];
-      const cost = config.baseCost * Math.pow(config.priceMultiplier, owned);
+      const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, owned);
       return currentAccountBalance >= cost;
     });
     
