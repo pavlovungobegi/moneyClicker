@@ -682,6 +682,13 @@
       incomePerSecond: 75000,
       priceMultiplier: 1.05, // 5% increase per purchase
       icon: "fas fa-city"
+    },
+    operaHouse: {
+      name: "Opera House",
+      baseCost: 500000000,
+      incomePerSecond: 1500000,
+      priceMultiplier: 1.15, // 15% increase per purchase
+      icon: "fas fa-theater-masks"
     }
   };
 
@@ -694,7 +701,8 @@
     apartment: 0,
     manufacturingPlant: 0,
     officeBuilding: 0,
-    skyscraper: 0
+    skyscraper: 0,
+    operaHouse: 0
   };
 
   // Buy multiplier system (1x, 10x, 100x, MAX)
@@ -1776,6 +1784,7 @@
   const buyManufacturingPlantBtn = document.getElementById("buyManufacturingPlantBtn");
   const buyOfficeBuildingBtn = document.getElementById("buyOfficeBuildingBtn");
   const buySkyscraperBtn = document.getElementById("buySkyscraperBtn");
+  const buyOperaHouseBtn = document.getElementById("buyOperaHouseBtn");
   const buyMultiplierBtn = document.getElementById("buyMultiplierBtn");
   const interestPerSecEl = document.getElementById("interestPerSec");
   const interestContainer = document.getElementById("interestContainer");
@@ -3754,6 +3763,7 @@
   setupPropertyButtonEvents("manufacturingPlant", buyManufacturingPlantBtn);
   setupPropertyButtonEvents("officeBuilding", buyOfficeBuildingBtn);
   setupPropertyButtonEvents("skyscraper", buySkyscraperBtn);
+  setupPropertyButtonEvents("operaHouse", buyOperaHouseBtn);
 
   // Buy multiplier toggle button
   if (buyMultiplierBtn) {
