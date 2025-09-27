@@ -1,7 +1,7 @@
 (() => {
   let currentAccountBalance = 0;
   let investmentAccountBalance = 0;
-  
+
   // Mobile detection for particle optimization
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                    ('ontouchstart' in window) || 
@@ -1143,9 +1143,9 @@
     
     // Check if current account has money
     if (currentAccountBalance > 0) {
-      // Steal all money from current account
+    // Steal all money from current account
       stolenAmount = currentAccountBalance;
-      currentAccountBalance = 0;
+    currentAccountBalance = 0;
       notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
     } else {
       // If current account is empty, steal from investment account based on difficulty
@@ -1418,30 +1418,30 @@
           // Trigger the appropriate event
           switch (event.name) {
             case 'marketBoom':
-              triggerMarketBoom();
+        triggerMarketBoom();
               break;
             case 'marketCrash':
-              triggerMarketCrash();
+        triggerMarketCrash();
               break;
             case 'flashSale':
-              triggerFlashSale();
+        triggerFlashSale();
               break;
             case 'greatDepression':
-              triggerGreatDepression();
+        triggerGreatDepression();
               break;
             case 'fastFingers':
               triggerFastFingers();
               break;
             case 'taxCollection':
-              triggerTaxCollection();
+        triggerTaxCollection();
               break;
             case 'robbery':
-              triggerRobbery();
+        triggerRobbery();
               break;
             case 'divorce':
-              triggerDivorce();
+        triggerDivorce();
               break;
-          }
+      }
           eventTriggered = true;
           break;
         }
@@ -2280,10 +2280,50 @@
     return Math.floor(getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, owned));
   }
 
+  // Helper function to get individual building income based on total owned count
+  function getIndividualBuildingIncome(propertyId, buildingIndex, totalOwned) {
+    const config = PROPERTY_CONFIG[propertyId];
+    
+    // Calculate tier based on total owned buildings (not individual building index)
+    // 0-99 buildings = tier 0 (1x), 100-199 = tier 1 (2x), 200-299 = tier 2 (4x), etc.
+    const tier = Math.floor(totalOwned / 100);
+    const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x...)
+    
+    let income = config.incomePerSecond * tierMultiplier;
+    
+    // Apply Property Management boost (35% increase)
+    if (owned.u35) {
+      income *= 1.35;
+    }
+    
+    // Apply Rental Monopoly boost (20% increase)
+    if (owned.u37) {
+      income *= 1.20;
+    }
+    
+    return Math.floor(income);
+  }
+
   function getPropertyTotalIncome(propertyId) {
     const config = PROPERTY_CONFIG[propertyId];
     const ownedCount = properties[propertyId];
-    let baseIncome = ownedCount * config.incomePerSecond;
+    
+    // Calculate tier based on total owned buildings (max tier 3)
+    let tier;
+    if (ownedCount >= 300) {
+      tier = 3; // Golden (300+) - 8x multiplier
+    } else if (ownedCount >= 200) {
+      tier = 2; // Silver (200-299) - 4x multiplier
+    } else if (ownedCount >= 100) {
+      tier = 1; // Bronze (100-199) - 2x multiplier
+    } else {
+      tier = 0; // Default (0-99) - 1x multiplier
+    }
+    
+    const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
+    
+    // All buildings get the same income multiplier based on total owned
+    let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
     
     // Apply Property Management boost (35% increase)
     if (owned.u35) {
@@ -2293,6 +2333,11 @@
     // Apply Rental Monopoly boost (20% increase)
     if (owned.u37) {
       baseIncome *= 1.20;
+    }
+    
+    // Debug logging
+    if (ownedCount >= 99 && ownedCount <= 101) {
+      console.log(`${propertyId} Total ${ownedCount} buildings: Tier ${tier}, Multiplier ${tierMultiplier}x, Base €${ownedCount * config.incomePerSecond}, Total €${Math.floor(baseIncome)}/sec`);
     }
     
     return Math.floor(baseIncome);
@@ -2319,9 +2364,9 @@
       
       if (propertiesToBuy === 0) {
         console.log('Insufficient funds for any property purchase:', { propertyId, currentBalance: currentAccountBalance });
-        playErrorSound();
-        return false;
-      }
+      playErrorSound();
+      return false;
+    }
     } else {
       // For fixed multipliers (1x, 10x, 100x), calculate how many we can actually afford
       const requestedCount = buyMultiplier;
@@ -2344,8 +2389,8 @@
     // Make multiple purchases
     for (let i = 0; i < propertiesToBuy; i++) {
       const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned + i);
-      currentAccountBalance -= cost;
-      properties[propertyId]++;
+    currentAccountBalance -= cost;
+    properties[propertyId]++;
       purchases++;
     }
     
@@ -2451,16 +2496,33 @@
       }
     }
     
-    // Update individual income per unit (with Property Management and Rental Monopoly boost)
+    // Update individual income per unit (with tier system and upgrades)
     const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
     if (individualIncomeEl) {
-      let individualIncome = config.incomePerSecond;
+      // Calculate tier based on total owned buildings (max tier 3)
+      let tier;
+      if (ownedCount >= 300) {
+        tier = 3; // Golden (300+) - 8x multiplier
+      } else if (ownedCount >= 200) {
+        tier = 2; // Silver (200-299) - 4x multiplier
+      } else if (ownedCount >= 100) {
+        tier = 1; // Bronze (100-199) - 2x multiplier
+      } else {
+        tier = 0; // Default (0-99) - 1x multiplier
+      }
+      
+      const tierMultiplier = Math.pow(2, tier);
+      
+      let individualIncome = config.incomePerSecond * tierMultiplier;
+      
+      // Apply upgrades
       if (owned.u35) {
-        individualIncome *= 1.35; // Apply Property Management boost
+        individualIncome *= 1.35;
       }
       if (owned.u37) {
-        individualIncome *= 1.20; // Apply Rental Monopoly boost
+        individualIncome *= 1.20;
       }
+      
       individualIncomeEl.textContent = `€${formatNumberShort(Math.floor(individualIncome))}/sec each`;
     }
     
@@ -2469,6 +2531,9 @@
     if (totalIncomeEl) {
       totalIncomeEl.textContent = `€${formatNumberShort(totalIncome)}/sec total`;
     }
+    
+    // Apply tier-based styling
+    applyTierStyling(propertyId, ownedCount);
     
     // Update buy button state and text
     const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
@@ -2497,6 +2562,221 @@
         buyBtn.textContent = `Buy ${buyMultiplier}x`;
       }
     }
+  }
+
+  // Apply tier-based styling to property rows
+  function applyTierStyling(propertyId, ownedCount) {
+    const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
+    if (!propertyRow) return;
+    
+    // Get previous tier to detect tier changes
+    const previousTier = getTierFromClass(propertyRow);
+    
+    // Calculate new tier (max 3 tiers: Bronze, Silver, Gold)
+    let newTier;
+    if (ownedCount >= 300) {
+      newTier = 3; // Golden (300+)
+    } else if (ownedCount >= 200) {
+      newTier = 2; // Silver (200-299)
+    } else if (ownedCount >= 100) {
+      newTier = 1; // Bronze (100-199)
+    } else {
+      newTier = 0; // Default (0-99)
+    }
+    
+    // Remove existing tier classes
+    propertyRow.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3');
+    
+    if (ownedCount >= 300) {
+      propertyRow.classList.add('tier-3'); // Golden (300+)
+    } else if (ownedCount >= 200) {
+      propertyRow.classList.add('tier-2'); // Silver (200-299)
+    } else if (ownedCount >= 100) {
+      propertyRow.classList.add('tier-1'); // Bronze (100-199)
+    } else {
+      propertyRow.classList.add('tier-0'); // Default (0-99)
+    }
+    
+    // Check if tier increased and celebrate! (only for tiers 1, 2, 3)
+    if (newTier > previousTier && newTier <= 3 && ownedCount % 100 === 0) {
+      celebrateTierUpgrade(propertyId, newTier, propertyRow);
+    }
+  }
+  
+  // Helper function to get tier from CSS class
+  function getTierFromClass(propertyRow) {
+    if (propertyRow.classList.contains('tier-3')) return 3;
+    if (propertyRow.classList.contains('tier-2')) return 2;
+    if (propertyRow.classList.contains('tier-1')) return 1;
+    return 0;
+  }
+  
+  // Celebrate tier upgrade with particles
+  function celebrateTierUpgrade(propertyId, newTier, propertyRow) {
+    const config = PROPERTY_CONFIG[propertyId];
+    const rect = propertyRow.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Create celebration particles based on tier
+    let particleCount = 20 + (newTier * 10); // More particles for higher tiers
+    let colors = [];
+    
+    switch(newTier) {
+      case 1: // Bronze tier
+        colors = ['#cd7f32', '#b87333', '#a0522d', '#8b4513'];
+        break;
+      case 2: // Silver tier
+        colors = ['#c0c0c0', '#a9a9a9', '#808080', '#696969'];
+        break;
+      case 3: // Gold tier
+        colors = ['#ffd700', '#ffdf00', '#daa520', '#b8860b'];
+        break;
+      default: // Higher tiers
+        colors = ['#8b5cf6', '#7c3aed', '#6d28d9'];
+        break;
+    }
+    
+    // Create tier-specific particles
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount;
+      const velocity = 2 + Math.random() * 3;
+      const vx = Math.cos(angle) * velocity;
+      const vy = Math.sin(angle) * velocity;
+      
+      createTierParticle(
+        centerX,
+        centerY,
+        vx,
+        vy,
+        colors[Math.floor(Math.random() * colors.length)],
+        newTier
+      );
+    }
+    
+    // Play celebration sound
+    if (soundEnabled) {
+      playTierUpgradeSound();
+    }
+    
+    // Show tier upgrade notification
+    showTierUpgradeNotification(propertyId, newTier, config.name);
+  }
+  
+  // Create individual tier celebration particle
+  function createTierParticle(x, y, vx, vy, color, tier) {
+    const particle = document.createElement('div');
+    particle.style.position = 'fixed';
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+    particle.style.width = '8px';
+    particle.style.height = '8px';
+    particle.style.backgroundColor = color;
+    particle.style.borderRadius = '50%';
+    particle.style.pointerEvents = 'none';
+    particle.style.zIndex = '9999';
+    particle.style.boxShadow = `0 0 10px ${color}`;
+    
+    // Add tier-specific effects
+    if (tier >= 2) {
+      particle.style.border = '2px solid rgba(255, 255, 255, 0.8)';
+    }
+    if (tier >= 3) {
+      particle.style.animation = 'sparkle 1s ease-out forwards';
+    }
+    
+    document.body.appendChild(particle);
+    
+    // Animate particle
+    let opacity = 1;
+    let scale = 1;
+    const gravity = 0.1;
+    let currentY = y;
+    let currentX = x;
+    
+    const animate = () => {
+      opacity -= 0.02;
+      scale -= 0.01;
+      vy += gravity;
+      currentX += vx;
+      currentY += vy;
+      
+      particle.style.opacity = opacity;
+      particle.style.transform = `translate(${currentX - x}px, ${currentY - y}px) scale(${scale})`;
+      
+      if (opacity > 0 && scale > 0) {
+        requestAnimationFrame(animate);
+      } else {
+        document.body.removeChild(particle);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
+  
+  // Show tier upgrade notification
+  function showTierUpgradeNotification(propertyId, tier, propertyName) {
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.left = '50%';
+    notification.style.transform = 'translateX(-50%)';
+    notification.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+    notification.style.color = 'white';
+    notification.style.padding = '12px 24px';
+    notification.style.borderRadius = '8px';
+    notification.style.fontWeight = 'bold';
+    notification.style.fontSize = '16px';
+    notification.style.zIndex = '10000';
+    notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(-50%) translateY(-20px)';
+    notification.style.transition = 'all 0.3s ease-out';
+    
+    let tierText = '';
+    let multiplierText = '';
+    switch(tier) {
+      case 1: 
+        tierText = 'BRONZE';
+        multiplierText = '2x';
+        break;
+      case 2: 
+        tierText = 'SILVER';
+        multiplierText = '4x';
+        break;
+      case 3: 
+        tierText = 'GOLD';
+        multiplierText = '8x';
+        break;
+      default: 
+        tierText = 'LEGENDARY';
+        multiplierText = `${Math.pow(2, tier)}x`;
+        break;
+    }
+    
+    notification.innerHTML = `
+      ${propertyName} reached ${tierText} tier! (${tier * 100}+ buildings)<br>
+      <span style="font-size: 14px; opacity: 0.9;">Rent increased by ${multiplierText}!</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+      notification.style.opacity = '1';
+      notification.style.transform = 'translateX(-50%) translateY(0)';
+    }, 100);
+    
+    // Animate out and remove
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateX(-50%) translateY(-20px)';
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
   }
 
   function renderAllProperties() {
@@ -4114,6 +4394,38 @@
     oscillator3.stop(audioContext.currentTime + 0.3);
   }
 
+  function playTierUpgradeSound() {
+    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    try {
+      // Create a celebratory ascending chord sequence
+      const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 (C major chord)
+      
+      frequencies.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.1);
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime + index * 0.1);
+        gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + index * 0.1 + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.1 + 0.8);
+        
+        oscillator.start(audioContext.currentTime + index * 0.1);
+        oscillator.stop(audioContext.currentTime + index * 0.1 + 0.8);
+      });
+    } catch (error) {
+      console.log('Tier upgrade sound error:', error);
+    }
+  }
+
   // Centralized upgrade configuration
   // To add a new upgrade: Add an entry with id, cost, name, effect, and type
   // To remove an upgrade: Delete the entry from this object
@@ -4738,7 +5050,7 @@
         investmentAccountBalance = Math.round((investmentAccountBalance + cappedPropertyIncome) * 100) / 100;
       } else {
         // Normal: add property income to current account
-        currentAccountBalance = Math.round((currentAccountBalance + cappedPropertyIncome) * 100) / 100;
+      currentAccountBalance = Math.round((currentAccountBalance + cappedPropertyIncome) * 100) / 100;
       }
     }
 
@@ -4803,34 +5115,34 @@
   }
 
   function initializeGame() {
-    // Initialize upgrade visibility state before rendering
-    initUpgradeVisibility();
-    updateToggleCompletedUI();
+  // Initialize upgrade visibility state before rendering
+  initUpgradeVisibility();
+  updateToggleCompletedUI();
 
-    renderBalances();
-    renderUpgradesOwned();
-    renderUpgradePrices();
-    renderAllProperties();
-    // Apply upgrade visibility rules now that hide-completed class is set
-    // Use requestAnimationFrame to ensure DOM is fully rendered
-    requestAnimationFrame(() => {
-    sortUpgradesByCost();
-    });
-    renderInvestmentUnlocked();
-    renderPrestigeMultipliers();
-    renderAutoInvestSection();
-    renderClickStreak();
-    updateProgressBars();
-    
-    // Initialize net worth chart
-    initNetWorthChart();
-    
-    // Add initial data point
-    addNetWorthDataPoint();
-    renderAchievements();
-    renderStatistics();
+  renderBalances();
+  renderUpgradesOwned();
+  renderUpgradePrices();
+  renderAllProperties();
+  // Apply upgrade visibility rules now that hide-completed class is set
+  // Use requestAnimationFrame to ensure DOM is fully rendered
+  requestAnimationFrame(() => {
+  sortUpgradesByCost();
+  });
+  renderInvestmentUnlocked();
+  renderPrestigeMultipliers();
+  renderAutoInvestSection();
+  renderClickStreak();
+  updateProgressBars();
+  
+  // Initialize net worth chart
+  initNetWorthChart();
+  
+  // Add initial data point
+  addNetWorthDataPoint();
+  renderAchievements();
+  renderStatistics();
     renderEventLogs();
-    updateUpgradeIndicator();
+  updateUpgradeIndicator();
     updatePortfolioIndicator();
   }
 
@@ -5318,7 +5630,7 @@ window.addEventListener('beforeunload', () => {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (autoInvestModal && !autoInvestModal.classList.contains('hidden')) {
-        autoInvestModal.classList.add('hidden');
+      autoInvestModal.classList.add('hidden');
       }
       if (autoRentModal && !autoRentModal.classList.contains('hidden')) {
         autoRentModal.classList.add('hidden');

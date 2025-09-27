@@ -1846,6 +1846,93 @@ button#withdrawHalfBtn:focus-visible {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Tier-based styling for property rows */
+.property-row.tier-0 {
+  /* Default styling - no changes */
+}
+
+.property-row.tier-1 {
+  /* Bronze gradient for 100-199 buildings */
+  background: linear-gradient(135deg, 
+    rgba(205, 127, 50, 0.2) 0%, 
+    rgba(184, 115, 51, 0.15) 25%,
+    rgba(160, 82, 45, 0.1) 50%,
+    rgba(139, 69, 19, 0.15) 75%,
+    rgba(205, 127, 50, 0.2) 100%);
+  border: 1px solid rgba(205, 127, 50, 0.4);
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.15);
+}
+
+.property-row.tier-1:hover {
+  border-color: rgba(205, 127, 50, 0.6);
+  box-shadow: 0 4px 12px rgba(205, 127, 50, 0.25);
+}
+
+.property-row.tier-2 {
+  /* Silver gradient for 200-299 buildings */
+  background: linear-gradient(135deg, 
+    rgba(192, 192, 192, 0.4) 0%, 
+    rgba(169, 169, 169, 0.35) 25%,
+    rgba(128, 128, 128, 0.3) 50%,
+    rgba(105, 105, 105, 0.35) 75%,
+    rgba(192, 192, 192, 0.4) 100%);
+  border: 1px solid rgba(192, 192, 192, 0.6);
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.25);
+}
+
+.property-row.tier-2:hover {
+  border-color: rgba(192, 192, 192, 0.8);
+  box-shadow: 0 4px 12px rgba(192, 192, 192, 0.35);
+}
+
+.property-row.tier-3 {
+  /* Golden gradient for 300+ buildings */
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.4) 0%, 
+    rgba(255, 223, 0, 0.35) 20%,
+    rgba(255, 215, 0, 0.3) 40%,
+    rgba(218, 165, 32, 0.35) 60%,
+    rgba(184, 134, 11, 0.3) 80%,
+    rgba(255, 215, 0, 0.4) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.7);
+  box-shadow: 
+    0 2px 8px rgba(255, 215, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.property-row.tier-3:hover {
+  border-color: rgba(255, 215, 0, 0.9);
+  box-shadow: 
+    0 4px 12px rgba(255, 215, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Sparkle animation for tier celebration particles */
+@keyframes sparkle {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.8) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Golden shine animation for tier-3 buildings */
+@keyframes goldenShine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
 .property-icon {
   flex-shrink: 0;
 }
