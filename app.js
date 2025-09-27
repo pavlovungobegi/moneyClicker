@@ -5528,8 +5528,8 @@ function initPWAInstallPrompt() {
           hideInstallPrompt();
         }
       } else {
-        // Fallback for browsers that don't support the install prompt
-        showInstallInstructions();
+        // Fallback: Try to trigger the browser's add to home screen functionality
+        triggerAddToHomeScreen();
       }
     });
   }
@@ -5575,21 +5575,188 @@ function hideInstallPrompt() {
   }
 }
 
-function showInstallInstructions() {
-  // Show instructions for manual installation
-  alert(`To install Interest Inc on your device:
+function triggerAddToHomeScreen() {
+  // Try to detect the device and browser to provide the best experience
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(userAgent);
+  const isAndroid = /android/.test(userAgent);
+  const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+  const isChrome = /chrome/.test(userAgent);
+
+  if (isIOS && isSafari) {
+    // iOS Safari - show a more helpful prompt
+    showIOSInstallGuide();
+  } else if (isAndroid && isChrome) {
+    // Android Chrome - try to trigger the install prompt
+    showAndroidInstallGuide();
+  } else {
+    // Fallback for other browsers
+    showGenericInstallGuide();
+  }
+}
+
+function showIOSInstallGuide() {
+  // Create a modal-style guide for iOS users
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
   
-iPhone/iPad:
-1. Tap the Share button (square with arrow up)
-2. Scroll down and tap "Add to Home Screen"
-3. Tap "Add" to confirm
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    ">
+      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">📱 Add to Home Screen</h3>
+      <div style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+        <p style="margin: 0 0 15px 0;">1. Tap the <strong>Share</strong> button <span style="font-size: 18px;">⤴️</span></p>
+        <p style="margin: 0 0 15px 0;">2. Scroll down and tap <strong>"Add to Home Screen"</strong></p>
+        <p style="margin: 0;">3. Tap <strong>"Add"</strong> to confirm</p>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 16px;
+      ">Got it!</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Auto-remove after 15 seconds
+  setTimeout(() => {
+    if (modal.parentNode) {
+      modal.parentNode.removeChild(modal);
+    }
+  }, 15000);
+}
 
-Android:
-1. Tap the menu button (three dots)
-2. Tap "Add to Home Screen" or "Install App"
-3. Tap "Add" to confirm
+function showAndroidInstallGuide() {
+  // Create a modal-style guide for Android users
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
+  
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    ">
+      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">📱 Install App</h3>
+      <div style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+        <p style="margin: 0 0 15px 0;">1. Tap the <strong>Menu</strong> button <span style="font-size: 18px;">⋮</span></p>
+        <p style="margin: 0 0 15px 0;">2. Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></p>
+        <p style="margin: 0;">3. Tap <strong>"Add"</strong> or <strong>"Install"</strong> to confirm</p>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 16px;
+      ">Got it!</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Auto-remove after 15 seconds
+  setTimeout(() => {
+    if (modal.parentNode) {
+      modal.parentNode.removeChild(modal);
+    }
+  }, 15000);
+}
 
-Enjoy your financial empire! 💰`);
+function showGenericInstallGuide() {
+  // Generic guide for other browsers
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  `;
+  
+  modal.innerHTML = `
+    <div style="
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    ">
+      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 24px;">📱 Add to Home Screen</h3>
+      <div style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+        <p style="margin: 0 0 15px 0;">Look for an <strong>"Add to Home Screen"</strong> or <strong>"Install"</strong> option in your browser menu.</p>
+        <p style="margin: 0;">This will add Interest Inc to your device's home screen!</p>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" style="
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 16px;
+      ">Got it!</button>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Auto-remove after 15 seconds
+  setTimeout(() => {
+    if (modal.parentNode) {
+      modal.parentNode.removeChild(modal);
+    }
+  }, 15000);
 }
 
 function initPWASpecificFeatures() {
