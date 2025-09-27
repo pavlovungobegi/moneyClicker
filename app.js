@@ -2260,6 +2260,7 @@
     let totalDiscount = 0;
     if (owned.u33) totalDiscount += 0.15; // Real Estate Connections: 15% off
     if (owned.u34) totalDiscount += 0.20; // Hire a contractor: additional 20% off
+    if (owned.u36) totalDiscount += 0.10; // Market awareness: additional 10% off
     
     return config.baseCost * (1 - totalDiscount);
   }
@@ -2278,6 +2279,11 @@
     // Apply Property Management boost (35% increase)
     if (owned.u35) {
       baseIncome *= 1.35;
+    }
+    
+    // Apply Rental Monopoly boost (20% increase)
+    if (owned.u37) {
+      baseIncome *= 1.20;
     }
     
     return Math.floor(baseIncome);
@@ -2436,12 +2442,15 @@
       }
     }
     
-    // Update individual income per unit (with Property Management boost)
+    // Update individual income per unit (with Property Management and Rental Monopoly boost)
     const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
     if (individualIncomeEl) {
       let individualIncome = config.incomePerSecond;
       if (owned.u35) {
         individualIncome *= 1.35; // Apply Property Management boost
+      }
+      if (owned.u37) {
+        individualIncome *= 1.20; // Apply Rental Monopoly boost
       }
       individualIncomeEl.textContent = `€${formatNumberShort(Math.floor(individualIncome))}/sec each`;
     }
@@ -4128,7 +4137,9 @@
     u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
     u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount" },
     u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount" },
-    u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost" }
+    u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost" },
+    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount" },
+    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost" }
   };
 
   // Generate upgrade costs and owned objects from config
