@@ -5449,5 +5449,114 @@ window.addEventListener('beforeunload', () => {
   })();
 })();
 
+// PWA Install Prompt Functionality
+let deferredPrompt;
+let installPromptShown = false;
 
+function initPWAInstallPrompt() {
+  // Listen for the beforeinstallprompt event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('PWA install prompt available');
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show our custom install prompt after a delay
+    setTimeout(() => {
+      showInstallPrompt();
+    }, 3000); // Show after 3 seconds
+  });
 
+  // Listen for the app installed event
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    hideInstallPrompt();
+    installPromptShown = true;
+  });
+
+  // Handle install button click
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        // Show the native install prompt
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+        
+        if (outcome === 'accepted') {
+          hideInstallPrompt();
+        }
+      } else {
+        // Fallback for browsers that don't support the install prompt
+        showInstallInstructions();
+      }
+    });
+  }
+
+  // Handle dismiss button click
+  const dismissBtn = document.getElementById('installDismiss');
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', () => {
+      hideInstallPrompt();
+      installPromptShown = true;
+      // Don't show again for this session
+      sessionStorage.setItem('installPromptDismissed', 'true');
+    });
+  }
+
+  // Check if already installed
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('PWA is already installed');
+    installPromptShown = true;
+  }
+
+  // Check if user dismissed before
+  if (sessionStorage.getItem('installPromptDismissed') === 'true') {
+    installPromptShown = true;
+  }
+}
+
+function showInstallPrompt() {
+  if (installPromptShown) return;
+  
+  const installPrompt = document.getElementById('installPrompt');
+  if (installPrompt) {
+    installPrompt.classList.remove('hidden');
+    setTimeout(() => {
+      installPrompt.classList.add('show');
+    }, 100);
+  }
+}
+
+function hideInstallPrompt() {
+  const installPrompt = document.getElementById('installPrompt');
+  if (installPrompt) {
+    installPrompt.classList.remove('show');
+    setTimeout(() => {
+      installPrompt.classList.add('hidden');
+    }, 300);
+  }
+}
+
+function showInstallInstructions() {
+  // Show instructions for manual installation
+  alert(`To install Interest Inc on your device:
+  
+iPhone/iPad:
+1. Tap the Share button (square with arrow up)
+2. Scroll down and tap "Add to Home Screen"
+3. Tap "Add" to confirm
+
+Android:
+1. Tap the menu button (three dots)
+2. Tap "Add to Home Screen" or "Install App"
+3. Tap "Add" to confirm
+
+Enjoy your financial empire! 💰`);
+}
+
+// Initialize PWA functionality when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  initPWAInstallPrompt();
+});
