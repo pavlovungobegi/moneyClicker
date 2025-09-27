@@ -4099,7 +4099,7 @@
   };
 
   // Money cap system
-  const MAX_TOTAL_MONEY = 100000000000000; // 100 trillion euros
+  const MAX_TOTAL_MONEY = 1000000000000000; // 100 trillion euros
 
   function getTotalMoney() {
     return currentAccountBalance + investmentAccountBalance;
