@@ -630,57 +630,57 @@
     foodStand: {
       name: "Food Stand",
       baseCost: 500,
-      incomePerSecond: 2,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      incomePerSecond: 3.5,
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-utensils"
     },
     newsstand: {
       name: "Newsstand",
       baseCost: 8000,
       incomePerSecond: 25,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-newspaper"
     },
     parkingGarage: {
       name: "Parking Garage",
       baseCost: 30000,
       incomePerSecond: 100,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-car"
     },
     convenienceStore: {
       name: "Convenience Store",
       baseCost: 150000,
       incomePerSecond: 500,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-store"
     },
     apartment: {
       name: "Apartment",
       baseCost: 500000,
       incomePerSecond: 1250,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-home"
     },
     manufacturingPlant: {
       name: "Manufacturing Plant",
       baseCost: 2500000,
       incomePerSecond: 6250,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-industry"
     },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
       incomePerSecond: 15000,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-building"
     },
     skyscraper: {
       name: "Skyscraper",
       baseCost: 50000000,
       incomePerSecond: 75000,
-      priceMultiplier: 1.05, // 5% increase per purchase
+      priceMultiplier: 1.04, // 4% increase per purchase
       icon: "fas fa-city"
     },
     operaHouse: {
@@ -2336,9 +2336,11 @@
     }
     
     // Debug logging
+    /*
     if (ownedCount >= 99 && ownedCount <= 101) {
       console.log(`${propertyId} Total ${ownedCount} buildings: Tier ${tier}, Multiplier ${tierMultiplier}x, Base €${ownedCount * config.incomePerSecond}, Total €${Math.floor(baseIncome)}/sec`);
     }
+    */
     
     return Math.floor(baseIncome);
   }
