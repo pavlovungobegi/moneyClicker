@@ -5495,7 +5495,7 @@ function initPWAInstallPrompt() {
     // Show our custom install prompt after a delay
     setTimeout(() => {
       showInstallPrompt();
-    }, 3000); // Show after 3 seconds
+    }, 1000); // Show after 1 second
   });
 
   // Fallback: Show install prompt even without beforeinstallprompt event
@@ -5504,7 +5504,7 @@ function initPWAInstallPrompt() {
     if (!installPromptShown && !deferredPrompt) {
       showInstallPrompt();
     }
-  }, 5000); // Show after 5 seconds if no native prompt
+  }, 3000); // Show after 3 seconds if no native prompt
 
   // Listen for the app installed event
   window.addEventListener('appinstalled', () => {
