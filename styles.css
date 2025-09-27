@@ -2412,6 +2412,44 @@ button#withdrawHalfBtn:focus-visible {
   }
 }
 
+/* PWA vs Browser Mode Styles */
+.pwa-mode {
+  /* PWA-specific styles */
+}
+
+.pwa-mode .install-prompt {
+  display: none !important; /* Hide install prompt in PWA mode */
+}
+
+.browser-mode {
+  /* Browser-specific styles */
+}
+
+/* Example: Different styling for PWA mode */
+.pwa-mode .version-info {
+  color: #10b981; /* Green color to indicate PWA mode */
+}
+
+.pwa-mode .version-info::after {
+  content: " (PWA)";
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Hide elements in PWA mode */
+.pwa-mode .browser-only {
+  display: none !important;
+}
+
+/* Show elements only in PWA mode */
+.pwa-only {
+  display: none;
+}
+
+.pwa-mode .pwa-only {
+  display: block;
+}
+
 @keyframes fadeInOut {
   0%, 100% {
     opacity: 0.7;

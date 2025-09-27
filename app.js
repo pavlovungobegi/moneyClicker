@@ -5453,10 +5453,42 @@ window.addEventListener('beforeunload', () => {
 let deferredPrompt;
 let installPromptShown = false;
 
+function isRunningAsPWA() {
+  // Method 1: Check if display mode is standalone (most reliable)
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    return true;
+  }
+  
+  // Method 2: Check if window.navigator.standalone is true (iOS Safari)
+  if (window.navigator.standalone === true) {
+    return true;
+  }
+  
+  // Method 3: Check if the app was launched from home screen
+  // This works by checking if there's no referrer and the document was loaded via a link
+  if (document.referrer === '' && window.location.search.includes('homescreen=1')) {
+    return true;
+  }
+  
+  // Method 4: Check if the app is running in fullscreen mode
+  if (window.screen.height - window.innerHeight < 100) {
+    // If the difference is small, it might be running as PWA
+    // This is less reliable but can help in some cases
+    return window.matchMedia('(display-mode: minimal-ui)').matches;
+  }
+  
+  return false;
+}
+
 function initPWAInstallPrompt() {
+  // Check if app is already installed (PWA mode)
+  if (isRunningAsPWA()) {
+    console.log('App is running as PWA - no install prompt needed');
+    return; // Don't show install prompt if already installed
+  }
+
   // Listen for the beforeinstallprompt event
   window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('PWA install prompt available');
     e.preventDefault();
     deferredPrompt = e;
     
@@ -5465,6 +5497,14 @@ function initPWAInstallPrompt() {
       showInstallPrompt();
     }, 3000); // Show after 3 seconds
   });
+
+  // Fallback: Show install prompt even without beforeinstallprompt event
+  // This ensures the prompt shows on browsers that don't support the native prompt
+  setTimeout(() => {
+    if (!installPromptShown && !deferredPrompt) {
+      showInstallPrompt();
+    }
+  }, 5000); // Show after 5 seconds if no native prompt
 
   // Listen for the app installed event
   window.addEventListener('appinstalled', () => {
@@ -5500,21 +5540,17 @@ function initPWAInstallPrompt() {
     dismissBtn.addEventListener('click', () => {
       hideInstallPrompt();
       installPromptShown = true;
-      // Don't show again for this session
-      sessionStorage.setItem('installPromptDismissed', 'true');
     });
   }
 
   // Check if already installed
-  if (window.matchMedia('(display-mode: standalone)').matches) {
+  if (isRunningAsPWA()) {
     console.log('PWA is already installed');
     installPromptShown = true;
   }
 
-  // Check if user dismissed before
-  if (sessionStorage.getItem('installPromptDismissed') === 'true') {
-    installPromptShown = true;
-  }
+
+
 }
 
 function showInstallPrompt() {
@@ -5556,7 +5592,37 @@ Android:
 Enjoy your financial empire! 💰`);
 }
 
+function initPWASpecificFeatures() {
+  if (isRunningAsPWA()) {
+    console.log('Initializing PWA-specific features');
+    
+    // Add a class to body for PWA-specific styling
+    document.body.classList.add('pwa-mode');
+    
+    // You can add PWA-specific features here, such as:
+    // - Different UI elements
+    // - Enhanced offline capabilities
+    // - PWA-specific notifications
+    // - Different behavior for certain features
+    
+    // Example: Hide browser-specific elements if any
+    const browserElements = document.querySelectorAll('.browser-only');
+    browserElements.forEach(el => el.style.display = 'none');
+    
+    // Example: Show PWA-specific elements
+    const pwaElements = document.querySelectorAll('.pwa-only');
+    pwaElements.forEach(el => el.style.display = 'block');
+    
+    // Log PWA mode for debugging
+    console.log('Running in PWA mode - enhanced experience enabled');
+  } else {
+    console.log('Running in browser mode - install prompt available');
+    document.body.classList.add('browser-mode');
+  }
+}
+
 // Initialize PWA functionality when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initPWAInstallPrompt();
+  initPWASpecificFeatures();
 });
