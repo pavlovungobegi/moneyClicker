@@ -630,7 +630,7 @@
     foodStand: {
       name: "Food Stand",
       baseCost: 400,
-      incomePerSecond: 6,
+      incomePerSecond: 10,
       priceMultiplier: 1.03, // 3% increase per purchase
       icon: "fas fa-utensils"
     },
