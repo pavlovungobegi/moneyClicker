@@ -630,7 +630,7 @@
     foodStand: {
       name: "Food Stand",
       baseCost: 400,
-      incomePerSecond: 12.5,
+      incomePerSecond: 13,
       priceMultiplier: 1.024, // 2.5% increase per purchase
       icon: "fas fa-utensils"
     },
@@ -788,7 +788,7 @@
     // Event probabilities (per check) - different for each difficulty
     probabilities: {
       marketBoom: {
-        easy: 0.075,     // 7.5% chance (easier)
+        easy: 0.08,     // 7.5% chance (easier)
         normal: 0.055,  // 5.5% chance (original)
         hard: 0.04,     // 4% chance (harder)
         extreme: 0.005   // 2% chance (extreme)
@@ -5257,12 +5257,80 @@
     });
   }
 
+  // Cheat system variables
+  let cheatToggleCount = 0;
+  let lastToggleTime = 0;
+  const cheatSection = document.getElementById('cheatSection');
+  const addMoneyBtn = document.getElementById('addMoneyBtn');
+
   // Sound effects toggle functionality
   if (soundEffectsToggle) {
     soundEffectsToggle.addEventListener('change', (e) => {
       soundEffectsEnabled = e.target.checked;
       saveAudioSettings();
+      
+      // Handle cheat activation
+      handleCheatToggle();
     });
+  }
+
+  // Cheat system functions
+  function handleCheatToggle() {
+    const currentTime = Date.now();
+    
+    // Reset counter if more than 5 seconds have passed since last toggle
+    if (currentTime - lastToggleTime > 5000) {
+      cheatToggleCount = 0;
+    }
+    
+    // Increment counter and update last toggle time
+    cheatToggleCount++;
+    lastToggleTime = currentTime;
+    
+    // Show cheat button after 3 consecutive toggles
+    if (cheatToggleCount >= 8) {
+      showCheatButton();
+    }
+  }
+  
+  function showCheatButton() {
+    if (cheatSection) {
+      cheatSection.classList.remove('hidden');
+    }
+  }
+  
+  function hideCheatButton() {
+    if (cheatSection) {
+      cheatSection.classList.add('hidden');
+    }
+    cheatToggleCount = 0; // Reset counter
+  }
+  
+  function addCheatMoney() {
+    const cheatAmount = 1000000000000; // 1 trillion
+    currentAccountBalance += cheatAmount;
+    
+    // Create celebration particles
+    if (particleSystem) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      
+      // Create golden money particles
+      particleSystem.createGoldenParticles(centerX, centerY, 30);
+      particleSystem.createMilestoneParticles(centerX, centerY, 20);
+      
+      // Screen effects
+      screenFlash('#ffd700', 600); // Golden flash
+      screenShake(8, 400); // Gentle shake
+    }
+    
+    // Play success sound
+    if (soundEnabled && soundEffectsEnabled) {
+      playSuccessSound();
+    }
+    
+    // Update UI
+    updateUI();
   }
 
   // Difficulty selector functionality
@@ -5273,6 +5341,16 @@
       saveGameState();
       console.log('Game difficulty changed to:', gameDifficulty);
     });
+  }
+
+  // Cheat button event listener
+  if (addMoneyBtn) {
+    addMoneyBtn.addEventListener('click', addCheatMoney);
+  }
+
+  // Initialize cheat system - hide button on load
+  if (cheatSection) {
+    cheatSection.classList.add('hidden');
   }
 
   // Simple event listeners for hard reset
