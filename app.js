@@ -638,56 +638,56 @@
       name: "Newsstand",
       baseCost: 8000,
       incomePerSecond: 100,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-newspaper"
     },
     parkingGarage: {
       name: "Parking Garage",
       baseCost: 30000,
       incomePerSecond: 200,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-car"
     },
     convenienceStore: {
       name: "Convenience Store",
       baseCost: 150000,
       incomePerSecond: 1250,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-store"
     },
     apartment: {
       name: "Apartment",
       baseCost: 500000,
       incomePerSecond: 4000,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-home"
     },
     manufacturingPlant: {
       name: "Manufacturing Plant",
       baseCost: 2500000,
       incomePerSecond: 18000,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-industry"
     },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
       incomePerSecond: 55000,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-building"
     },
     skyscraper: {
       name: "Skyscraper",
       baseCost: 50000000,
       incomePerSecond: 175000,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-city"
     },
     operaHouse: {
       name: "Opera House",
       baseCost: 500000000,
       incomePerSecond: 1500000,
-      priceMultiplier: 1.035, // 4% increase per purchase
+      priceMultiplier: 1.03, // 4% increase per purchase
       icon: "fas fa-theater-masks"
     }
   };
