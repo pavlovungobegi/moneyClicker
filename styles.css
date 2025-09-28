@@ -898,6 +898,47 @@ main {
   font-weight: 600;
 }
 
+.upgrade-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upgrade-icon {
+  font-size: 12px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.click-icon {
+  color: #10b981;
+}
+
+.interest-icon {
+  color: #3b82f6;
+}
+
+.dividend-icon {
+  color: #f59e0b;
+}
+
+.building-icon {
+  color: #8b5cf6;
+}
+
+.unlock-icon {
+  color: #ef4444;
+}
+
+.special-icon {
+  color: #f97316;
+}
+
+.prestige-icon {
+  color: #ec4899;
+}
+
 .upgrade-actions, .building-actions {
   display: flex;
   align-items: center;
