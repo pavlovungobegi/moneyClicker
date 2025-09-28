@@ -629,7 +629,7 @@
   const PROPERTY_CONFIG = {
     foodStand: {
       name: "Food Stand",
-      baseCost: 450,
+      baseCost: 400,
       incomePerSecond: 6,
       priceMultiplier: 1.03, // 3% increase per purchase
       icon: "fas fa-utensils"
@@ -637,7 +637,7 @@
     newsstand: {
       name: "Newsstand",
       baseCost: 8000,
-      incomePerSecond: 70,
+      incomePerSecond: 100,
       priceMultiplier: 1.035, // 4% increase per purchase
       icon: "fas fa-newspaper"
     },
@@ -665,21 +665,21 @@
     manufacturingPlant: {
       name: "Manufacturing Plant",
       baseCost: 2500000,
-      incomePerSecond: 16000,
+      incomePerSecond: 18000,
       priceMultiplier: 1.035, // 4% increase per purchase
       icon: "fas fa-industry"
     },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
-      incomePerSecond: 45000,
+      incomePerSecond: 55000,
       priceMultiplier: 1.035, // 4% increase per purchase
       icon: "fas fa-building"
     },
     skyscraper: {
       name: "Skyscraper",
       baseCost: 50000000,
-      incomePerSecond: 160000,
+      incomePerSecond: 175000,
       priceMultiplier: 1.035, // 4% increase per purchase
       icon: "fas fa-city"
     },
