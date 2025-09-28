@@ -2287,7 +2287,7 @@
     // Calculate tier based on total owned buildings (not individual building index)
     // 0-99 buildings = tier 0 (1x), 100-199 = tier 1 (2x), 200-299 = tier 2 (4x), etc.
     const tier = Math.floor(totalOwned / 100);
-    const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x...)
+    const tierMultiplier = Math.pow(3, tier); // 2^tier (1x, 2x, 4x, 8x...)
     
     let income = config.incomePerSecond * tierMultiplier;
     
@@ -2308,19 +2308,21 @@
     const config = PROPERTY_CONFIG[propertyId];
     const ownedCount = properties[propertyId];
     
-    // Calculate tier based on total owned buildings (max tier 3)
+    // Calculate tier based on total owned buildings (max tier 4)
     let tier;
-    if (ownedCount >= 300) {
-      tier = 3; // Golden (300+) - 8x multiplier
+    if (ownedCount >= 400) {
+      tier = 4; // Diamond (400+) - 81x multiplier
+    } else if (ownedCount >= 300) {
+      tier = 3; // Golden (300-399) - 27x multiplier
     } else if (ownedCount >= 200) {
-      tier = 2; // Silver (200-299) - 4x multiplier
+      tier = 2; // Silver (200-299) - 9x multiplier
     } else if (ownedCount >= 100) {
-      tier = 1; // Bronze (100-199) - 2x multiplier
+      tier = 1; // Bronze (100-199) - 3x multiplier
     } else {
       tier = 0; // Default (0-99) - 1x multiplier
     }
     
-    const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
+    const tierMultiplier = Math.pow(3, tier); // 3^tier (1x, 3x, 9x, 27x)
     
     // All buildings get the same income multiplier based on total owned
     let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
@@ -2501,19 +2503,21 @@
     // Update individual income per unit (with tier system and upgrades)
     const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
     if (individualIncomeEl) {
-      // Calculate tier based on total owned buildings (max tier 3)
+      // Calculate tier based on total owned buildings (max tier 4)
       let tier;
-      if (ownedCount >= 300) {
-        tier = 3; // Golden (300+) - 8x multiplier
+      if (ownedCount >= 400) {
+        tier = 4; // Diamond (400+) - 81x multiplier
+      } else if (ownedCount >= 300) {
+        tier = 3; // Golden (300-399) - 27x multiplier
       } else if (ownedCount >= 200) {
-        tier = 2; // Silver (200-299) - 4x multiplier
+        tier = 2; // Silver (200-299) - 9x multiplier
       } else if (ownedCount >= 100) {
-        tier = 1; // Bronze (100-199) - 2x multiplier
+        tier = 1; // Bronze (100-199) - 3x multiplier
       } else {
         tier = 0; // Default (0-99) - 1x multiplier
       }
       
-      const tierMultiplier = Math.pow(2, tier);
+      const tierMultiplier = Math.pow(3, tier);
       
       let individualIncome = config.incomePerSecond * tierMultiplier;
       
@@ -2574,10 +2578,12 @@
     // Get previous tier to detect tier changes
     const previousTier = getTierFromClass(propertyRow);
     
-    // Calculate new tier (max 3 tiers: Bronze, Silver, Gold)
+    // Calculate new tier (max 4 tiers: Bronze, Silver, Gold, Diamond)
     let newTier;
-    if (ownedCount >= 300) {
-      newTier = 3; // Golden (300+)
+    if (ownedCount >= 400) {
+      newTier = 4; // Diamond (400+)
+    } else if (ownedCount >= 300) {
+      newTier = 3; // Golden (300-399)
     } else if (ownedCount >= 200) {
       newTier = 2; // Silver (200-299)
     } else if (ownedCount >= 100) {
@@ -2587,10 +2593,12 @@
     }
     
     // Remove existing tier classes
-    propertyRow.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3');
+    propertyRow.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3', 'tier-4');
     
-    if (ownedCount >= 300) {
-      propertyRow.classList.add('tier-3'); // Golden (300+)
+    if (ownedCount >= 400) {
+      propertyRow.classList.add('tier-4'); // Diamond (400+)
+    } else if (ownedCount >= 300) {
+      propertyRow.classList.add('tier-3'); // Golden (300-399)
     } else if (ownedCount >= 200) {
       propertyRow.classList.add('tier-2'); // Silver (200-299)
     } else if (ownedCount >= 100) {
@@ -2599,14 +2607,15 @@
       propertyRow.classList.add('tier-0'); // Default (0-99)
     }
     
-    // Check if tier increased and celebrate! (only for tiers 1, 2, 3)
-    if (newTier > previousTier && newTier <= 3 && ownedCount % 100 === 0) {
+    // Check if tier increased and celebrate! (only for tiers 1, 2, 3, 4)
+    if (newTier > previousTier && newTier <= 4 && ownedCount % 100 === 0) {
       celebrateTierUpgrade(propertyId, newTier, propertyRow);
     }
   }
   
   // Helper function to get tier from CSS class
   function getTierFromClass(propertyRow) {
+    if (propertyRow.classList.contains('tier-4')) return 4;
     if (propertyRow.classList.contains('tier-3')) return 3;
     if (propertyRow.classList.contains('tier-2')) return 2;
     if (propertyRow.classList.contains('tier-1')) return 1;
@@ -2633,6 +2642,9 @@
         break;
       case 3: // Gold tier
         colors = ['#ffd700', '#ffdf00', '#daa520', '#b8860b'];
+        break;
+      case 4: // Diamond tier
+        colors = ['#00bfff', '#1e90ff', '#4169e1', '#0000ff'];
         break;
       default: // Higher tiers
         colors = ['#8b5cf6', '#7c3aed', '#6d28d9'];
@@ -2740,19 +2752,23 @@
     switch(tier) {
       case 1: 
         tierText = 'BRONZE';
-        multiplierText = '2x';
+        multiplierText = '3x';
         break;
       case 2: 
         tierText = 'SILVER';
-        multiplierText = '4x';
+        multiplierText = '9x';
         break;
       case 3: 
         tierText = 'GOLD';
-        multiplierText = '8x';
+        multiplierText = '27x';
+        break;
+      case 4: 
+        tierText = 'DIAMOND';
+        multiplierText = '81x';
         break;
       default: 
         tierText = 'LEGENDARY';
-        multiplierText = `${Math.pow(2, tier)}x`;
+        multiplierText = `${Math.pow(3, tier)}x`;
         break;
     }
     
