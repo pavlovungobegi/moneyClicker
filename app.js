@@ -4,6 +4,9 @@
   
   // Active tab tracking for performance optimization
   let activeTab = 'earn'; // Default to earn tab
+  
+  // DOM element caching for performance optimization
+  let cachedElements = {};
 
   // Mobile detection for particle optimization
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -4964,9 +4967,15 @@
     return 1 + (getBaseCompoundMultiplierPerTick() - 1) * rateBoost * prestigeInterestMultiplier;
   }
 
+  // Cache DOM elements for performance optimization
+  function cacheDOMElements() {
+    cachedElements.upgradeIndicator = document.getElementById('upgradeIndicator');
+    cachedElements.portfolioIndicator = document.getElementById('portfolioIndicator');
+  }
+
   // Check if any upgrades are available and update indicator
   function updateUpgradeIndicator() {
-    const indicator = document.getElementById('upgradeIndicator');
+    const indicator = cachedElements.upgradeIndicator;
     if (!indicator) return;
     
     // Check if any upgrade is affordable using only current account balance
@@ -4983,7 +4992,7 @@
 
   // Check if any buildings are available and update portfolio indicator
   function updatePortfolioIndicator() {
-    const indicator = document.getElementById('portfolioIndicator');
+    const indicator = cachedElements.portfolioIndicator;
     if (!indicator) return;
     
     // Check if any building is affordable using only current account balance
@@ -5403,6 +5412,9 @@
   }
 
   function initializeGame() {
+  // Cache DOM elements for performance optimization
+  cacheDOMElements();
+  
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
   updateToggleCompletedUI();
