@@ -631,7 +631,7 @@
       name: "Food Stand",
       baseCost: 400,
       incomePerSecond: 13,
-      priceMultiplier: 1.024, // 2.5% increase per purchase
+      priceMultiplier: 1.03, // 2.5% increase per purchase
       icon: "fas fa-utensils"
     },
     newsstand: {
@@ -2308,21 +2308,21 @@
     const config = PROPERTY_CONFIG[propertyId];
     const ownedCount = properties[propertyId];
     
-    // Calculate tier based on total owned buildings (max tier 4)
+    // Calculate tier based on total owned buildings (every 25 buildings)
     let tier;
-    if (ownedCount >= 400) {
-      tier = 4; // Diamond (400+) - 81x multiplier
-    } else if (ownedCount >= 300) {
-      tier = 3; // Golden (300-399) - 27x multiplier
-    } else if (ownedCount >= 200) {
-      tier = 2; // Silver (200-299) - 9x multiplier
-    } else if (ownedCount >= 100) {
-      tier = 1; // Bronze (100-199) - 3x multiplier
+    if (ownedCount >= 100) {
+      tier = 4; // Diamond (100+) - 16x multiplier
+    } else if (ownedCount >= 75) {
+      tier = 3; // Golden (75-99) - 8x multiplier
+    } else if (ownedCount >= 50) {
+      tier = 2; // Silver (50-74) - 4x multiplier
+    } else if (ownedCount >= 25) {
+      tier = 1; // Bronze (25-49) - 2x multiplier
     } else {
-      tier = 0; // Default (0-99) - 1x multiplier
+      tier = 0; // Default (0-24) - 1x multiplier
     }
     
-    const tierMultiplier = Math.pow(3, tier); // 3^tier (1x, 3x, 9x, 27x)
+    const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
     
     // All buildings get the same income multiplier based on total owned
     let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
@@ -2503,21 +2503,21 @@
     // Update individual income per unit (with tier system and upgrades)
     const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
     if (individualIncomeEl) {
-      // Calculate tier based on total owned buildings (max tier 4)
-      let tier;
-      if (ownedCount >= 400) {
-        tier = 4; // Diamond (400+) - 81x multiplier
-      } else if (ownedCount >= 300) {
-        tier = 3; // Golden (300-399) - 27x multiplier
-      } else if (ownedCount >= 200) {
-        tier = 2; // Silver (200-299) - 9x multiplier
-      } else if (ownedCount >= 100) {
-        tier = 1; // Bronze (100-199) - 3x multiplier
-      } else {
-        tier = 0; // Default (0-99) - 1x multiplier
-      }
+              // Calculate tier based on total owned buildings (every 25 buildings)
+              let tier;
+              if (ownedCount >= 100) {
+                tier = 4; // Diamond (100+) - 16x multiplier
+              } else if (ownedCount >= 75) {
+                tier = 3; // Golden (75-99) - 8x multiplier
+              } else if (ownedCount >= 50) {
+                tier = 2; // Silver (50-74) - 4x multiplier
+              } else if (ownedCount >= 25) {
+                tier = 1; // Bronze (25-49) - 2x multiplier
+              } else {
+                tier = 0; // Default (0-24) - 1x multiplier
+              }
       
-      const tierMultiplier = Math.pow(3, tier);
+      const tierMultiplier = Math.pow(2, tier);
       
       let individualIncome = config.incomePerSecond * tierMultiplier;
       
@@ -2540,6 +2540,9 @@
     
     // Apply tier-based styling
     applyTierStyling(propertyId, ownedCount);
+    
+    // Update tier progress line
+    updateTierProgressLine(propertyId, ownedCount);
     
     // Update buy button state and text
     const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
@@ -2578,37 +2581,37 @@
     // Get previous tier to detect tier changes
     const previousTier = getTierFromClass(propertyRow);
     
-    // Calculate new tier (max 4 tiers: Bronze, Silver, Gold, Diamond)
+    // Calculate new tier (every 25 buildings: Bronze, Silver, Gold, Diamond)
     let newTier;
-    if (ownedCount >= 400) {
-      newTier = 4; // Diamond (400+)
-    } else if (ownedCount >= 300) {
-      newTier = 3; // Golden (300-399)
-    } else if (ownedCount >= 200) {
-      newTier = 2; // Silver (200-299)
-    } else if (ownedCount >= 100) {
-      newTier = 1; // Bronze (100-199)
+    if (ownedCount >= 100) {
+      newTier = 4; // Diamond (100+)
+    } else if (ownedCount >= 75) {
+      newTier = 3; // Golden (75-99)
+    } else if (ownedCount >= 50) {
+      newTier = 2; // Silver (50-74)
+    } else if (ownedCount >= 25) {
+      newTier = 1; // Bronze (25-49)
     } else {
-      newTier = 0; // Default (0-99)
+      newTier = 0; // Default (0-24)
     }
     
     // Remove existing tier classes
     propertyRow.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3', 'tier-4');
     
-    if (ownedCount >= 400) {
-      propertyRow.classList.add('tier-4'); // Diamond (400+)
-    } else if (ownedCount >= 300) {
-      propertyRow.classList.add('tier-3'); // Golden (300-399)
-    } else if (ownedCount >= 200) {
-      propertyRow.classList.add('tier-2'); // Silver (200-299)
-    } else if (ownedCount >= 100) {
-      propertyRow.classList.add('tier-1'); // Bronze (100-199)
+    if (ownedCount >= 100) {
+      propertyRow.classList.add('tier-4'); // Diamond (100+)
+    } else if (ownedCount >= 75) {
+      propertyRow.classList.add('tier-3'); // Golden (75-99)
+    } else if (ownedCount >= 50) {
+      propertyRow.classList.add('tier-2'); // Silver (50-74)
+    } else if (ownedCount >= 25) {
+      propertyRow.classList.add('tier-1'); // Bronze (25-49)
     } else {
-      propertyRow.classList.add('tier-0'); // Default (0-99)
+      propertyRow.classList.add('tier-0'); // Default (0-24)
     }
     
     // Check if tier increased and celebrate! (only for tiers 1, 2, 3, 4)
-    if (newTier > previousTier && newTier <= 4 && ownedCount % 100 === 0) {
+    if (newTier > previousTier && newTier <= 4 && ownedCount % 25 === 0) {
       celebrateTierUpgrade(propertyId, newTier, propertyRow);
     }
   }
@@ -2620,6 +2623,73 @@
     if (propertyRow.classList.contains('tier-2')) return 2;
     if (propertyRow.classList.contains('tier-1')) return 1;
     return 0;
+  }
+  
+  // Update tier progress line under property card
+  function updateTierProgressLine(propertyId, ownedCount) {
+    const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
+    if (!propertyRow) return;
+    
+    // Calculate current tier and progress to next tier
+    let currentTier, nextTierThreshold, progress, lineColor;
+    
+    if (ownedCount >= 100) {
+      // Diamond tier (max tier) - hide progress line
+      currentTier = 4;
+      nextTierThreshold = 100;
+      progress = 0;
+      lineColor = '#00bfff'; // Diamond blue
+    } else if (ownedCount >= 75) {
+      // Gold tier - progress to Diamond (100)
+      currentTier = 3;
+      nextTierThreshold = 100;
+      progress = (ownedCount - 75) / 25; // 0-1 progress from 75 to 100
+      lineColor = '#ffd700'; // Gold
+    } else if (ownedCount >= 50) {
+      // Silver tier - progress to Gold (75)
+      currentTier = 2;
+      nextTierThreshold = 75;
+      progress = (ownedCount - 50) / 25; // 0-1 progress from 50 to 75
+      lineColor = '#c0c0c0'; // Silver
+    } else if (ownedCount >= 25) {
+      // Bronze tier - progress to Silver (50)
+      currentTier = 1;
+      nextTierThreshold = 50;
+      progress = (ownedCount - 25) / 25; // 0-1 progress from 25 to 50
+      lineColor = '#cd7f32'; // Bronze
+    } else {
+      // Default tier - progress to Bronze (25)
+      currentTier = 0;
+      nextTierThreshold = 25;
+      progress = ownedCount / 25; // 0-1 progress from 0 to 25
+      lineColor = '#6b7280'; // Gray
+    }
+    
+    // Create or update the progress line
+    let progressLine = propertyRow.querySelector('.tier-progress-line');
+    if (!progressLine) {
+      progressLine = document.createElement('div');
+      progressLine.classList.add('tier-progress-line');
+      propertyRow.appendChild(progressLine);
+    }
+    
+    // Hide progress line if at max tier (Diamond tier)
+    if (currentTier >= 4) {
+      progressLine.style.display = 'none';
+    } else {
+      progressLine.style.display = 'block';
+      
+      // Update progress line styling
+      progressLine.style.width = `${progress * 100}%`;
+      progressLine.style.backgroundColor = lineColor;
+      
+      // Add glow effect for higher tiers
+      if (currentTier >= 3) {
+        progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
+      } else {
+        progressLine.style.boxShadow = 'none';
+      }
+    }
   }
   
   // Celebrate tier upgrade with particles
@@ -2752,30 +2822,30 @@
     switch(tier) {
       case 1: 
         tierText = 'BRONZE';
-        multiplierText = '3x';
+        multiplierText = '2x';
         break;
       case 2: 
         tierText = 'SILVER';
-        multiplierText = '9x';
+        multiplierText = '4x';
         break;
       case 3: 
         tierText = 'GOLD';
-        multiplierText = '27x';
+        multiplierText = '8x';
         break;
       case 4: 
         tierText = 'DIAMOND';
-        multiplierText = '81x';
+        multiplierText = '16x';
         break;
       default: 
         tierText = 'LEGENDARY';
-        multiplierText = `${Math.pow(3, tier)}x`;
+        multiplierText = `${Math.pow(2, tier)}x`;
         break;
     }
     
-    notification.innerHTML = `
-      ${propertyName} reached ${tierText} tier! (${tier * 100}+ buildings)<br>
-      <span style="font-size: 14px; opacity: 0.9;">Rent increased by ${multiplierText}!</span>
-    `;
+            notification.innerHTML = `
+              ${propertyName} reached ${tierText} tier! (${tier * 25}+ buildings)<br>
+              <span style="font-size: 14px; opacity: 0.9;">Rent increased by ${multiplierText}!</span>
+            `;
     
     document.body.appendChild(notification);
     

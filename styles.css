@@ -939,6 +939,17 @@ main {
   color: #ec4899;
 }
 
+/* Tier Progress Line */
+.tier-progress-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: #6b7280;
+  transition: all 0.3s ease;
+  border-radius: 0 0 8px 8px;
+}
+
 /* Cheat System Styles */
 .cheat-section {
   margin-top: 10px;
@@ -1912,6 +1923,7 @@ button#withdrawHalfBtn:focus-visible {
   margin: 4px 0;
   gap: 10px;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .property-row:hover {
