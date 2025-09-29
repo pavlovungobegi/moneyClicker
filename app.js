@@ -3212,6 +3212,7 @@
       const clickAchievements = ['ach6', 'ach7', 'ach8']; // Click-related achievements
       const rareAchievements = ['ach11', 'ach12']; // Rare/hard achievements
       const upgradeAchievements = ['ach9', 'ach10', 'ach13']; // Upgrade-related achievements
+      const propertyAchievements = ['ach14', 'ach15', 'ach16', 'ach17', 'ach18']; // Property-related achievements
       
       if (milestoneAchievements.includes(achievementId)) {
         // Money milestone achievements - golden particles + fireworks
@@ -3237,6 +3238,13 @@
         particleSystem.createUpgradeParticles(centerX, centerY, 8);
         particleSystem.createMilestoneParticles(centerX, centerY, 10);
         screenFlash('#3498DB', 350); // Blue flash
+        
+      } else if (propertyAchievements.includes(achievementId)) {
+        // Property achievements - building particles + money gain particles
+        particleSystem.createUpgradeParticles(centerX, centerY, 12);
+        particleSystem.createMoneyGainParticles(centerX, centerY, 0); // No money amount, just particles
+        screenFlash('#32CD32', 500); // Green flash (property color)
+        screenShake(4, 300); // Medium shake
         
       } else {
         // Default achievement effects
@@ -4025,10 +4033,10 @@
     if (achievementsUnlockedEl && numberAnimator) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
       const currentUnlocked = parseInt(achievementsUnlockedEl.textContent.split('/')[0]) || 0;
-      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/12`);
+      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/17`);
     } else if (achievementsUnlockedEl) {
       const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
-      achievementsUnlockedEl.textContent = `${unlockedCount}/12`;
+      achievementsUnlockedEl.textContent = `${unlockedCount}/17`;
     }
   }
 
@@ -4180,7 +4188,12 @@
     ach9: { unlocked: false, condition: () => owned.u5 }, // Educated - Higher Education
     ach10: { unlocked: false, condition: () => investmentAccountBalance >= 100000 },
     ach11: { unlocked: false, condition: () => totalDividendsReceived >= 1000000 }, // Receive €1,000,000 in dividends
-    ach13: { unlocked: false, condition: () => hasMadeFirstInvestment } // First investment
+    ach13: { unlocked: false, condition: () => hasMadeFirstInvestment }, // First investment
+    ach14: { unlocked: false, condition: () => hasBoughtFirstProperty() }, // Property Pioneer
+    ach15: { unlocked: false, condition: () => getTotalRentIncome() >= 1000 }, // Rent Rookie
+    ach16: { unlocked: false, condition: () => getTotalRentIncome() >= 100000 }, // Rent Royalty
+    ach17: { unlocked: false, condition: () => getTotalRentIncome() >= 1000000 }, // Rent Empire
+    ach18: { unlocked: false, condition: () => getTotalRentIncome() >= 1000000000 } // Rent Billionaire
   };
 
   // Money cap system
@@ -4188,6 +4201,19 @@
 
   function getTotalMoney() {
     return currentAccountBalance + investmentAccountBalance;
+  }
+
+  // Helper functions for new achievements
+  function hasBoughtFirstProperty() {
+    return Object.values(properties).some(count => count > 0);
+  }
+
+  function getTotalRentIncome() {
+    let totalRent = 0;
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      totalRent += getPropertyTotalIncome(propertyId);
+    });
+    return totalRent;
   }
 
   function applyMoneyCap(amountToAdd) {
