@@ -5833,6 +5833,15 @@ window.addEventListener('beforeunload', () => {
   // Load saved game state
   const gameStateLoaded = loadGameState();
   
+  // Initialize achievementsBannerShown for already unlocked achievements (prevent notifications on load)
+  if (gameStateLoaded) {
+    for (const [achievementId, achievement] of Object.entries(achievements)) {
+      if (achievement.unlocked && !achievementsBannerShown[achievementId]) {
+        achievementsBannerShown[achievementId] = true;
+      }
+    }
+  }
+  
   // Update buy multiplier display after game state is loaded
   updateBuyMultiplierDisplay();
   
