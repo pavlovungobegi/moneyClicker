@@ -2034,17 +2034,17 @@
     // Track total clicks
     totalClicks++;
     
-    // Handle click streak if upgrade is owned
-    if (owned.u30) {
-      updateClickStreak();
-      income *= streakMultiplier;
-    }
-    
     // Check if this was a critical hit and multiply income by 5x
     const isCritical = owned.u29 && Math.random() < 0.15;
     if (isCritical) {
       income *= 5;
       totalCriticalHits++;
+    }
+    
+    // Handle click streak if upgrade is owned
+    if (owned.u30) {
+      updateClickStreak(isCritical);
+      income *= streakMultiplier;
     }
     
     // Round income to 2 decimal places
@@ -3108,11 +3108,15 @@
     netWorthChart.update('none'); // No animation for smoother updates
   }
 
-  function updateClickStreak() {
+  function updateClickStreak(isCritical = false) {
     const currentTime = Date.now();
     
-    // Update streak
-    streakCount++;
+    // Update streak - critical hits fill 3x more
+    if (isCritical) {
+      streakCount += 3; // Critical hits fill streak 3x faster
+    } else {
+      streakCount++; // Normal clicks fill streak normally
+    }
     lastClickTime = currentTime;
     
     // Calculate streak multiplier (linear from 1 to 3)
@@ -3159,7 +3163,7 @@
     streakProgressFill.style.width = `${progress}%`;
     
     // Update progress text
-    streakProgressText.textContent = `${streakMultiplier.toFixed(1)}x - ${MAX_STREAK_MULTIPLIER.toFixed(1)}x`;
+    streakProgressText.textContent = `${MAX_STREAK_MULTIPLIER.toFixed(1)}x`;
   }
 
   function checkAchievements() {
