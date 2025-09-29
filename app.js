@@ -631,63 +631,63 @@
       name: "Food Stand",
       baseCost: 400,
       incomePerSecond: 13,
-      priceMultiplier: 1.03, // 2.5% increase per purchase
+      priceMultiplier: 1.065, // 2.5% increase per purchase
       icon: "fas fa-utensils"
     },
     newsstand: {
       name: "Newsstand",
       baseCost: 8000,
       incomePerSecond: 100,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-newspaper"
     },
     parkingGarage: {
       name: "Parking Garage",
       baseCost: 30000,
       incomePerSecond: 200,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-car"
     },
     convenienceStore: {
       name: "Convenience Store",
       baseCost: 150000,
       incomePerSecond: 1250,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-store"
     },
     apartment: {
       name: "Apartment",
       baseCost: 500000,
       incomePerSecond: 4000,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-home"
     },
     manufacturingPlant: {
       name: "Manufacturing Plant",
       baseCost: 2500000,
       incomePerSecond: 18000,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-industry"
     },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
       incomePerSecond: 55000,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-building"
     },
     skyscraper: {
       name: "Skyscraper",
       baseCost: 50000000,
       incomePerSecond: 175000,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-city"
     },
     operaHouse: {
       name: "Opera House",
       baseCost: 500000000,
       incomePerSecond: 1500000,
-      priceMultiplier: 1.03, // 4% increase per purchase
+      priceMultiplier: 1.065, // 4% increase per purchase
       icon: "fas fa-theater-masks"
     }
   };
@@ -705,9 +705,9 @@
     operaHouse: 0
   };
 
-  // Buy multiplier system (1x, 10x, 100x, MAX)
+  // Buy multiplier system (1x, 10x, 25x, MAX)
   let buyMultiplier = 1;
-  const BUY_MULTIPLIERS = [1, 10, 100, 'MAX'];
+  const BUY_MULTIPLIERS = [1, 10, 25, 'MAX'];
 
   function cycleBuyMultiplier() {
     const currentIndex = BUY_MULTIPLIERS.indexOf(buyMultiplier);
@@ -1065,10 +1065,18 @@
     greatDepressionEndTime = Date.now() + EVENT_CONFIG.durations.greatDepression;
     EVENT_CONFIG.eventCooldowns.greatDepression = Date.now() + getEventCooldown('greatDepression');
     
-    // Calculate loss based on difficulty
-    const lossRate = gameDifficulty === 'extreme' ? 0.7 : 0.5; // 70% for extreme, 50% for others
-    const lossAmount = investmentAccountBalance * lossRate;
-    investmentAccountBalance -= lossAmount;
+    // Calculate loss based on difficulty and available funds
+    let lossAmount;
+    if (investmentAccountBalance > 0) {
+      // Take from investment account if available
+      const lossRate = gameDifficulty === 'extreme' ? 0.7 : 0.5; // 70% for extreme, 50% for others
+      lossAmount = investmentAccountBalance * lossRate;
+      investmentAccountBalance -= lossAmount;
+    } else {
+      // Take 10% from current account if no investment money
+      lossAmount = currentAccountBalance * 0.1;
+      currentAccountBalance -= lossAmount;
+    }
     
     // Show notification
     showEventNotification("💀 The Great Depression!", `Lost €${formatNumberShort(lossAmount)}! Interest rates decreased by 120% - money is shrinking! Dividends stopped!`, "great-depression");
@@ -1143,9 +1151,9 @@
     
     // Check if current account has money
     if (currentAccountBalance > 0) {
-    // Steal all money from current account
-      stolenAmount = currentAccountBalance;
-    currentAccountBalance = 0;
+      // Steal 25% of money from current account
+      stolenAmount = currentAccountBalance * 0.25;
+      currentAccountBalance -= stolenAmount;
       notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
     } else {
       // If current account is empty, steal from investment account based on difficulty
@@ -2372,7 +2380,7 @@
       return false;
     }
     } else {
-      // For fixed multipliers (1x, 10x, 100x), calculate how many we can actually afford
+      // For fixed multipliers (1x, 10x, 25x), calculate how many we can actually afford
       const requestedCount = buyMultiplier;
       while (propertiesToBuy < requestedCount && runningCost <= currentAccountBalance) {
         const cost = getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, currentOwned + propertiesToBuy);
