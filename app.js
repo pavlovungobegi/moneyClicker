@@ -2071,9 +2071,11 @@
         const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.25 * particleMultiplier), 1), isMobile ? 1 : 2);
         
         // Debug log for mobile particles
+        /*
         if (isMobile) {
           console.log('Mobile click particles:', { income, particleMultiplier, baseCoinCount, baseSparkleCount });
         }
+        */
         
         // Create coin particles
         particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
@@ -2111,9 +2113,6 @@
     
     // Check achievements
     checkAchievementsOptimized();
-    
-    // Save game state after significant changes
-    saveGameState();
   }
 
   function createFlyingMoney(amount, isCritical = false) {
