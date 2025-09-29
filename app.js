@@ -1,6 +1,9 @@
 (() => {
   let currentAccountBalance = 0;
   let investmentAccountBalance = 0;
+  
+  // Active tab tracking for performance optimization
+  let activeTab = 'earn'; // Default to earn tab
 
   // Mobile detection for particle optimization
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -2071,6 +2074,32 @@
     // Parse the number and apply multiplier
     const number = parseFloat(cleanText) || 0;
     return number * multiplier;
+  }
+
+  // Render only the active tab for performance optimization
+  function renderActiveTab() {
+    switch(activeTab) {
+      case 'earn':
+        renderDividendUI(0);
+        renderInvestmentUnlocked();
+        renderPrestigeMultipliers();
+        renderAutoInvestSection();
+        renderAutoRentSection();
+        renderClickStreak();
+        break;
+      case 'upgrades':
+        renderUpgradesOwned();
+        break;
+      case 'portfolio':
+        renderAllProperties();
+        break;
+      case 'achievements':
+        // Achievements are rendered on demand, no continuous updates needed
+        break;
+      case 'stats':
+        // Stats are rendered on demand, no continuous updates needed
+        break;
+    }
   }
 
   function renderBalances() {
@@ -5297,15 +5326,34 @@
     
     tickDividends(TICK_MS);
 
+    // Always render balances (needed for header)
     renderBalances();
-    renderUpgradesOwned();
-    renderDividendUI(TICK_MS);
-    renderAllProperties();
-    renderInvestmentUnlocked();
-    renderPrestigeMultipliers();
-    renderAutoInvestSection();
-    renderAutoRentSection();
-    renderClickStreak();
+    
+    // Only render active tab content for performance
+    switch(activeTab) {
+      case 'earn':
+        renderDividendUI(TICK_MS);
+        renderInvestmentUnlocked();
+        renderPrestigeMultipliers();
+        renderAutoInvestSection();
+        renderAutoRentSection();
+        renderClickStreak();
+        break;
+      case 'upgrades':
+        renderUpgradesOwned();
+        break;
+      case 'portfolio':
+        renderAllProperties();
+        break;
+      case 'achievements':
+        // Achievements are rendered on demand, no continuous updates needed
+        break;
+      case 'stats':
+        // Stats are rendered on demand, no continuous updates needed
+        break;
+    }
+    
+    // Always update these (needed for indicators and events)
     updateActiveEventDisplay();
     checkExpiredEvents(); // Check for expired events immediately
     checkStreakTimeout();
@@ -5360,9 +5408,8 @@
   updateToggleCompletedUI();
 
   renderBalances();
-  renderUpgradesOwned();
   renderUpgradePrices();
-  renderAllProperties();
+  renderActiveTab(); // Render only the active tab for performance
   // Apply upgrade visibility rules now that hide-completed class is set
   // Use requestAnimationFrame to ensure DOM is fully rendered
   requestAnimationFrame(() => {
@@ -5391,7 +5438,7 @@
   setTimeout(() => {
     initializeGame();
     hideLoadingScreen();
-  }, 2000);
+  }, 1500);
   
   // Settings panel functionality
   const settingsToggle = document.getElementById('settingsToggle');
@@ -5617,6 +5664,12 @@
         e.preventDefault();
         const panelName = button.getAttribute('data-panel');
         const panelIndex = panelMap[panelName];
+        
+        // Update active tab for performance optimization
+        activeTab = panelName;
+        
+        // Render the newly active tab immediately
+        renderActiveTab();
         
         if (panelIndex !== undefined) {
           // Immediately update active button to prevent jittering
