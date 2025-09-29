@@ -2056,7 +2056,7 @@ button#withdrawHalfBtn:focus-visible {
   border-radius: 6px;
 }
 
-/* Removed tier-5 - back to 4 tiers */
+/* Removed tier-5 (Legendary) - back to 4 tiers */
 
 .property-row.tier-4:hover {
   border-color: rgba(0, 191, 255, 0.9);
@@ -2064,6 +2064,7 @@ button#withdrawHalfBtn:focus-visible {
     0 4px 12px rgba(0, 191, 255, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
+
 
 
 /* Sparkle animation for tier celebration particles */
@@ -2102,6 +2103,7 @@ button#withdrawHalfBtn:focus-visible {
     left: 100%;
   }
 }
+
 
 .property-icon {
   flex-shrink: 0;

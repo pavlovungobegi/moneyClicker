@@ -2835,24 +2835,24 @@
         break;
       case 2: 
         tierText = 'SILVER';
-        multiplierText = '4x';
+        multiplierText = '2x';
         break;
       case 3: 
         tierText = 'GOLD';
-        multiplierText = '8x';
+        multiplierText = '2x';
         break;
       case 4: 
         tierText = 'DIAMOND';
-        multiplierText = '16x';
+        multiplierText = '2x';
         break;
       default: 
-        tierText = 'LEGENDARY';
-        multiplierText = `${Math.pow(2, tier)}x`;
+        tierText = 'DIAMOND';
+        multiplierText = '2x';
         break;
     }
     
             notification.innerHTML = `
-              ${propertyName} reached ${tierText} tier! (${tier * 25}+ buildings)<br>
+              ${propertyName} reached ${tierText} tier!<br>
               <span style="font-size: 14px; opacity: 0.9;">Rent increased by ${multiplierText}!</span>
             `;
     
