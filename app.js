@@ -2813,7 +2813,7 @@
     notification.style.top = '20px';
     notification.style.left = '50%';
     notification.style.transform = 'translateX(-50%)';
-    notification.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+    notification.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%)';
     notification.style.color = 'white';
     notification.style.padding = '12px 24px';
     notification.style.borderRadius = '8px';
@@ -2822,6 +2822,7 @@
     notification.style.zIndex = '10000';
     notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
     notification.style.opacity = '0';
+    notification.style.backdropFilter = 'blur(10px)';
     notification.style.transform = 'translateX(-50%) translateY(-20px)';
     notification.style.transition = 'all 0.3s ease-out';
     
