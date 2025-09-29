@@ -116,6 +116,11 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+          <div class="setting-item">
+            <label for="usernameInput" class="setting-label">Username:</label>
+            <input type="text" id="usernameInput" class="username-input" placeholder="Enter your username" maxlength="20" />
+            <p class="setting-description">Used for leaderboard submissions</p>
+          </div>
           
           <!-- Hidden Cheat Button -->
           <div class="setting-item cheat-section hidden" id="cheatSection">
@@ -1120,6 +1125,18 @@
             <!-- Statistics removed for performance -->
 
             <!-- Net Worth Chart removed for performance -->
+
+            <!-- Leaderboard -->
+            <div class="leaderboard-container">
+              <h3 class="leaderboard-title">Global Leaderboard (Top 10)</h3>
+              <div class="leaderboard-content" id="leaderboardContent">
+                <div class="leaderboard-loading">Loading leaderboard...</div>
+              </div>
+              <div class="leaderboard-submit">
+                <button id="submitScoreBtn" class="submit-score-btn">Submit Score</button>
+                <p class="leaderboard-note">Set your username in Settings to submit scores</p>
+              </div>
+            </div>
 
             <!-- Event Logs -->
             <div class="event-logs-container">

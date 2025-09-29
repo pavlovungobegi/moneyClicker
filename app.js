@@ -1,7 +1,7 @@
 (() => {
   let currentAccountBalance = 0;
   let investmentAccountBalance = 0;
-  
+
   // Active tab tracking for performance optimization
   let activeTab = 'earn'; // Default to earn tab
   
@@ -832,6 +832,19 @@
 
   // Event logs
   let eventLogs = [];
+
+  // Leaderboard system - Firebase Realtime Database
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBprL8LvwvLYQZzPeKNEuIzUGamP1Ii-fY",
+    authDomain: "moneyclicker-291ef.firebaseapp.com",
+    databaseURL: "https://moneyclicker-291ef-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "moneyclicker-291ef",
+    storageBucket: "moneyclicker-291ef.firebasestorage.app",
+    messagingSenderId: "105757877305",
+    appId: "1:105757877305:web:7ac7e12fd90c70981759e8",
+    measurementId: "G-07NZVE6FWJ"
+  };
+  let leaderboardData = [];
 
   // Event system configuration
   const EVENT_CONFIG = {
@@ -1919,7 +1932,7 @@
   const numberFormatCache = new Map();
   const CACHE_SIZE_LIMIT = 500; // Prevent memory leaks
   const SIGNIFICANT_CHANGE_THRESHOLD = 0.01; // 1% change threshold
-  
+
   // Format numbers with k/m/b/t suffixes for better readability
   function formatNumberShort(num) {
     formatStats.totalCalls++;
@@ -2209,7 +2222,7 @@
       if (isCritical) {
         // Critical hit: single orange coin + screen shake
         if (particleEffectsEnabled) {
-          particleSystem.createCriticalCoin(centerX, centerY);
+        particleSystem.createCriticalCoin(centerX, centerY);
         }
         screenShake(8, 300);
       } else {
@@ -3978,6 +3991,265 @@
 
   // Statistics rendering removed for performance
 
+  // Leaderboard functions - Firebase Realtime Database
+  async function loadLeaderboard() {
+    try {
+      // Simple fetch without query parameters first
+      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Firebase error response:', errorText);
+        throw new Error(`Failed to load leaderboard: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data && Object.keys(data).length > 0) {
+        // Convert Firebase object to array and sort by score (highest first)
+        leaderboardData = Object.values(data)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 50); // Take top 50
+      } else {
+        leaderboardData = [];
+      }
+      
+      renderLeaderboard();
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+      document.getElementById('leaderboardContent').innerHTML = 
+        '<div class="leaderboard-loading">Failed to load leaderboard</div>';
+    }
+  }
+
+  function renderLeaderboard() {
+    const content = document.getElementById('leaderboardContent');
+    if (!content) return;
+
+    if (leaderboardData.length === 0) {
+      content.innerHTML = '<div class="leaderboard-loading">No scores yet. Be the first!</div>';
+      return;
+    }
+
+    // Sort by score (highest first)
+    const sortedData = [...leaderboardData].sort((a, b) => b.score - a.score);
+    
+    // Show top 10
+    const top10 = sortedData.slice(0, 10);
+    
+    content.innerHTML = top10.map((entry, index) => {
+      const rank = index + 1;
+      const rankClass = rank <= 3 ? 'top-3' : '';
+      const formattedScore = formatNumberShort(entry.score);
+      
+      return `
+        <div class="leaderboard-entry">
+          <span class="leaderboard-rank ${rankClass}">#${rank}</span>
+          <span class="leaderboard-name">${entry.name}</span>
+          <span class="leaderboard-score">€${formattedScore}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function submitScore() {
+    const submitBtn = document.getElementById('submitScoreBtn');
+    
+    // Check if username is set
+    if (!username || username.trim().length === 0) {
+      alert('Please set your username in Settings first!');
+      return;
+    }
+
+    // Sanitize username (remove special characters, limit length)
+    const sanitizedName = username.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 20);
+    if (sanitizedName.length < 2) {
+      alert('Username must be at least 2 characters long. Please update it in Settings.');
+      return;
+    }
+
+    // Calculate current net worth as score
+    const currentBalance = currentAccountBalance;
+    const investmentBalance = investmentAccountBalance;
+    const propertyValue = calculateTotalPropertyValue();
+    const score = currentBalance + investmentBalance + propertyValue;
+
+    // Validate score
+    if (score < 1000) {
+      alert('You need at least €1,000 to submit a score');
+      return;
+    }
+
+    // Prevent unrealistic scores (cap at reasonable limit)
+    if (score > 1e15) { // 1 quadrillion
+      alert('Score too high - please play the game fairly');
+      return;
+    }
+
+    // Simple 5-minute cooldown between submissions
+    const lastSubmission = localStorage.getItem('lastScoreSubmission');
+    const now = Date.now();
+    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes in milliseconds
+    
+    if (lastSubmission && (now - parseInt(lastSubmission)) < cooldownPeriod) {
+      const remainingTime = Math.ceil((cooldownPeriod - (now - parseInt(lastSubmission))) / 1000);
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      alert(`Please wait ${minutes}:${seconds.toString().padStart(2, '0')} before submitting again.`);
+      return;
+    }
+
+    // Disable button during submission
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      // Check if this name already exists in leaderboard
+      const existingResponse = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json`);
+      if (existingResponse.ok) {
+        const existingData = await existingResponse.json();
+        if (existingData) {
+          const existingEntries = Object.values(existingData);
+          const nameExists = existingEntries.some(entry => 
+            entry.name.toLowerCase() === sanitizedName.toLowerCase()
+          );
+          
+          if (nameExists) {
+            alert('This name is already taken on the leaderboard. Please choose a different name.');
+            submitBtn.textContent = 'Submit Score';
+            submitBtn.disabled = false;
+            return;
+          }
+        }
+      }
+
+      // Create new score entry with validation
+      const newEntry = {
+        name: sanitizedName,
+        score: Math.round(score), // Ensure integer score
+        timestamp: now,
+        version: '1.0', // For future validation
+        browserFingerprint: generateBrowserFingerprint() // For duplicate detection
+      };
+
+      // Generate a unique key for this player (use name + timestamp for uniqueness)
+      const playerKey = `${sanitizedName.replace(/\s+/g, '_')}_${now}`;
+
+      // Submit to Firebase
+      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard/${playerKey}.json`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newEntry)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to submit score: ${response.status} ${errorText}`);
+      }
+
+      // Update submission tracking
+      localStorage.setItem('lastScoreSubmission', now.toString());
+      localStorage.setItem('playerName', sanitizedName); // Remember the name they used
+
+      // Reload leaderboard to get updated data
+      await loadLeaderboard();
+      
+      // Show success message
+      submitBtn.textContent = 'Submitted!';
+      setTimeout(() => {
+        submitBtn.textContent = 'Submit Score';
+        submitBtn.disabled = false;
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error submitting score:', error);
+      alert('Failed to submit score. Please try again.');
+      submitBtn.textContent = 'Submit Score';
+      submitBtn.disabled = false;
+    }
+  }
+
+  // Generate a simple browser fingerprint for duplicate detection
+  function generateBrowserFingerprint() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('Browser fingerprint', 2, 2);
+    
+    const fingerprint = [
+      navigator.userAgent,
+      navigator.language,
+      screen.width + 'x' + screen.height,
+      new Date().getTimezoneOffset(),
+      canvas.toDataURL()
+    ].join('|');
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+      const char = fingerprint.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString();
+  }
+
+  // Update submission status and show helpful messages
+  function updateSubmissionStatus() {
+    const submitBtn = document.getElementById('submitScoreBtn');
+    if (!submitBtn) return;
+
+    const lastSubmission = localStorage.getItem('lastScoreSubmission');
+    const now = Date.now();
+    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    // Check if username is set
+    if (!username || username.trim().length === 0) {
+      submitBtn.textContent = 'Set Username First';
+      submitBtn.disabled = true;
+      submitBtn.title = 'Please set your username in Settings before submitting';
+      return;
+    }
+
+    // Check if user is still in cooldown period
+    if (lastSubmission && (now - parseInt(lastSubmission)) < cooldownPeriod) {
+      const remainingTime = Math.ceil((cooldownPeriod - (now - parseInt(lastSubmission))) / 1000);
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      
+      submitBtn.textContent = `Wait ${minutes}:${seconds.toString().padStart(2, '0')}`;
+      submitBtn.disabled = true;
+      submitBtn.title = `You can submit again in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+      return;
+    }
+
+    // Ready to submit
+    submitBtn.textContent = 'Submit Score';
+    submitBtn.disabled = false;
+    submitBtn.title = 'Submit your score to the leaderboard';
+  }
+
+  // Helper function to calculate total property value (needed for score calculation)
+  function calculateTotalPropertyValue() {
+    let total = 0;
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      const owned = properties[propertyId];
+      const baseCost = PROPERTY_CONFIG[propertyId].baseCost;
+      const priceMultiplier = PROPERTY_CONFIG[propertyId].priceMultiplier;
+      
+      // Sum of all purchase prices (not current market value)
+      for (let i = 0; i < owned; i++) {
+        total += baseCost * Math.pow(priceMultiplier, i);
+      }
+    });
+    return total;
+  }
+
+  // Score URL handling removed - using direct JSONBin submission now
+
   // Event logging functions
   function logEvent(eventName, eventType) {
     const now = new Date();
@@ -4174,6 +4446,9 @@
   
   // Number animations system
   let numberAnimationsEnabled = true;
+  
+  // Username for leaderboard
+  let username = '';
 
   function initAudio() {
     try {
@@ -5126,12 +5401,12 @@
     // Only render active tab content for performance
     switch(activeTab) {
       case 'earn':
-        renderDividendUI(TICK_MS);
-        renderInvestmentUnlocked();
-        renderPrestigeMultipliers();
-        renderAutoInvestSection();
+    renderDividendUI(TICK_MS);
+    renderInvestmentUnlocked();
+    renderPrestigeMultipliers();
+    renderAutoInvestSection();
         renderAutoRentSection();
-        renderClickStreak();
+    renderClickStreak();
         break;
       case 'upgrades':
         renderUpgradesOwned();
@@ -5198,7 +5473,7 @@
   
   // Invalidate property income cache to ensure fresh calculation
   propertyIncomeCacheValid = false;
-  
+
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
   updateToggleCompletedUI();
@@ -5222,6 +5497,31 @@
     renderEventLogs();
   updateUpgradeIndicator();
     updatePortfolioIndicator();
+    
+    // Initialize leaderboard
+    loadLeaderboard();
+    
+    // Check submission status and update UI
+    updateSubmissionStatus();
+    
+    // Set up timer to update submission status every second
+    setInterval(updateSubmissionStatus, 1000);
+    
+    // Add leaderboard event listeners
+    const submitBtn = document.getElementById('submitScoreBtn');
+    const usernameInput = document.getElementById('usernameInput');
+    
+    if (submitBtn) {
+      submitBtn.addEventListener('click', submitScore);
+    }
+    
+    if (usernameInput) {
+      usernameInput.addEventListener('input', (e) => {
+        username = e.target.value.trim();
+        saveAudioSettings();
+        updateSubmissionStatus();
+      });
+    }
   }
 
   // Show loading screen and initialize game after 2 seconds
@@ -5255,6 +5555,7 @@
     const savedSoundEffectsEnabled = localStorage.getItem('soundEffectsEnabled');
     const savedParticleEffectsEnabled = localStorage.getItem('particleEffectsEnabled');
     const savedNumberAnimationsEnabled = localStorage.getItem('numberAnimationsEnabled');
+    const savedUsername = localStorage.getItem('username');
     
     if (savedMusicEnabled !== null) {
       musicEnabled = savedMusicEnabled === 'true';
@@ -5276,6 +5577,12 @@
       if (numberAnimationsToggle) numberAnimationsToggle.checked = numberAnimationsEnabled;
     }
     
+    if (savedUsername !== null) {
+      username = savedUsername;
+      const usernameInput = document.getElementById('usernameInput');
+      if (usernameInput) usernameInput.value = username;
+    }
+    
     // Apply music setting on load
     if (!musicEnabled && backgroundMusic) {
       backgroundMusic.pause();
@@ -5291,6 +5598,7 @@
     localStorage.setItem('soundEffectsEnabled', soundEffectsEnabled.toString());
     localStorage.setItem('particleEffectsEnabled', particleEffectsEnabled.toString());
     localStorage.setItem('numberAnimationsEnabled', numberAnimationsEnabled.toString());
+    localStorage.setItem('username', username);
   }
 
   // Apply audio settings to UI and audio
