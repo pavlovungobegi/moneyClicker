@@ -828,12 +828,8 @@
     }, { passive: true });
   }
 
-  // Net worth chart data
-  let netWorthHistory = [];
+  // Event logs
   let eventLogs = [];
-  let netWorthChart = null;
-  const MAX_DATA_POINTS = 30; // 5 minutes of data (30 * 10 seconds)
-  const DATA_COLLECTION_INTERVAL = 10000; // 10 seconds
 
   // Event system configuration
   const EVENT_CONFIG = {
@@ -1950,7 +1946,7 @@
 
   // Optimized number formatting with caching and performance improvements
   const numberFormatCache = new Map();
-  const CACHE_SIZE_LIMIT = 1000; // Prevent memory leaks
+  const CACHE_SIZE_LIMIT = 500; // Prevent memory leaks
   const SIGNIFICANT_CHANGE_THRESHOLD = 0.01; // 1% change threshold
   
   // Format numbers with k/m/b/t suffixes for better readability
@@ -2065,10 +2061,14 @@
     };
   }
   
-  // Reset stats periodically to prevent overflow
+  // Reset stats and clean cache periodically to prevent overflow
   setInterval(() => {
     formatStats = { cacheHits: 0, cacheMisses: 0, totalCalls: 0 };
-  }, 60000); // Reset every minute
+    // Clear cache more frequently to prevent memory buildup
+    if (numberFormatCache.size > 250) {
+      numberFormatCache.clear();
+    }
+  }, 30000); // Reset every 30 seconds
 
   function renderUpgradePrices() {
     // Generate upgrade price elements mapping automatically
@@ -3107,203 +3107,13 @@
     totalRentElement.textContent = `€${formattedRent}/sec`;
   }
 
-  // Net worth calculation functions
-  function calculateTotalPropertyValue() {
-    let total = 0;
-    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
-      const owned = properties[propertyId];
-      const baseCost = PROPERTY_CONFIG[propertyId].baseCost;
-      const priceMultiplier = PROPERTY_CONFIG[propertyId].priceMultiplier;
-      
-      // Sum of all purchase prices (not current market value)
-      for (let i = 0; i < owned; i++) {
-        total += baseCost * Math.pow(priceMultiplier, i);
-      }
-    });
-    return total;
-  }
+  // Net worth calculation functions removed for performance
 
-  function calculateNetWorth() {
-    const currentBalance = currentAccountBalance;
-    const investmentBalance = investmentAccountBalance;
-    const propertyValue = calculateTotalPropertyValue();
-    return currentBalance + investmentBalance + propertyValue;
-  }
+  // Net worth data point collection removed for performance
 
-  function addNetWorthDataPoint() {
-    const liquidAssets = currentAccountBalance + investmentAccountBalance;
-    const propertyValue = calculateTotalPropertyValue();
-    const netWorth = liquidAssets + propertyValue;
-    const timestamp = Date.now();
-    
-    netWorthHistory.push({ 
-      timestamp, 
-      netWorth,
-      liquidAssets,
-      propertyValue
-    });
-    
-    // Keep only the last MAX_DATA_POINTS
-    if (netWorthHistory.length > MAX_DATA_POINTS) {
-      netWorthHistory.shift();
-    }
-    
-    // Update chart if it exists
-    updateNetWorthChart();
-  }
+  // Net worth chart initialization removed for performance
 
-  function initNetWorthChart() {
-    const ctx = document.getElementById('netWorthChart');
-    if (!ctx) return;
-
-    netWorthChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Property Values',
-          data: [],
-          borderColor: '#f59e0b',
-          backgroundColor: 'rgba(245, 158, 11, 0.4)',
-          borderWidth: 2,
-          fill: true, // Fill to the bottom (base layer)
-          tension: 0.4,
-          pointRadius: 0, // Hide points by default
-          pointHoverRadius: 5, // Show points on hover
-          pointBackgroundColor: '#f59e0b',
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2
-        }, {
-          label: 'Liquid Assets',
-          data: [],
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.4)',
-          borderWidth: 2,
-          fill: true, // Fill to the bottom (creates area under the line)
-          tension: 0.4,
-          pointRadius: 0, // Hide points by default
-          pointHoverRadius: 5, // Show points on hover
-          pointBackgroundColor: '#10b981',
-          pointBorderColor: '#ffffff',
-          pointBorderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              usePointStyle: true,
-              padding: 15,
-              font: {
-                size: 11
-              }
-            }
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-            callbacks: {
-              title: function(context) {
-                return context[0].label;
-              },
-              label: function(context) {
-                const value = context.parsed.y;
-                const label = context.dataset.label;
-                return label + ': €' + formatNumberShort(value);
-              },
-              footer: function(context) {
-                const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
-                return 'Total Net Worth: €' + formatNumberShort(total);
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            display: true,
-            title: {
-              display: false
-            },
-            grid: {
-              color: 'rgba(100, 116, 139, 0.1)'
-            },
-            ticks: {
-              color: '#64748b',
-              maxTicksLimit: 6
-            },
-            stacked: true
-          },
-          y: {
-            display: true,
-            title: {
-              display: true,
-              text: 'Net Worth (€)',
-              color: '#64748b',
-              font: {
-                size: 12
-              }
-            },
-            grid: {
-              color: 'rgba(100, 116, 139, 0.1)'
-            },
-            ticks: {
-              color: '#64748b',
-              callback: function(value) {
-                return formatNumberShort(value);
-              }
-            },
-            stacked: true
-          }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index'
-        }
-      }
-    });
-  }
-
-  function updateNetWorthChart() {
-    if (!netWorthChart || netWorthHistory.length === 0) return;
-
-    const labels = netWorthHistory.map(point => {
-      const date = new Date(point.timestamp);
-      return date.toLocaleTimeString('en-US', { 
-        hour12: false, 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-    });
-
-    const liquidAssetsData = netWorthHistory.map(point => {
-      // Handle legacy data points that only have netWorth
-      if (point.liquidAssets !== undefined) {
-        return point.liquidAssets;
-      } else {
-        // For legacy data, estimate liquid assets as 70% of net worth
-        return point.netWorth * 0.7;
-      }
-    });
-    
-    const propertyValuesData = netWorthHistory.map(point => {
-      // Handle legacy data points that only have netWorth
-      if (point.propertyValue !== undefined) {
-        return point.propertyValue;
-      } else {
-        // For legacy data, estimate property values as 30% of net worth
-        return point.netWorth * 0.3;
-      }
-    });
-
-    netWorthChart.data.labels = labels;
-    netWorthChart.data.datasets[0].data = propertyValuesData; // Property Values (base layer)
-    netWorthChart.data.datasets[1].data = liquidAssetsData;   // Liquid Assets (stacked on top)
-    netWorthChart.update('none'); // No animation for smoother updates
-  }
+  // Net worth chart update function removed for performance
 
   function updateClickStreak(isCritical = false) {
     const currentTime = Date.now();
@@ -3589,9 +3399,6 @@
         // Properties owned
         properties: { ...properties },
         
-        // Net worth chart data
-        netWorthHistory: [...netWorthHistory],
-        
         // Event logs
         eventLogs: [...eventLogs],
         
@@ -3678,11 +3485,6 @@
               properties[key] = gameState.properties[key];
             }
           });
-        }
-        
-        // Restore net worth chart data
-        if (gameState.netWorthHistory) {
-          netWorthHistory = [...gameState.netWorthHistory];
         }
         
         // Restore event logs
@@ -3846,8 +3648,7 @@
         officeBuilding: 0
       };
       
-      // Reset net worth chart data
-      netWorthHistory = [];
+      // Net worth chart data reset removed for performance
       
       console.log('All game data has been reset. Refresh the page to start fresh.');
     } catch (error) {
@@ -5390,10 +5191,7 @@
     //checkPortfolioTour();
   }, TICK_MS);
 
-  // Net worth data collection (every 10 seconds)
-  setInterval(() => {
-    addNetWorthDataPoint();
-  }, DATA_COLLECTION_INTERVAL);
+  // Net worth data collection removed for performance
   
   // Events check every 10 seconds - reduced frequency for mobile performance
   setInterval(() => {
@@ -5446,11 +5244,7 @@
   renderClickStreak();
   updateProgressBars();
   
-  // Initialize net worth chart
-  initNetWorthChart();
-  
-  // Add initial data point
-  addNetWorthDataPoint();
+  // Net worth chart initialization removed for performance
   renderAchievements();
     renderEventLogs();
   updateUpgradeIndicator();
@@ -6123,10 +5917,10 @@ window.addEventListener('beforeunload', () => {
     }, 1000);
   }
   
-  // Periodic saving every 10 seconds
+  // Periodic saving every 15 seconds
   setInterval(() => {
     saveGameState();
-  }, 10000);
+  }, 15000);
 
   // Render interest per second from per-tick multiplier (dynamic)
   function renderInterestPerSecond() {
@@ -6192,7 +5986,7 @@ window.addEventListener('beforeunload', () => {
     };
     update();
     // Recompute periodically to reflect upgrades - reduced frequency for mobile performance
-    setInterval(update, 2000);
+    setInterval(update, 5000);
   })();
 
   // Mobile horizontal scrolling enhancements
