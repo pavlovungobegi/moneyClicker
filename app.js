@@ -94,6 +94,8 @@
     }
     
     createCriticalCoin(x, y) {
+      if (!particleEffectsEnabled) return;
+      
       // Create a single orange coin for critical hits
       this.createParticle('coin', x, y, {
         vx: (Math.random() - 0.5) * 2, // Less horizontal movement (more centered)
@@ -1810,37 +1812,6 @@
   const depositAllBtn = document.getElementById("depositAllBtn");
   const withdrawAllBtn = document.getElementById("withdrawAllBtn");
   const withdrawHalfBtn = document.getElementById("withdrawHalfBtn");
-  const buyU1Btn = document.getElementById("buyU1Btn");
-  const buyU2Btn = document.getElementById("buyU2Btn");
-  const buyU3Btn = document.getElementById("buyU3Btn");
-  const buyU4Btn = document.getElementById("buyU4Btn");
-  const buyU5Btn = document.getElementById("buyU5Btn");
-  const buyU6Btn = document.getElementById("buyU6Btn");
-  const buyU7Btn = document.getElementById("buyU7Btn");
-  const buyU8Btn = document.getElementById("buyU8Btn");
-  const buyU9Btn = document.getElementById("buyU9Btn");
-  const buyU10Btn = document.getElementById("buyU10Btn");
-  const buyU11Btn = document.getElementById("buyU11Btn");
-  const buyU12Btn = document.getElementById("buyU12Btn");
-  const buyU13Btn = document.getElementById("buyU13Btn");
-  const buyU14Btn = document.getElementById("buyU14Btn");
-  const buyU15Btn = document.getElementById("buyU15Btn");
-  const buyU16Btn = document.getElementById("buyU16Btn");
-  const buyU17Btn = document.getElementById("buyU17Btn");
-  const buyU18Btn = document.getElementById("buyU18Btn");
-  const buyU19Btn = document.getElementById("buyU19Btn");
-  const buyU20Btn = document.getElementById("buyU20Btn");
-  const buyU22Btn = document.getElementById("buyU22Btn");
-  const buyU23Btn = document.getElementById("buyU23Btn");
-  const buyU24Btn = document.getElementById("buyU24Btn");
-  const buyU25Btn = document.getElementById("buyU25Btn");
-  const buyU26Btn = document.getElementById("buyU26Btn");
-  const buyU27Btn = document.getElementById("buyU27Btn");
-  const buyU28Btn = document.getElementById("buyU28Btn");
-  const buyU29Btn = document.getElementById("buyU29Btn");
-  const buyU30Btn = document.getElementById("buyU30Btn");
-  const buyU31Btn = document.getElementById("buyU31Btn");
-  const buyU32Btn = document.getElementById("buyU32Btn");
   const buyFoodStandBtn = document.getElementById("buyFoodStandBtn");
   const buyNewsstandBtn = document.getElementById("buyNewsstandBtn");
   const buyParkingGarageBtn = document.getElementById("buyParkingGarageBtn");
@@ -2237,7 +2208,9 @@
       
       if (isCritical) {
         // Critical hit: single orange coin + screen shake
-        particleSystem.createCriticalCoin(centerX, centerY);
+        if (particleEffectsEnabled) {
+          particleSystem.createCriticalCoin(centerX, centerY);
+        }
         screenShake(8, 300);
       } else {
         // Normal click: regular particles based on income (mobile gets even fewer particles)
