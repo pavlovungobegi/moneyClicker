@@ -5294,6 +5294,7 @@
     }
 
     // Dividends
+    
     tickDividends(TICK_MS);
 
     renderBalances();
@@ -5316,10 +5317,10 @@
     
     
     // Check tour triggers
-    checkTourTriggers();
+    //checkTourTriggers();
     
     // Check portfolio tour (independent)
-    checkPortfolioTour();
+    //checkPortfolioTour();
   }, TICK_MS);
 
   // Net worth data collection (every 5 seconds)
