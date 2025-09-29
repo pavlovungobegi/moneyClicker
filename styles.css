@@ -3413,15 +3413,15 @@ input#amountInput:focus {
 }
 
 .settings-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
+  margin: 0 0 8px 0;
+  font-size: 14px;
   font-weight: 700;
   color: #1e293b;
   text-align: center;
 }
 
 .setting-item {
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .setting-item:last-child {
@@ -3461,7 +3461,7 @@ input#amountInput:focus {
 
 .setting-item .toggle-label {
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .setting-item .toggle-text {

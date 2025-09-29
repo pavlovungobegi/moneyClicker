@@ -77,6 +77,8 @@
     }
     
     createCoinParticles(x, y, count = 1) {
+      if (!particleEffectsEnabled) return;
+      
       // Reduce particles on mobile
       const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.5)) : count;
       for (let i = 0; i < actualCount; i++) {
@@ -104,6 +106,8 @@
     }
     
     createSparkleParticles(x, y, count = 2) {
+      if (!particleEffectsEnabled) return;
+      
       // Reduce particles on mobile
       const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.5)) : count;
       for (let i = 0; i < actualCount; i++) {
@@ -120,6 +124,8 @@
     }
     
     createUpgradeParticles(x, y, count = 5) {
+      if (!particleEffectsEnabled) return;
+      
       for (let i = 0; i < count; i++) {
         this.createParticle('upgrade', x, y, {
           vx: (Math.random() - 0.5) * 10,
@@ -135,6 +141,8 @@
     }
     
     createConfettiParticles(x, y, count = 8) {
+      if (!particleEffectsEnabled) return;
+      
       for (let i = 0; i < count; i++) {
         this.createParticle('confetti', x, y, {
           vx: (Math.random() - 0.5) * 12,
@@ -151,6 +159,8 @@
     }
     
     createMoneyGainParticles(x, y, amount) {
+      if (!particleEffectsEnabled) return;
+      
       const baseCount = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
       const count = isMobile ? Math.max(1, Math.floor(baseCount * 0.5)) : baseCount;
       for (let i = 0; i < count; i++) {
@@ -168,6 +178,8 @@
     }
     
     createFireworkParticles(x, y, count = 8) {
+      if (!particleEffectsEnabled) return;
+      
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
         const speed = 8 + Math.random() * 4;
@@ -185,6 +197,8 @@
     }
     
     createGoldenParticles(x, y, count = 10) {
+      if (!particleEffectsEnabled) return;
+      
       for (let i = 0; i < count; i++) {
         this.createParticle('golden', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -201,6 +215,8 @@
     }
     
     createMilestoneParticles(x, y, count = 15) {
+      if (!particleEffectsEnabled) return;
+      
       for (let i = 0; i < count; i++) {
         this.createParticle('milestone', x, y, {
           vx: (Math.random() - 0.5) * 12,
@@ -217,6 +233,8 @@
     }
     
     createRareAchievementParticles(x, y, count = 20) {
+      if (!particleEffectsEnabled) return;
+      
       // Create multiple bursts for rare achievements
       for (let burst = 0; burst < 3; burst++) {
         setTimeout(() => {
@@ -238,6 +256,8 @@
     }
     
     createMoneyLossParticles(x, y, amount) {
+      if (!particleEffectsEnabled) return;
+      
       const count = Math.min(Math.floor(amount / 1000) + 5, 20);
       for (let i = 0; i < count; i++) {
         this.createParticle('money-loss', x, y, {
@@ -255,6 +275,8 @@
     }
     
     createFlashSaleParticles(x, y, count = 20) {
+      if (!particleEffectsEnabled) return;
+      
       for (let i = 0; i < count; i++) {
         this.createParticle('flash-sale', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -2865,6 +2887,16 @@
   
   // Celebrate tier upgrade with particles
   function celebrateTierUpgrade(propertyId, newTier, propertyRow) {
+    if (!particleEffectsEnabled) {
+      // Still show notification and play sound even if particles are disabled
+      const config = PROPERTY_CONFIG[propertyId];
+      if (soundEnabled) {
+        playTierUpgradeSound();
+      }
+      showTierUpgradeNotification(propertyId, newTier, config.name);
+      return;
+    }
+    
     const config = PROPERTY_CONFIG[propertyId];
     const rect = propertyRow.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -4410,6 +4442,9 @@
   let backgroundMusic = null;
   let musicEnabled = true;
   let soundEffectsEnabled = true;
+  
+  // Particle effects system
+  let particleEffectsEnabled = true;
 
   function initAudio() {
     try {
@@ -5481,6 +5516,7 @@
   const settingsMenu = document.getElementById('settingsMenu');
   const musicToggle = document.getElementById('musicToggle');
   const soundEffectsToggle = document.getElementById('soundEffectsToggle');
+  const particleEffectsToggle = document.getElementById('particleEffectsToggle');
 
   // Auto Invest Help Modal functionality
   const autoInvestHelpBtn = document.getElementById('autoInvestHelpBtn');
@@ -5496,6 +5532,7 @@
   function loadAudioSettings() {
     const savedMusicEnabled = localStorage.getItem('musicEnabled');
     const savedSoundEffectsEnabled = localStorage.getItem('soundEffectsEnabled');
+    const savedParticleEffectsEnabled = localStorage.getItem('particleEffectsEnabled');
     
     if (savedMusicEnabled !== null) {
       musicEnabled = savedMusicEnabled === 'true';
@@ -5505,6 +5542,11 @@
     if (savedSoundEffectsEnabled !== null) {
       soundEffectsEnabled = savedSoundEffectsEnabled === 'true';
       if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
+    }
+    
+    if (savedParticleEffectsEnabled !== null) {
+      particleEffectsEnabled = savedParticleEffectsEnabled === 'true';
+      if (particleEffectsToggle) particleEffectsToggle.checked = particleEffectsEnabled;
     }
     
     // Apply music setting on load
@@ -5520,6 +5562,7 @@
   function saveAudioSettings() {
     localStorage.setItem('musicEnabled', musicEnabled.toString());
     localStorage.setItem('soundEffectsEnabled', soundEffectsEnabled.toString());
+    localStorage.setItem('particleEffectsEnabled', particleEffectsEnabled.toString());
   }
 
   // Apply audio settings to UI and audio
@@ -5527,6 +5570,7 @@
     // Update toggle UI
     if (musicToggle) musicToggle.checked = musicEnabled;
     if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
+    if (particleEffectsToggle) particleEffectsToggle.checked = particleEffectsEnabled;
     
     // Apply music setting
     if (!musicEnabled && backgroundMusic) {
@@ -5576,6 +5620,15 @@
       
       // Handle cheat activation
       handleCheatToggle();
+    });
+  }
+
+  // Particle effects toggle functionality
+  if (particleEffectsToggle) {
+    particleEffectsToggle.addEventListener('change', (e) => {
+      particleEffectsEnabled = e.target.checked;
+      saveAudioSettings();
+      console.log('Particle effects toggle changed to:', particleEffectsEnabled);
     });
   }
 
