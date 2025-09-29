@@ -2009,13 +2009,13 @@ button#withdrawHalfBtn:focus-visible {
 }
 
 .property-row.tier-4 {
-  /* Diamond gradient with shine effect for 400+ buildings */
+  /* Diamond gradient with shine effect for 100+ buildings */
   background: linear-gradient(135deg, 
     rgba(0, 191, 255, 0.4) 0%, 
     rgba(30, 144, 255, 0.35) 20%,
     rgba(65, 105, 225, 0.3) 40%,
     rgba(0, 0, 255, 0.35) 60%,
-    rgba(0, 0, 139, 0.3) 80%,
+    rgba(0, 100, 200, 0.3) 80%,
     rgba(0, 191, 255, 0.4) 100%);
   border: 1px solid rgba(0, 191, 255, 0.7);
   box-shadow: 
@@ -2033,11 +2033,15 @@ button#withdrawHalfBtn:focus-visible {
   height: 100%;
   background: linear-gradient(90deg, 
     transparent, 
-    rgba(255, 255, 255, 0.7), 
+    rgba(0, 191, 255, 0.6), 
+    rgba(255, 255, 255, 0.8),
+    rgba(0, 191, 255, 0.6),
     transparent);
   animation: diamondShine 2.5s infinite;
   pointer-events: none;
 }
+
+/* Removed tier-5 - back to 4 tiers */
 
 .property-row.tier-4:hover {
   border-color: rgba(0, 191, 255, 0.9);
@@ -2045,6 +2049,7 @@ button#withdrawHalfBtn:focus-visible {
     0 4px 12px rgba(0, 191, 255, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
+
 
 /* Sparkle animation for tier celebration particles */
 @keyframes sparkle {
@@ -2073,6 +2078,7 @@ button#withdrawHalfBtn:focus-visible {
 }
 
 /* Diamond shine animation for tier-4 buildings */
+
 @keyframes diamondShine {
   0% {
     left: -100%;

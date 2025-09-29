@@ -1071,7 +1071,7 @@
       // Take from investment account if available
       const lossRate = gameDifficulty === 'extreme' ? 0.7 : 0.5; // 70% for extreme, 50% for others
       lossAmount = investmentAccountBalance * lossRate;
-      investmentAccountBalance -= lossAmount;
+    investmentAccountBalance -= lossAmount;
     } else {
       // Take 10% from current account if no investment money
       lossAmount = currentAccountBalance * 0.1;
