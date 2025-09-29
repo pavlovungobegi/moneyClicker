@@ -5307,8 +5307,8 @@
   }
   
   function addCheatMoney() {
-    const cheatAmount = 1000000000000; // 1 trillion
-    currentAccountBalance += cheatAmount;
+    // Apply 10x multiplier to click income
+    prestigeClickMultiplier *= 10;
     
     // Create celebration particles
     if (particleSystem) {
@@ -5331,6 +5331,9 @@
     
     // Update UI
     updateUI();
+    
+    // Hide the cheat button after use
+    hideCheatButton();
   }
 
   // Difficulty selector functionality

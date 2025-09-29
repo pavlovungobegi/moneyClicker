@@ -947,8 +947,8 @@ main {
 }
 
 .cheat-btn {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  color: white;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1f2937;
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -957,18 +957,18 @@ main {
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
 }
 
 .cheat-btn:hover {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.4);
 }
 
 .cheat-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
 }
 
 .upgrade-actions, .building-actions {
