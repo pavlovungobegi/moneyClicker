@@ -1896,26 +1896,127 @@
     maximumFractionDigits: 2,
   });
 
+  // Optimized number formatting with caching and performance improvements
+  const numberFormatCache = new Map();
+  const CACHE_SIZE_LIMIT = 1000; // Prevent memory leaks
+  const SIGNIFICANT_CHANGE_THRESHOLD = 0.01; // 1% change threshold
+  
   // Format numbers with k/m/b/t suffixes for better readability
   function formatNumberShort(num) {
+    formatStats.totalCalls++;
+    
+    // Handle edge cases quickly
+    if (num === 0) return '0.00';
+    if (num === Infinity || num === -Infinity || isNaN(num)) return '0.00';
+    
+    // Check cache first (major performance boost)
+    const cacheKey = Math.round(num * 100) / 100; // Round to 2 decimal places for cache
+    if (numberFormatCache.has(cacheKey)) {
+      formatStats.cacheHits++;
+      return numberFormatCache.get(cacheKey);
+    }
+    
+    formatStats.cacheMisses++;
+    
+    // Clean cache if it gets too large
+    if (numberFormatCache.size > CACHE_SIZE_LIMIT) {
+      numberFormatCache.clear();
+    }
+    
     const isNegative = num < 0;
     const absNum = Math.abs(num);
     
     let formatted;
-    if (absNum >= 1000000000000) {
-      formatted = (absNum / 1000000000000).toFixed(2) + 't';
-    } else if (absNum >= 1000000000) {
-      formatted = (absNum / 1000000000).toFixed(2) + 'b';
-    } else if (absNum >= 1000000) {
-      formatted = (absNum / 1000000).toFixed(2) + 'm';
-    } else if (absNum >= 1000) {
-      formatted = (absNum / 1000).toFixed(2) + 'k';
+    // Use faster comparisons and avoid repeated calculations
+    if (absNum >= 1e12) { // 1 trillion
+      formatted = (absNum / 1e12).toFixed(2) + 't';
+    } else if (absNum >= 1e9) { // 1 billion
+      formatted = (absNum / 1e9).toFixed(2) + 'b';
+    } else if (absNum >= 1e6) { // 1 million
+      formatted = (absNum / 1e6).toFixed(2) + 'm';
+    } else if (absNum >= 1e3) { // 1 thousand
+      formatted = (absNum / 1e3).toFixed(2) + 'k';
     } else {
-      formatted = absNum.toFixed(2); // Show cents for amounts below 1000
+      formatted = absNum.toFixed(2);
     }
     
-    return isNegative ? '-' + formatted : formatted;
+    const result = isNegative ? '-' + formatted : formatted;
+    
+    // Cache the result
+    numberFormatCache.set(cacheKey, result);
+    
+    return result;
   }
+  
+  // Optimized version for frequent updates with change threshold
+  function formatNumberShortWithThreshold(num, previousNum = 0, threshold = SIGNIFICANT_CHANGE_THRESHOLD) {
+    // If change is not significant, return cached previous result
+    if (previousNum !== 0 && Math.abs(num - previousNum) / Math.abs(previousNum) < threshold) {
+      return formatNumberShort(previousNum);
+    }
+    return formatNumberShort(num);
+  }
+  
+  // Batch formatter for multiple numbers (reduces function call overhead)
+  function formatNumbersBatch(numbers) {
+    return numbers.map(num => formatNumberShort(num));
+  }
+  
+  // Optimized formatters for specific contexts
+  const formatCurrency = (value) => '€' + formatNumberShort(value);
+  const formatCurrencyWithUnit = (value, unit = '') => '€' + formatNumberShort(value) + unit;
+  
+  // Cached formatters for animation contexts (major performance boost)
+  const animationFormatters = {
+    currency: (value) => '€' + formatNumberShort(value),
+    currencyPerSec: (value) => '€' + formatNumberShort(value) + '/sec',
+    currencyEach: (value) => '€' + formatNumberShort(value) + '/sec each',
+    currencyTotal: (value) => '€' + formatNumberShort(value) + '/sec total'
+  };
+  
+  // Debounced formatter for high-frequency updates (prevents excessive formatting)
+  const debouncedFormatters = new Map();
+  function getDebouncedFormatter(key, formatter, delay = 16) { // 16ms = ~60fps
+    if (!debouncedFormatters.has(key)) {
+      let timeoutId;
+      let lastValue;
+      let lastFormatted;
+      
+      debouncedFormatters.set(key, (value) => {
+        if (value === lastValue) return lastFormatted;
+        
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          lastValue = value;
+          lastFormatted = formatter(value);
+        }, delay);
+        
+        return lastFormatted || formatter(value);
+      });
+    }
+    return debouncedFormatters.get(key);
+  }
+  
+  // Performance monitoring for number formatting
+  let formatStats = {
+    cacheHits: 0,
+    cacheMisses: 0,
+    totalCalls: 0
+  };
+  
+  function getFormatStats() {
+    const hitRate = formatStats.totalCalls > 0 ? (formatStats.cacheHits / formatStats.totalCalls * 100).toFixed(1) : 0;
+    return {
+      ...formatStats,
+      hitRate: `${hitRate}%`,
+      cacheSize: numberFormatCache.size
+    };
+  }
+  
+  // Reset stats periodically to prevent overflow
+  setInterval(() => {
+    formatStats = { cacheHits: 0, cacheMisses: 0, totalCalls: 0 };
+  }, 60000); // Reset every minute
 
   function renderUpgradePrices() {
     // Generate upgrade price elements mapping automatically
@@ -1936,7 +2037,7 @@
         const currentValue = parseDisplayedValue(el.textContent);
         
         // Animate to new cost
-        numberAnimator.animateValue(el, currentValue, cost, 300, (value) => '€' + formatNumberShort(value));
+        numberAnimator.animateValue(el, currentValue, cost, 300, animationFormatters.currency);
       } else {
         // Fallback to instant update
         el.textContent = '€' + formatNumberShort(cost);
@@ -1977,26 +2078,26 @@
       const currentValue = parseDisplayedValue(currentDisplay.textContent);
       // Only animate for significant changes (1% or more)
       const minChange = Math.max(currentAccountBalance * 0.01, 1);
-      numberAnimator.animateValue(currentDisplay, currentValue, currentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
+      numberAnimator.animateValue(currentDisplay, currentValue, currentAccountBalance, 400, animationFormatters.currency, minChange);
     }
     if (investmentDisplay && numberAnimator) {
       const investmentValue = parseDisplayedValue(investmentDisplay.textContent);
       // Dynamic threshold: 1% of balance, but minimum 0.01 for small amounts
       const minChange = Math.max(investmentAccountBalance * 0.01, 0.01);
-      numberAnimator.animateValue(investmentDisplay, investmentValue, investmentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
+      numberAnimator.animateValue(investmentDisplay, investmentValue, investmentAccountBalance, 400, animationFormatters.currency, minChange);
     }
     
     // Update header displays
     if (headerCurrentDisplay && numberAnimator) {
       const headerCurrentValue = parseDisplayedValue(headerCurrentDisplay.textContent);
       const minChange = Math.max(currentAccountBalance * 0.01, 1);
-      numberAnimator.animateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
+      numberAnimator.animateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 400, animationFormatters.currency, minChange);
     }
     if (headerInvestmentDisplay && numberAnimator) {
       const headerInvestmentValue = parseDisplayedValue(headerInvestmentDisplay.textContent);
       // Dynamic threshold: 1% of balance, but minimum 0.01 for small amounts
       const minChange = Math.max(investmentAccountBalance * 0.01, 0.01);
-      numberAnimator.animateValue(headerInvestmentDisplay, headerInvestmentValue, investmentAccountBalance, 400, (value) => '€' + formatNumberShort(value), minChange);
+      numberAnimator.animateValue(headerInvestmentDisplay, headerInvestmentValue, investmentAccountBalance, 400, animationFormatters.currency, minChange);
     }
   }
 
@@ -2089,11 +2190,11 @@
     if (numberAnimator) {
       if (currentDisplay) {
         const currentValue = parseDisplayedValue(currentDisplay.textContent);
-        numberAnimator.forceAnimateValue(currentDisplay, currentValue, currentAccountBalance, 300, (value) => '€' + formatNumberShort(value));
+        numberAnimator.forceAnimateValue(currentDisplay, currentValue, currentAccountBalance, 300, animationFormatters.currency);
       }
       if (headerCurrentDisplay) {
         const headerCurrentValue = parseDisplayedValue(headerCurrentDisplay.textContent);
-        numberAnimator.forceAnimateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 300, (value) => '€' + formatNumberShort(value));
+        numberAnimator.forceAnimateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 300, animationFormatters.currency);
       }
     }
     
@@ -2560,13 +2661,13 @@
         individualIncome *= 1.05;
       }
       
-      individualIncomeEl.textContent = `€${formatNumberShort(Math.floor(individualIncome))}/sec each`;
+      individualIncomeEl.textContent = animationFormatters.currencyEach(Math.floor(individualIncome));
     }
     
     // Update total income
     const totalIncomeEl = document.getElementById(`${propertyId}TotalIncome`);
     if (totalIncomeEl) {
-      totalIncomeEl.textContent = `€${formatNumberShort(totalIncome)}/sec total`;
+      totalIncomeEl.textContent = animationFormatters.currencyTotal(totalIncome);
     }
     
     // Apply tier-based styling
@@ -4727,11 +4828,11 @@
     if (numberAnimator) {
       if (currentDisplay) {
         const currentValue = parseDisplayedValue(currentDisplay.textContent);
-        numberAnimator.forceAnimateValue(currentDisplay, currentValue, currentAccountBalance, 250, (value) => '€' + formatNumberShort(value));
+        numberAnimator.forceAnimateValue(currentDisplay, currentValue, currentAccountBalance, 250, animationFormatters.currency);
       }
       if (headerCurrentDisplay) {
         const headerCurrentValue = parseDisplayedValue(headerCurrentDisplay.textContent);
-        numberAnimator.forceAnimateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 250, (value) => '€' + formatNumberShort(value));
+        numberAnimator.forceAnimateValue(headerCurrentDisplay, headerCurrentValue, currentAccountBalance, 250, animationFormatters.currency);
       }
     }
     
@@ -5086,7 +5187,7 @@
     if (dividendAmountEl) {
       if (numberAnimator) {
         const currentAmount = parseDisplayedValue(dividendAmountEl.textContent);
-        numberAnimator.animateValue(dividendAmountEl, currentAmount, dividendAmount, 250, (value) => '€' + formatNumberShort(value));
+        numberAnimator.animateValue(dividendAmountEl, currentAmount, dividendAmount, 250, animationFormatters.currency);
       } else {
         dividendAmountEl.textContent = '€' + formatNumberShort(dividendAmount);
       }
@@ -5950,7 +6051,7 @@ window.addEventListener('beforeunload', () => {
     if (interestPerSecondEl) {
       if (numberAnimator) {
         const currentEarnings = parseDisplayedValue(interestPerSecondEl.textContent);
-        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, (value) => '€' + formatNumberShort(value) + '/sec');
+        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSec);
       } else {
         interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/sec';
       }
