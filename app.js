@@ -1112,10 +1112,19 @@
     // Set cooldown
     EVENT_CONFIG.eventCooldowns.taxCollection = Date.now() + getEventCooldown('taxCollection');
     
-    // Calculate tax based on difficulty
-    const taxRate = gameDifficulty === 'extreme' ? 0.28 : 0.08; // 24% for extreme (3x), 8% for others
-    const taxAmount = investmentAccountBalance * taxRate;
-    investmentAccountBalance -= taxAmount;
+    let taxAmount = 0;
+    
+    // Calculate tax based on difficulty and available funds
+    if (investmentAccountBalance > 0) {
+      // Primary: Take from investment account
+      const taxRate = gameDifficulty === 'extreme' ? 0.28 : 0.08; // 28% for extreme, 8% for others
+      taxAmount = investmentAccountBalance * taxRate;
+      investmentAccountBalance -= taxAmount;
+    } else if (currentAccountBalance > 0) {
+      // Fallback: Take 5% from current account if investment account is empty
+      taxAmount = currentAccountBalance * 0.05;
+      currentAccountBalance -= taxAmount;
+    }
     
     // Show notification
     showEventNotification("🏛️ Tax Collection!", `Paid €${formatNumberShort(taxAmount)} in taxes!`, "tax-collection");
