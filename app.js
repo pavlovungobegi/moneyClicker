@@ -812,8 +812,8 @@
   let netWorthHistory = [];
   let eventLogs = [];
   let netWorthChart = null;
-  const MAX_DATA_POINTS = 120; // 10 minutes of data (120 * 5 seconds)
-  const DATA_COLLECTION_INTERVAL = 5000; // 5 seconds
+  const MAX_DATA_POINTS = 30; // 5 minutes of data (30 * 10 seconds)
+  const DATA_COLLECTION_INTERVAL = 10000; // 10 seconds
 
   // Event system configuration
   const EVENT_CONFIG = {
@@ -5436,7 +5436,7 @@
     //checkPortfolioTour();
   }, TICK_MS);
 
-  // Net worth data collection (every 5 seconds)
+  // Net worth data collection (every 10 seconds)
   setInterval(() => {
     addNetWorthDataPoint();
   }, DATA_COLLECTION_INTERVAL);
