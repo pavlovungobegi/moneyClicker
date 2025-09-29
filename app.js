@@ -7,6 +7,10 @@
   
   // DOM element caching for performance optimization
   let cachedElements = {};
+  
+  // Property income caching for performance optimization
+  let cachedPropertyIncome = 0;
+  let propertyIncomeCacheValid = false;
 
   // Mobile detection for particle optimization
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -2558,6 +2562,9 @@
       purchases++;
     }
     
+    // Invalidate property income cache since properties changed
+    propertyIncomeCacheValid = false;
+    
     // Create purchase particle effects
     if (particleSystem) {
       const buyBtn = document.getElementById(`buy${propertyId.charAt(0).toUpperCase() + propertyId.slice(1)}Btn`);
@@ -3027,10 +3034,19 @@
   }
 
   function getTotalPropertyIncome() {
+    // Use cached value if valid
+    if (propertyIncomeCacheValid) {
+      return cachedPropertyIncome;
+    }
+    
+    // Calculate and cache the result
     let total = 0;
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
       total += getPropertyTotalIncome(propertyId);
     });
+    
+    cachedPropertyIncome = total;
+    propertyIncomeCacheValid = true;
     return total;
   }
 
@@ -4835,6 +4851,11 @@
     currentAccountBalance -= cost;
     owned[key] = true;
     
+    // Invalidate property income cache if property-related upgrade was purchased
+    if (key === 'u35' || key === 'u37' || key === 'u38') {
+      propertyIncomeCacheValid = false;
+    }
+    
     // Create upgrade particle effects
     if (particleSystem) {
       const buyButton = document.getElementById(`buy${key.charAt(0).toUpperCase() + key.slice(1)}Btn`);
@@ -5414,6 +5435,9 @@
   function initializeGame() {
   // Cache DOM elements for performance optimization
   cacheDOMElements();
+  
+  // Invalidate property income cache to ensure fresh calculation
+  propertyIncomeCacheValid = false;
   
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
