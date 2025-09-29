@@ -2427,7 +2427,8 @@
     
     // Update displays
     renderBalances();
-    renderPropertyUI(propertyId);
+    renderPropertyUI(propertyId, true); // Show notifications for tier upgrades
+    
     updateTotalRentDisplay();
     updatePortfolioIndicator();
     saveGameState();
@@ -2435,7 +2436,7 @@
     return true;
   }
 
-  function renderPropertyUI(propertyId) {
+  function renderPropertyUI(propertyId, showNotifications = false) {
     const config = PROPERTY_CONFIG[propertyId];
     const ownedCount = properties[propertyId];
     const singleCost = getPropertyCost(propertyId);
@@ -2547,7 +2548,7 @@
     }
     
     // Apply tier-based styling
-    applyTierStyling(propertyId, ownedCount);
+    applyTierStyling(propertyId, ownedCount, showNotifications);
     
     // Update tier progress line
     updateTierProgressLine(propertyId, ownedCount);
@@ -2582,7 +2583,7 @@
   }
 
   // Apply tier-based styling to property rows
-  function applyTierStyling(propertyId, ownedCount) {
+  function applyTierStyling(propertyId, ownedCount, showNotifications = true) {
     const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
     if (!propertyRow) return;
     
@@ -2619,7 +2620,7 @@
     }
     
     // Check if tier increased and celebrate! (only for tiers 1, 2, 3, 4)
-    if (newTier > previousTier && newTier <= 4 && ownedCount % 25 === 0) {
+    if (showNotifications && newTier > previousTier && newTier <= 4) {
       celebrateTierUpgrade(propertyId, newTier, propertyRow);
     }
   }
