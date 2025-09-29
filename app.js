@@ -515,6 +515,16 @@
     animateValue(element, startValue, endValue, duration = 1000, formatter = null, minChange = 0.01) {
       if (!element) return;
       
+      // If number animations are disabled, just set the value directly
+      if (!numberAnimationsEnabled) {
+        if (formatter) {
+          element.textContent = formatter(endValue);
+        } else {
+          element.textContent = endValue.toString();
+        }
+        return;
+      }
+      
       const key = element.id || element;
       
       // Check if there's already an animation running for this element
@@ -562,6 +572,16 @@
     // Force immediate animation for important events (bypasses minChange)
     forceAnimateValue(element, startValue, endValue, duration = 1000, formatter = null) {
       if (!element) return;
+      
+      // If number animations are disabled, just set the value directly
+      if (!numberAnimationsEnabled) {
+        if (formatter) {
+          element.textContent = formatter(endValue);
+        } else {
+          element.textContent = endValue.toString();
+        }
+        return;
+      }
       
       const key = element.id || element;
       const startTime = Date.now();
@@ -2190,14 +2210,10 @@
   function handleClick() {
     let income = getPerClickIncome();
     
-    // Track total clicks
-    totalClicks++;
-    
     // Check if this was a critical hit and multiply income by 5x
     const isCritical = owned.u29 && Math.random() < 0.15;
     if (isCritical) {
       income *= 5;
-      totalCriticalHits++;
     }
     
     // Handle click streak if upgrade is owned
@@ -3580,8 +3596,6 @@
         eventLogs: [...eventLogs],
         
         // Statistics
-        totalClicks,
-        totalCriticalHits,
         totalDividendsReceived,
         hasMadeFirstInvestment,
         
@@ -3601,9 +3615,6 @@
         
         // Buy multiplier
         buyMultiplier,
-        
-        // Game timing
-        gameStartTime,
         
         // Audio settings
         musicEnabled,
@@ -3680,8 +3691,6 @@
         }
         
         // Restore statistics
-        totalClicks = gameState.totalClicks || 0;
-        totalCriticalHits = gameState.totalCriticalHits || 0;
         totalDividendsReceived = gameState.totalDividendsReceived || 0;
         hasMadeFirstInvestment = gameState.hasMadeFirstInvestment || false;
         
@@ -3711,9 +3720,6 @@
         
         // Restore buy multiplier
         buyMultiplier = gameState.buyMultiplier || 1;
-        
-        // Restore game timing (no offline earnings)
-        gameStartTime = gameState.gameStartTime || Date.now();
         
         // Restore audio settings
         musicEnabled = gameState.musicEnabled !== undefined ? gameState.musicEnabled : true;
@@ -3778,7 +3784,6 @@
     renderInvestmentUnlocked();
     renderInterestPerSecond();
     renderAutoInvestSection();
-    renderStatistics();
     renderEventLogs();
     updateUpgradeIndicator();
     updatePortfolioIndicator();
@@ -3877,14 +3882,11 @@
     // Reset all game variables to initial state
     currentAccountBalance = 0;
     investmentAccountBalance = 0;
-    totalClicks = 0;
-    totalCriticalHits = 0;
     totalDividendsReceived = 0;
     streakCount = 0;
     streakMultiplier = 1;
     autoInvestEnabled = false;
     autoRentEnabled = false;
-    gameStartTime = Date.now();
     
     // Reset all upgrades
     Object.keys(owned).forEach(upgradeKey => {
@@ -4200,52 +4202,7 @@
     targetElement.classList.add('tour-highlight');
   }
 
-  function renderStatistics() {
-    
-    // Time played
-    const timePlayed = Math.floor((Date.now() - gameStartTime) / 1000);
-    const timePlayedEl = document.getElementById('timePlayedDisplay');
-    if (timePlayedEl) {
-      if (timePlayed < 60) {
-        timePlayedEl.textContent = `${timePlayed}s`;
-      } else if (timePlayed < 3600) {
-        timePlayedEl.textContent = `${Math.floor(timePlayed / 60)}m ${timePlayed % 60}s`;
-      } else {
-        timePlayedEl.textContent = `${Math.floor(timePlayed / 3600)}h ${Math.floor((timePlayed % 3600) / 60)}m`;
-      }
-    }
-
-    // Total clicks
-    const totalClicksEl = document.getElementById('totalClicksDisplay');
-    if (totalClicksEl && numberAnimator) {
-      const currentClicks = parseInt(totalClicksEl.textContent.replace(/,/g, '')) || 0;
-      numberAnimator.animateValue(totalClicksEl, currentClicks, totalClicks, 600, (value) => new Intl.NumberFormat("en-US").format(Math.floor(value)));
-    } else if (totalClicksEl) {
-      totalClicksEl.textContent = new Intl.NumberFormat("en-US").format(totalClicks);
-    }
-
-    // Total critical hits
-    const totalCriticalHitsEl = document.getElementById('totalCriticalHitsDisplay');
-    if (totalCriticalHitsEl && numberAnimator) {
-      const currentHits = parseInt(totalCriticalHitsEl.textContent.replace(/,/g, '')) || 0;
-      numberAnimator.animateValue(totalCriticalHitsEl, currentHits, totalCriticalHits, 600, (value) => new Intl.NumberFormat("en-US").format(Math.floor(value)));
-    } else if (totalCriticalHitsEl) {
-      totalCriticalHitsEl.textContent = new Intl.NumberFormat("en-US").format(totalCriticalHits);
-    }
-
-
-
-    // Achievements unlocked
-    const achievementsUnlockedEl = document.getElementById('achievementsUnlockedDisplay');
-    if (achievementsUnlockedEl && numberAnimator) {
-      const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
-      const currentUnlocked = parseInt(achievementsUnlockedEl.textContent.split('/')[0]) || 0;
-      numberAnimator.animateValue(achievementsUnlockedEl, currentUnlocked, unlockedCount, 600, (value) => `${Math.floor(value)}/17`);
-    } else if (achievementsUnlockedEl) {
-      const unlockedCount = Object.values(achievements).filter(ach => ach.unlocked).length;
-      achievementsUnlockedEl.textContent = `${unlockedCount}/17`;
-    }
-  }
+  // Statistics rendering removed for performance
 
   // Event logging functions
   function logEvent(eventName, eventType) {
@@ -4265,8 +4222,8 @@
     });
     
     // Keep only the last 20 events
-    if (eventLogs.length > 20) {
-      eventLogs = eventLogs.slice(0, 20);
+    if (eventLogs.length > 10) {
+      eventLogs = eventLogs.slice(0, 10);
     }
     
     // Render the updated event logs
@@ -4374,13 +4331,10 @@
   const AUTO_CLICK_INTERVAL_MS = 3000; // 3 seconds
 
   // Achievement system
-  let totalClicks = 0;
-  let totalCriticalHits = 0;
   let maxStreakReached = false;
   let totalDividendsReceived = 0;
 
   // Statistics tracking
-  let gameStartTime = Date.now();
   let hasMadeFirstInvestment = false;
   
   const achievements = {
@@ -4389,8 +4343,6 @@
     ach3: { unlocked: false, condition: () => getTotalMoney() >= 1000000 },
     ach4: { unlocked: false, condition: () => getTotalMoney() >= 1000000000 },
     ach5: { unlocked: false, condition: () => getTotalMoney() >= 1000000000000 },
-    ach6: { unlocked: false, condition: () => totalClicks >= 1000 },
-    ach7: { unlocked: false, condition: () => totalCriticalHits >= 100 },
     ach8: { unlocked: false, condition: () => maxStreakReached },
     ach9: { unlocked: false, condition: () => owned.u5 }, // Educated - Higher Education
     ach10: { unlocked: false, condition: () => investmentAccountBalance >= 100000 },
@@ -4445,6 +4397,9 @@
   
   // Particle effects system
   let particleEffectsEnabled = true;
+  
+  // Number animations system
+  let numberAnimationsEnabled = true;
 
   function initAudio() {
     try {
@@ -5426,7 +5381,6 @@
     updatePortfolioIndicator();
     updateProgressBars();
     checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
-    renderStatistics();
     
     
     // Check tour triggers
@@ -5498,7 +5452,6 @@
   // Add initial data point
   addNetWorthDataPoint();
   renderAchievements();
-  renderStatistics();
     renderEventLogs();
   updateUpgradeIndicator();
     updatePortfolioIndicator();
@@ -5517,6 +5470,7 @@
   const musicToggle = document.getElementById('musicToggle');
   const soundEffectsToggle = document.getElementById('soundEffectsToggle');
   const particleEffectsToggle = document.getElementById('particleEffectsToggle');
+  const numberAnimationsToggle = document.getElementById('numberAnimationsToggle');
 
   // Auto Invest Help Modal functionality
   const autoInvestHelpBtn = document.getElementById('autoInvestHelpBtn');
@@ -5533,6 +5487,7 @@
     const savedMusicEnabled = localStorage.getItem('musicEnabled');
     const savedSoundEffectsEnabled = localStorage.getItem('soundEffectsEnabled');
     const savedParticleEffectsEnabled = localStorage.getItem('particleEffectsEnabled');
+    const savedNumberAnimationsEnabled = localStorage.getItem('numberAnimationsEnabled');
     
     if (savedMusicEnabled !== null) {
       musicEnabled = savedMusicEnabled === 'true';
@@ -5549,6 +5504,11 @@
       if (particleEffectsToggle) particleEffectsToggle.checked = particleEffectsEnabled;
     }
     
+    if (savedNumberAnimationsEnabled !== null) {
+      numberAnimationsEnabled = savedNumberAnimationsEnabled === 'true';
+      if (numberAnimationsToggle) numberAnimationsToggle.checked = numberAnimationsEnabled;
+    }
+    
     // Apply music setting on load
     if (!musicEnabled && backgroundMusic) {
       backgroundMusic.pause();
@@ -5563,6 +5523,7 @@
     localStorage.setItem('musicEnabled', musicEnabled.toString());
     localStorage.setItem('soundEffectsEnabled', soundEffectsEnabled.toString());
     localStorage.setItem('particleEffectsEnabled', particleEffectsEnabled.toString());
+    localStorage.setItem('numberAnimationsEnabled', numberAnimationsEnabled.toString());
   }
 
   // Apply audio settings to UI and audio
@@ -5571,6 +5532,7 @@
     if (musicToggle) musicToggle.checked = musicEnabled;
     if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
     if (particleEffectsToggle) particleEffectsToggle.checked = particleEffectsEnabled;
+    if (numberAnimationsToggle) numberAnimationsToggle.checked = numberAnimationsEnabled;
     
     // Apply music setting
     if (!musicEnabled && backgroundMusic) {
@@ -5629,6 +5591,15 @@
       particleEffectsEnabled = e.target.checked;
       saveAudioSettings();
       console.log('Particle effects toggle changed to:', particleEffectsEnabled);
+    });
+  }
+
+  // Number animations toggle functionality
+  if (numberAnimationsToggle) {
+    numberAnimationsToggle.addEventListener('change', (e) => {
+      numberAnimationsEnabled = e.target.checked;
+      saveAudioSettings();
+      console.log('Number animations toggle changed to:', numberAnimationsEnabled);
     });
   }
 
