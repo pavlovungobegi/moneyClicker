@@ -1119,7 +1119,7 @@
       // Primary: Take from investment account
       const taxRate = gameDifficulty === 'extreme' ? 0.28 : 0.08; // 28% for extreme, 8% for others
       taxAmount = investmentAccountBalance * taxRate;
-      investmentAccountBalance -= taxAmount;
+    investmentAccountBalance -= taxAmount;
     } else if (currentAccountBalance > 0) {
       // Fallback: Take 5% from current account if investment account is empty
       taxAmount = currentAccountBalance * 0.05;
@@ -2286,6 +2286,7 @@
     if (owned.u33) totalDiscount += 0.15; // Real Estate Connections: 15% off
     if (owned.u34) totalDiscount += 0.20; // Hire a contractor: additional 20% off
     if (owned.u36) totalDiscount += 0.10; // Market awareness: additional 10% off
+    if (owned.u39) totalDiscount += 0.25; // Government Connections: additional 25% off
     
     return config.baseCost * (1 - totalDiscount);
   }
@@ -2315,6 +2316,11 @@
     // Apply Rental Monopoly boost (20% increase)
     if (owned.u37) {
       income *= 1.20;
+    }
+    
+    // Apply Cheesy Landlord boost (5% increase)
+    if (owned.u38) {
+      income *= 1.05;
     }
     
     return Math.floor(income);
@@ -2351,6 +2357,11 @@
     // Apply Rental Monopoly boost (20% increase)
     if (owned.u37) {
       baseIncome *= 1.20;
+    }
+    
+    // Apply Cheesy Landlord boost (5% increase)
+    if (owned.u38) {
+      baseIncome *= 1.05;
     }
     
     // Debug logging
@@ -2544,6 +2555,9 @@
       }
       if (owned.u37) {
         individualIncome *= 1.20;
+      }
+      if (owned.u38) {
+        individualIncome *= 1.05;
       }
       
       individualIncomeEl.textContent = `€${formatNumberShort(Math.floor(individualIncome))}/sec each`;
@@ -4579,7 +4593,9 @@
     u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount" },
     u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost" },
     u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount" },
-    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost" }
+    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost" },
+    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost" },
+    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount" }
   };
 
   // Generate upgrade costs and owned objects from config
