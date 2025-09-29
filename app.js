@@ -2809,71 +2809,58 @@
   // Show tier upgrade notification
   function showTierUpgradeNotification(propertyId, tier, propertyName) {
     const notification = document.createElement('div');
-    notification.style.position = 'fixed';
-    notification.style.top = '20px';
-    notification.style.left = '50%';
-    notification.style.transform = 'translateX(-50%)';
-    notification.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%)';
-    notification.style.color = 'white';
-    notification.style.padding = '12px 24px';
-    notification.style.borderRadius = '8px';
-    notification.style.fontWeight = 'bold';
-    notification.style.fontSize = '16px';
-    notification.style.zIndex = '10000';
-    notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-    notification.style.opacity = '0';
-    notification.style.backdropFilter = 'blur(10px)';
-    notification.style.transform = 'translateX(-50%) translateY(-20px)';
-    notification.style.transition = 'all 0.3s ease-out';
+    const tierClass = getTierClass(tier);
+    const propertyIcon = PROPERTY_CONFIG[propertyId].icon;
     
-    let tierText = '';
-    let multiplierText = '';
-    switch(tier) {
-      case 1: 
-        tierText = 'BRONZE';
-        multiplierText = '2x';
-        break;
-      case 2: 
-        tierText = 'SILVER';
-        multiplierText = '2x';
-        break;
-      case 3: 
-        tierText = 'GOLD';
-        multiplierText = '2x';
-        break;
-      case 4: 
-        tierText = 'DIAMOND';
-        multiplierText = '2x';
-        break;
-      default: 
-        tierText = 'DIAMOND';
-        multiplierText = '2x';
-        break;
-    }
-    
-            notification.innerHTML = `
-              ${propertyName} reached ${tierText} tier!<br>
-              <span style="font-size: 14px; opacity: 0.9;">Rent increased by ${multiplierText}!</span>
-            `;
+    notification.className = `market-event-notification tier-upgrade ${tierClass}`;
+    notification.innerHTML = `
+      <div class="event-title">
+        <i class="${propertyIcon}"></i>
+        ${propertyName} reached ${getTierText(tier)} tier!
+      </div>
+      <div class="event-message">Rent is doubled!</div>
+    `;
     
     document.body.appendChild(notification);
     
     // Animate in
-    setTimeout(() => {
-      notification.style.opacity = '1';
-      notification.style.transform = 'translateX(-50%) translateY(0)';
-    }, 100);
+    setTimeout(() => notification.classList.add('show'), 100);
     
-    // Animate out and remove
+    // Remove after 5 seconds
     setTimeout(() => {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateX(-50%) translateY(-20px)';
-      setTimeout(() => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      }, 300);
-    }, 3000);
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, 5000);
+  }
+  
+  function getTierText(tier) {
+    switch(tier) {
+      case 1: return 'bronze';
+      case 2: return 'silver';
+      case 3: return 'gold';
+      case 4: return 'diamond';
+      default: return 'diamond';
+    }
+  }
+  
+  function getMultiplierText(tier) {
+    switch(tier) {
+      case 1: return '2x';
+      case 2: return '2x';
+      case 3: return '2x';
+      case 4: return '2x';
+      default: return '2x';
+    }
+  }
+  
+  function getTierClass(tier) {
+    switch(tier) {
+      case 1: return 'tier-bronze';
+      case 2: return 'tier-silver';
+      case 3: return 'tier-gold';
+      case 4: return 'tier-diamond';
+      default: return 'tier-diamond';
+    }
   }
 
   function renderAllProperties() {
