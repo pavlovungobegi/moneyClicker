@@ -4836,6 +4836,137 @@
       upgradesContainer.insertAdjacentHTML('beforeend', upgradeHTML);
     });
   }
+
+  // Achievement configuration with display information
+  const ACHIEVEMENT_CONFIG = {
+    ach1: { 
+      name: "First Steps", 
+      description: "Earn your first €1,000", 
+      icon: "💰" 
+    },
+    ach2: { 
+      name: "Thousandaire", 
+      description: "Reach €10,000 total wealth", 
+      icon: "💎" 
+    },
+    ach3: { 
+      name: "Millionaire", 
+      description: "Reach €1,000,000 total wealth", 
+      icon: "🏆" 
+    },
+    ach4: { 
+      name: "Billionaire", 
+      description: "Reach €1,000,000,000 total wealth", 
+      icon: "👑" 
+    },
+    ach5: { 
+      name: "Trillionaire", 
+      description: "Reach €1,000,000,000,000 total wealth", 
+      icon: "🚀" 
+    },
+    ach6: { 
+      name: "Click Master", 
+      description: "Click 1,000 times", 
+      icon: "🎯" 
+    },
+    ach7: { 
+      name: "Critical Hit", 
+      description: "Get 100 critical hits", 
+      icon: "⚡" 
+    },
+    ach8: { 
+      name: "Streak Master", 
+      description: "Reach maximum click streak (3.0x)", 
+      icon: "🔥" 
+    },
+    ach9: { 
+      name: "Educated", 
+      description: "Complete Higher Education", 
+      icon: "🎓" 
+    },
+    ach10: { 
+      name: "Investor", 
+      description: "Invest €100,000 in the investment account", 
+      icon: "💼" 
+    },
+    ach11: { 
+      name: "Dividend King", 
+      description: "Receive €1,000,000 in dividends", 
+      icon: "📈" 
+    },
+    ach13: { 
+      name: "First Investment", 
+      description: "Invest your first euro", 
+      icon: "💳" 
+    },
+    ach14: { 
+      name: "Property Pioneer", 
+      description: "Buy your first property", 
+      icon: "🏠" 
+    },
+    ach15: { 
+      name: "Rent Rookie", 
+      description: "Generate €1,000 per second in rent", 
+      icon: "💰" 
+    },
+    ach16: { 
+      name: "Rent Royalty", 
+      description: "Generate €100,000 per second in rent", 
+      icon: "👑" 
+    },
+    ach17: { 
+      name: "Rent Empire", 
+      description: "Generate €1,000,000 per second in rent", 
+      icon: "🏰" 
+    },
+    ach18: { 
+      name: "Rent Billionaire", 
+      description: "Generate €1,000,000,000 per second in rent", 
+      icon: "🌍" 
+    }
+  };
+
+  // Function to generate achievement HTML from configuration
+  function generateAchievementHTML(achievementId, config) {
+    return `
+      <div class="achievement" data-achievement-id="${achievementId}">
+        <div class="achievement-icon">${config.icon}</div>
+        <div class="achievement-info">
+          <div class="achievement-name">${config.name}</div>
+          <div class="achievement-desc">${config.description}</div>
+        </div>
+        <div class="achievement-status" id="${achievementId}Status">🔒</div>
+      </div>
+    `;
+  }
+
+  // Function to generate all achievement HTML and insert into DOM
+  function generateAllAchievementHTML() {
+    const achievementsContainer = document.getElementById('achievementsSection');
+    if (!achievementsContainer) return;
+
+    // Clear existing achievements
+    achievementsContainer.innerHTML = '';
+
+    // Generate HTML for each achievement in the config
+    Object.entries(ACHIEVEMENT_CONFIG).forEach(([achievementId, config]) => {
+      const achievementHTML = generateAchievementHTML(achievementId, config);
+      achievementsContainer.insertAdjacentHTML('beforeend', achievementHTML);
+    });
+  }
+
+  // Function to set up event listeners for upgrade buy buttons
+  function setupUpgradeButtonEventListeners() {
+    Object.keys(UPGRADE_CONFIG).forEach(id => {
+      const buyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
+      if (buyBtn) {
+        // Remove any existing event listeners to prevent duplicates
+        buyBtn.replaceWith(buyBtn.cloneNode(true));
+        const newBuyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
+        newBuyBtn.addEventListener("click", () => tryBuyUpgrade(id));
+      }
+    });
+  }
   
   const owned = Object.fromEntries(
     Object.keys(UPGRADE_CONFIG).map(id => [id, false])
@@ -4999,13 +5130,6 @@
     saveGameState();
   }
 
-  // Automatically add event listeners for all upgrade buy buttons
-  Object.keys(UPGRADE_CONFIG).forEach(id => {
-    const buyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
-    if (buyBtn) {
-      buyBtn.addEventListener("click", () => tryBuyUpgrade(id));
-    }
-  });
 
   // Auto-invest toggle event listener
   if (autoInvestToggle) {
@@ -5532,6 +5656,12 @@
 
   // Generate upgrade HTML from configuration
   generateAllUpgradeHTML();
+
+  // Set up event listeners for upgrade buy buttons
+  setupUpgradeButtonEventListeners();
+
+  // Generate achievement HTML from configuration
+  generateAllAchievementHTML();
 
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
