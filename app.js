@@ -4954,9 +4954,9 @@
   function optimizeMemory() {
     // Limit the number of dynamic style elements to prevent memory bloat
     const styleElements = document.querySelectorAll('style[data-tier]');
-    if (styleElements.length > 15) {
-      // Remove oldest style elements (keep only the most recent 10)
-      const elementsToRemove = Array.from(styleElements).slice(0, styleElements.length - 10);
+    if (styleElements.length > 10) {
+      // Remove oldest style elements (keep only the most recent 8)
+      const elementsToRemove = Array.from(styleElements).slice(0, styleElements.length - 8);
       elementsToRemove.forEach(el => el.remove());
     }
     
@@ -4979,14 +4979,200 @@
       }
     });
     
+    // Clear property income cache periodically to prevent accumulation
+    propertyIncomeCacheValid = false;
+    cachedPropertyIncome = 0;
+    
+    // MAJOR MEMORY LEAK FIX: Clean up accumulating objects
+    // Clean up achievementsBannerShown object (grows indefinitely)
+    if (achievementsBannerShown && Object.keys(achievementsBannerShown).length > 100) {
+      // Keep only the most recent 50 achievement banners
+      const entries = Object.entries(achievementsBannerShown);
+      const recentEntries = entries.slice(-50);
+      achievementsBannerShown = Object.fromEntries(recentEntries);
+    }
+    
+    // Clean up cachedElements object
+    if (cachedElements && Object.keys(cachedElements).length > 20) {
+      // Clear old cached elements
+      cachedElements = {};
+      cacheDOMElements(); // Re-cache essential elements
+    }
+    
+    // Clean up eventLogs array (already limited to 10, but ensure it's not growing)
+    if (eventLogs && eventLogs.length > 10) {
+      eventLogs = eventLogs.slice(0, 10);
+    }
+    
+    // Clean up leaderboardData array
+    if (leaderboardData && leaderboardData.length > 50) {
+      leaderboardData = leaderboardData.slice(0, 50);
+    }
+    
+    // Clean up any accumulated DOM references
+    if (window.performance && window.performance.memory) {
+      const memInfo = window.performance.memory;
+      if (memInfo.usedJSHeapSize > 100 * 1024 * 1024) { // If using more than 100MB
+        // Force more aggressive cleanup
+        propertyIncomeCacheValid = false;
+        if (particleSystem) {
+          particleSystem.stopAnimation({ clearCanvas: true });
+        }
+      }
+    }
+    
     // Force garbage collection hint (if available)
     if (window.gc) {
       window.gc();
     }
   }
 
+  // Track intervals to prevent accumulation
+  let memoryOptimizationInterval = null;
+  let aggressiveCleanupInterval = null;
+  
   // Run memory optimization periodically
-  setInterval(optimizeMemory, 30000); // Every 30 seconds
+  if (!memoryOptimizationInterval) {
+    memoryOptimizationInterval = setInterval(optimizeMemory, 30000); // Every 30 seconds
+  }
+  
+  // More aggressive memory cleanup every 5 minutes
+  if (!aggressiveCleanupInterval) {
+    aggressiveCleanupInterval = setInterval(() => {
+    // Clear all caches
+    propertyIncomeCacheValid = false;
+    cachedPropertyIncome = 0;
+    
+    // MAJOR CLEANUP: Reset accumulating objects to prevent memory bloat
+    // Reset achievementsBannerShown to prevent indefinite growth
+    const currentAchievements = Object.keys(achievements).filter(id => achievements[id].unlocked);
+    achievementsBannerShown = {};
+    currentAchievements.forEach(id => {
+      achievementsBannerShown[id] = true; // Mark current achievements as shown
+    });
+    
+    // Clear cachedElements and re-cache only essential ones
+    cachedElements = {};
+    cacheDOMElements();
+    
+    // Ensure arrays are properly limited
+    if (eventLogs.length > 10) {
+      eventLogs = eventLogs.slice(0, 10);
+    }
+    if (leaderboardData.length > 50) {
+      leaderboardData = leaderboardData.slice(0, 50);
+    }
+    
+    // Clear DOM cache if it exists
+    if (typeof clearDOMCache === 'function') {
+      clearDOMCache();
+    }
+    
+    // Force particle system cleanup
+    if (particleSystem) {
+      particleSystem.stopAnimation({ clearCanvas: true });
+    }
+    
+    // Clear any accumulated intervals or timeouts
+    const highestTimeoutId = setTimeout(() => {}, 0);
+    for (let i = 0; i < highestTimeoutId; i++) {
+      clearTimeout(i);
+    }
+    
+    // Force garbage collection
+    if (window.gc) {
+      window.gc();
+    }
+    
+    console.log('Aggressive memory cleanup completed');
+    }, 300000); // Every 5 minutes
+  }
+
+  // Event delegation to prevent event listener accumulation
+  document.addEventListener('click', function(e) {
+    // Handle property buy buttons
+    if (e.target.matches('[data-property-id] .buy-btn, [data-property-id] .buy-btn *')) {
+      const propertyRow = e.target.closest('[data-property-id]');
+      if (propertyRow) {
+        const propertyId = propertyRow.getAttribute('data-property-id');
+        buyProperty(propertyId);
+      }
+    }
+    
+    // Handle upgrade buy buttons
+    if (e.target.matches('[data-upgrade-id] .buy-btn, [data-upgrade-id] .buy-btn *')) {
+      const upgradeRow = e.target.closest('[data-upgrade-id]');
+      if (upgradeRow) {
+        const upgradeId = upgradeRow.getAttribute('data-upgrade-id');
+        tryBuyUpgrade(upgradeId);
+      }
+    }
+  });
+
+  // Memory monitoring function
+  function logMemoryUsage() {
+    if (window.performance && window.performance.memory) {
+      const memInfo = window.performance.memory;
+      const usedMB = Math.round(memInfo.usedJSHeapSize / 1024 / 1024);
+      const totalMB = Math.round(memInfo.totalJSHeapSize / 1024 / 1024);
+      const limitMB = Math.round(memInfo.jsHeapSizeLimit / 1024 / 1024);
+      
+      console.log(`Memory Usage: ${usedMB}MB / ${totalMB}MB (Limit: ${limitMB}MB)`);
+      
+      // If memory usage is high, trigger aggressive cleanup
+      if (usedMB > 200) {
+        console.warn('High memory usage detected, triggering cleanup...');
+        optimizeMemory();
+        if (particleSystem) {
+          particleSystem.stopAnimation({ clearCanvas: true });
+        }
+      }
+    }
+  }
+
+  // Log memory usage every minute for debugging
+  setInterval(logMemoryUsage, 60000);
+
+  // Emergency memory reset function (can be called manually)
+  window.emergencyMemoryReset = function() {
+    console.log('Emergency memory reset triggered...');
+    
+    // Reset all accumulating objects
+    achievementsBannerShown = {};
+    cachedElements = {};
+    propertyIncomeCacheValid = false;
+    cachedPropertyIncome = 0;
+    
+    // Limit arrays
+    eventLogs = eventLogs.slice(0, 10);
+    leaderboardData = leaderboardData.slice(0, 50);
+    
+    // Stop all animations
+    if (particleSystem) {
+      particleSystem.stopAnimation({ clearCanvas: true });
+    }
+    if (numberAnimator) {
+      numberAnimator.stopAnimation();
+    }
+    
+    // Clear all style elements
+    const styleElements = document.querySelectorAll('style[data-tier]');
+    styleElements.forEach(el => el.remove());
+    
+    // Clear all modals
+    const modals = document.querySelectorAll('.modal-overlay');
+    modals.forEach(modal => modal.remove());
+    
+    // Force garbage collection
+    if (window.gc) {
+      window.gc();
+    }
+    
+    // Re-initialize essential elements
+    cacheDOMElements();
+    
+    console.log('Emergency memory reset completed');
+  };
 
   if (depositAllBtn) {
     depositAllBtn.addEventListener("click", depositAll);
