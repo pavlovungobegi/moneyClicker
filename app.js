@@ -5031,7 +5031,7 @@
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
     u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
     u31: { cost: 150000000, name: "Strong Credit Score", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
+    u32: { cost: 5000000, name: "Automated Rent Investment", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
     u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount", effects: { building_discount: 0.15 } },
     u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount", effects: { building_discount: 0.20 } },
     u35: { cost: 100000000, name: "Property Management", effect: "Increases rent income from properties by 10%", type: "rent_boost", effects: { rent_income: 0.10 } },
@@ -5468,10 +5468,10 @@
   function getBaseCompoundMultiplierPerTick() {
     switch (gameDifficulty) {
       case 'easy': return 1.004;    // 0.5% per second (easier)
-      case 'normal': return 1.0028;  // 0.4% per second (original)
-      case 'hard': return 1.0023;   // 0.35% per second (harder)
-      case 'extreme': return 1.0017; // 0.3% per second (extreme)
-      default: return 1.0030;        // fallback to normal
+      case 'normal': return 1.0022;  // 0.4% per second (original)
+      case 'hard': return 1.0018;   // 0.35% per second (harder)
+      case 'extreme': return 1.0012; // 0.3% per second (extreme)
+      default: return 1.0022;        // fallback to normal
     }
   }
   function getCompoundMultiplierPerTick() {
