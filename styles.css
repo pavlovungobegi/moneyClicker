@@ -3822,6 +3822,99 @@ input#amountInput:focus {
   font-size: 12px;
 }
 
+/* Horizontal Income Row */
+.income-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.income-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 0; /* Allow flex items to shrink */
+  min-height: 80px; /* More vertical space */
+}
+
+.income-icon {
+  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.income-info {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.income-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.income-value {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 16px;
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.income-earnings {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.income-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+}
+
+/* Dividend progress bar styling */
+.dividend-progress {
+  margin-top: 2px;
+  width: 100%;
+}
+
+.dividend-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dividend-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.1s ease-out;
+}
+
 .rate-icon {
   font-size: 14px;
   width: 16px;
@@ -3946,12 +4039,41 @@ input#amountInput:focus {
     height: 14px;
   }
   
-  .rate-label {
-    font-size: 9px;
+  /* Mobile optimizations for income row */
+  .income-row {
+    gap: 8px;
   }
   
-  .rate-value {
+  .income-item {
+    padding: 10px 12px;
+    gap: 8px;
     font-size: 12px;
+    min-height: 70px; /* Still more space on mobile */
+  }
+  
+  .income-icon {
+    font-size: 18px;
+    width: 22px;
+    height: 22px;
+  }
+  
+  .income-label {
+    font-size: 13px;
+  }
+  
+  .income-value {
+    font-size: 15px;
+  }
+  
+  .income-earnings {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .dividend-progress-bar {
+    height: 5px;
   }
   
   .rate-earnings {

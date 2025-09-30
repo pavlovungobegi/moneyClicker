@@ -2024,7 +2024,8 @@
     currency: (value) => '€' + formatNumberShort(value),
     currencyPerSec: (value) => '€' + formatNumberShort(value) + '/sec',
     currencyEach: (value) => '€' + formatNumberShort(value) + '/sec each',
-    currencyTotal: (value) => '€' + formatNumberShort(value) + '/sec total'
+    currencyTotal: (value) => '€' + formatNumberShort(value) + '/sec total',
+    currencyPerSecCompact: (value) => '€' + formatNumberShort(value) + '/s' // Shorter version for compact displays
   };
   
   // Debounced formatter for high-frequency updates (prevents excessive formatting)
@@ -2140,6 +2141,7 @@
         renderAutoInvestSection();
         renderAutoRentSection();
         renderClickStreak();
+        renderRentIncome(); // Update rent income display
         break;
       case 'upgrades':
         renderUpgradesOwned();
@@ -3049,6 +3051,7 @@
       renderPropertyUI(propertyId);
     });
     updateTotalRentDisplay();
+    renderRentIncome(); // Update rent income display in earn panel
   }
 
   function getTotalPropertyIncome() {
@@ -4771,7 +4774,9 @@
     u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount", effects: { building_discount: 0.10 } },
     u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost", effects: { rent_income: 0.20 } },
     u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost", effects: { rent_income: 0.05 } },
-    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount", effects: { building_discount: 0.25 } }
+    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount", effects: { building_discount: 0.25 } },
+    u40: { cost: 250000, name: "Zen Clicks", effect: "Adds +150 euros per click", type: "click", effects: { click_income: 150 } },
+    u41: { cost: 1500000, name: "Clicker Kicker", effect: "Adds +400 euros per click", type: "click", effects: { click_income: 400 } }
   };
 
   // Generate upgrade costs and owned objects from config
@@ -5193,11 +5198,11 @@
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (gameDifficulty) {
-      case 'easy': return 1.005;    // 0.5% per second (easier)
-      case 'normal': return 1.0035;  // 0.4% per second (original)
-      case 'hard': return 1.0030;   // 0.35% per second (harder)
-      case 'extreme': return 1.0025; // 0.3% per second (extreme)
-      default: return 1.0035;        // fallback to normal
+      case 'easy': return 1.004;    // 0.5% per second (easier)
+      case 'normal': return 1.0028;  // 0.4% per second (original)
+      case 'hard': return 1.0023;   // 0.35% per second (harder)
+      case 'extreme': return 1.0017; // 0.3% per second (extreme)
+      default: return 1.0030;        // fallback to normal
     }
   }
   function getCompoundMultiplierPerTick() {
@@ -5353,13 +5358,13 @@
         
         // Create flying money particles for dividend payout
         if (particleSystem && particleSystem.createMoneyParticles) {
-          const dividendCircle = document.getElementById('dividendCircle');
-          if (dividendCircle) {
-            const rect = dividendCircle.getBoundingClientRect();
+          const dividendProgress = document.getElementById('dividendProgressBar');
+          if (dividendProgress) {
+            const rect = dividendProgress.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
             
-            // Create money particles from the dividend circle
+            // Create money particles from the dividend progress bar
             particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(cappedPayout / 2000000, 6));
           }
         }
@@ -5403,16 +5408,10 @@
     const percent = timeInCycle / interval;
       const dashOffset = 100 - percent * 100;
     
-    // Update countdown timer smoothly
-    const countdownEl = document.getElementById('dividendCountdown');
-    if (countdownEl) {
-      countdownEl.textContent = `${remaining}s`;
-    }
-    
-    // Update circle fill smoothly
-    const circleFill = document.querySelector('.dividend-circle .circle-fill');
-    if (circleFill) {
-      circleFill.setAttribute('stroke-dashoffset', String(dashOffset));
+    // Update progress bar smoothly
+    const progressFill = document.getElementById('dividendProgressFill');
+    if (progressFill) {
+      progressFill.style.width = `${percent * 100}%`;
     }
     
     // Continue animation
@@ -5608,6 +5607,7 @@
     renderAutoInvestSection();
         renderAutoRentSection();
     renderClickStreak();
+    renderRentIncome(); // Update rent income display
         break;
       case 'upgrades':
         renderUpgradesOwned();
@@ -6432,6 +6432,9 @@ window.addEventListener('beforeunload', () => {
     // Calculate earnings per second
     const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
     
+    // Update rent income display
+    renderRentIncome();
+    
     if (numberAnimator) {
       // Parse current percentage from element text
       const currentText = interestPerSecEl.textContent.replace('%', '');
@@ -6450,9 +6453,9 @@ window.addEventListener('beforeunload', () => {
     if (interestPerSecondEl) {
       if (numberAnimator) {
         const currentEarnings = parseDisplayedValue(interestPerSecondEl.textContent);
-        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSec);
+        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSecCompact);
       } else {
-        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/sec';
+        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/s';
       }
     }
     
@@ -6467,6 +6470,32 @@ window.addEventListener('beforeunload', () => {
         interestRow.classList.add('market-crash');
       }
     }
+  }
+
+  // Render rent income display
+  function renderRentIncome() {
+    const rentContainer = document.getElementById('rentContainer');
+    const rentRate = document.getElementById('rentRate');
+    const rentPerSecond = document.getElementById('rentPerSecond');
+    
+    if (!rentContainer || !rentRate || !rentPerSecond) return;
+    
+    // Check if player has any properties
+    const hasProperties = Object.values(properties).some(count => count > 0);
+    rentContainer.classList.toggle('hidden', !hasProperties);
+    
+    if (!hasProperties) return;
+    
+    // Calculate total rent income
+    const totalRentIncome = getTotalPropertyIncome();
+    const formattedRent = formatNumberShort(totalRentIncome);
+    
+    // Update rent rate (number of properties)
+    const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
+    rentRate.textContent = totalProperties.toString();
+    
+    // Update rent per second (using compact format)
+    rentPerSecond.textContent = `€${formattedRent}/s`;
   }
 
   // Initialize interest per second display and set up periodic updates

@@ -219,33 +219,42 @@
             <div class="earnings-metrics-container hidden">
               <div class="earnings-metrics">
                 <div class="metrics-left">
+                  <!-- Income Row: Interest, Dividends, Rent -->
+                  <div class="income-row">
                   <!-- Interest Rate -->
-                  <div id="interestContainer" class="rate-row hidden" aria-live="polite">
-                    <div class="rate-icon">📈</div>
-                    <div class="rate-info">
-                      <div class="rate-label">Interest</div>
-                      <div class="rate-value" id="interestPerSec">0.00%</div>
+                    <div id="interestContainer" class="income-item hidden" aria-live="polite">
+                      <div class="income-icon">📈</div>
+                      <div class="income-info">
+                        <div class="income-label">Interest</div>
+                        <div class="income-value" id="interestPerSec">0.00%</div>
+                        <div class="income-earnings" id="interestPerSecond">€0.00/sec</div>
                     </div>
-                    <div class="rate-earnings" id="interestPerSecond">€0.00/sec</div>
                   </div>
                   
                   <!-- Dividends -->
-                  <div id="dividendInfo" class="rate-row hidden" aria-live="polite">
-                    <div class="rate-icon">💰</div>
-                    <div class="rate-info">
-                      <div class="rate-label">Dividends</div>
-                      <div class="rate-value" id="dividendRate">1.00%</div>
+                    <div id="dividendInfo" class="income-item hidden" aria-live="polite">
+                      <div class="income-icon">💰</div>
+                      <div class="income-info">
+                        <div class="income-label">Dividends</div>
+                        <div class="income-value" id="dividendRate">1.00%</div>
+                        <div class="income-details">
+                          <div class="income-earnings" id="dividendAmount">€0.00</div>
+                          <div class="dividend-progress">
+                            <div class="dividend-progress-bar" id="dividendProgressBar">
+                              <div class="dividend-progress-fill" id="dividendProgressFill"></div>
                     </div>
-                    <div class="rate-details">
-                      <div class="rate-earnings" id="dividendAmount">€0.00</div>
-                      <div class="rate-timer">
-                        <div class="dividend-circle" id="dividendCircle">
-                          <svg width="24" height="24" viewBox="0 0 36 36" aria-hidden="true">
-                            <circle class="circle-bg" cx="18" cy="18" r="16" />
-                            <circle class="circle-fill" cx="18" cy="18" r="16" stroke-dasharray="100 100" stroke-dashoffset="100" />
-                          </svg>
-                          <div class="circle-text" id="dividendCountdown">10s</div>
                         </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Rent Income -->
+                    <div id="rentContainer" class="income-item hidden" aria-live="polite">
+                      <div class="income-icon">🏠</div>
+                      <div class="income-info">
+                        <div class="income-label">Rent</div>
+                        <div class="income-value" id="rentRate">0</div>
+                        <div class="income-earnings" id="rentPerSecond">€0.00/sec</div>
                       </div>
                     </div>
                   </div>
@@ -305,7 +314,7 @@
           </div>
           <div class="scrollable-content">
             <!-- Upgrades will be generated dynamically from UPGRADE_CONFIG -->
-          </div>
+            </div>
 
         </section>
 
