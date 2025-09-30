@@ -2633,6 +2633,123 @@ button#withdrawHalfBtn:focus-visible {
   background: #f3e8ff;
 }
 
+.event-log-item.earthquake {
+  border-left-color: #8B4513;
+  background: #f5f5dc;
+}
+
+.event-details-hint {
+  font-size: 10px;
+  color: #64748b;
+  font-style: italic;
+  margin-left: 8px;
+}
+
+/* Earthquake Details Modal */
+.earthquake-details-modal {
+  max-width: 450px;
+}
+
+.earthquake-info {
+  margin-bottom: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.info-value {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.magnitude-high {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.magnitude-medium {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.magnitude-low {
+  color: #059669;
+  font-weight: 600;
+}
+
+.rent-reduction {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.demolition-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f1f5f9;
+}
+
+.demolition-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.demolition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demolition-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+}
+
+.demolition-count {
+  background: #dc2626;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.demolition-name {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.no-demolition {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .event-logs-container {
     margin-top: 4px;

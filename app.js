@@ -665,11 +665,14 @@
   let flashSaleActive = false;
   let greatDepressionActive = false;
   let fastFingersActive = false;
+  let earthquakeActive = false;
   let marketBoomEndTime = 0;
   let marketCrashEndTime = 0;
   let flashSaleEndTime = 0;
   let greatDepressionEndTime = 0;
   let fastFingersEndTime = 0;
+  let earthquakeEndTime = 0;
+  let earthquakeMagnitude = 0;
   let eventCooldown = 0;
   let skipNextEventCheck = false; // Skip next event check to give breathing room
   
@@ -897,6 +900,12 @@
         normal: 0.01,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.045   // 2% chance (extreme)
+      },
+      earthquake: {
+        easy: 0.01,     // 1% chance (same for all difficulties)
+        normal: 0.5,   // 1% chance
+        hard: 0.01,     // 1% chance
+        extreme: 0.01   // 1% chance
       }
     },
     
@@ -906,7 +915,8 @@
       marketCrash: 30000,   // 30 seconds
       flashSale: 30000,     // 30 seconds
       greatDepression: 30000, // 30 seconds
-      fastFingers: 15000    // 15 seconds
+      fastFingers: 15000,   // 15 seconds
+      earthquake: 30000     // 30 seconds
     },
     
     // Event cooldowns (milliseconds) - different for each difficulty
@@ -970,7 +980,8 @@
       fastFingers: 0,
       taxCollection: 0,
       robbery: 0,
-      divorce: 0
+      divorce: 0,
+      earthquake: 0
     },
     
     // Net worth thresholds (minimum net worth required for events to trigger)
@@ -982,7 +993,8 @@
       fastFingers: 0,       // No threshold
       taxCollection: 250000,     // No threshold
       robbery: 150000,           // No threshold
-      divorce: 1000000      // 1 million euro threshold
+      divorce: 1000000,     // 1 million euro threshold
+      earthquake: 0         // No net worth threshold, but requires 100 properties
     },
     
     // Event requirements (upgrades that must be unlocked for events to trigger)
@@ -994,7 +1006,8 @@
       robbery: null,            // No requirements
       flashSale: null,          // No requirements
       fastFingers: null,        // No requirements
-      divorce: null             // No requirements
+      divorce: null,            // No requirements
+      earthquake: null          // No upgrade requirements (100 property requirement handled separately)
     }
   };
   
@@ -1283,6 +1296,135 @@
     logEvent("🔫 Robbery", "robbery");
   }
   
+  function triggerEarthquake() {
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive) return; // Don't trigger if any event is active
+    
+    // Generate earthquake magnitude (4.0 to 8.0)
+    const magnitude = 4.0 + Math.random() * 4.0; // Random between 4.0 and 8.0
+    
+    // Set earthquake as active
+    earthquakeActive = true;
+    earthquakeEndTime = Date.now() + EVENT_CONFIG.durations.earthquake;
+    earthquakeMagnitude = magnitude;
+    EVENT_CONFIG.eventCooldowns.earthquake = Date.now() + getEventCooldown('earthquake');
+    
+    // Calculate effects based on magnitude
+    let rentReduction = 0;
+    let demolishPercentage = 0;
+    let demolishCount = 0;
+    
+    if (magnitude >= 4.0 && magnitude < 5.0) {
+      // 4.0-5.0: 15% rent reduction
+      rentReduction = 0.15;
+    } else if (magnitude >= 5.0 && magnitude < 6.0) {
+      // 5.0-6.0: 50% rent reduction
+      rentReduction = 0.50;
+    } else if (magnitude >= 6.0 && magnitude < 7.0) {
+      // 6.0-7.0: 75% rent reduction + demolish 1-4% of buildings
+      rentReduction = 0.75;
+      demolishPercentage = 0.01 + (magnitude - 6.0) * 0.03; // 1% at 6.0, 4% at 7.0
+    } else if (magnitude >= 7.0 && magnitude <= 8.0) {
+      // 7.0-8.0: 100% rent reduction + demolish 4-25% of buildings
+      rentReduction = 1.00;
+      demolishPercentage = 0.04 + (magnitude - 7.0) * 0.21; // 4% at 7.0, 25% at 8.0
+    }
+    
+    // Calculate total properties for demolition
+    const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
+    demolishCount = Math.floor(totalProperties * demolishPercentage);
+    
+    // Demolish properties if applicable
+    let demolishedProperties = {};
+    if (demolishCount > 0) {
+      demolishedProperties = demolishProperties(demolishCount);
+    }
+    
+    // Show notification
+    let notificationText = `Magnitude ${magnitude.toFixed(1)} earthquake! Rent income reduced by ${(rentReduction * 100).toFixed(0)}% for 30 seconds!`;
+    if (demolishCount > 0) {
+      notificationText += ` ${demolishCount} properties demolished!`;
+    }
+    
+    showEventNotification("🌍 Earthquake!", notificationText, "earthquake");
+    
+    // Visual effects
+    screenFlash('#8B4513', 800); // Brown flash
+    screenShake(Math.min(15, magnitude * 2), 600); // Strong shake based on magnitude
+    
+    // Sound effect (reuse crash sound for now)
+    playMarketCrashSound();
+    
+    // Create destruction particles
+    if (particleSystem && demolishCount > 0) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      // Create destruction effect with multiple particle types
+      particleSystem.createMoneyLossParticles(centerX, centerY, demolishCount * 1000); // Money loss particles for destruction
+      particleSystem.createSparkleParticles(centerX, centerY, Math.min(demolishCount * 2, 10)); // Sparkles for destruction effect
+      particleSystem.createUpgradeParticles(centerX, centerY, Math.min(demolishCount, 5)); // Upgrade particles for building destruction
+    }
+    
+    // Invalidate property income cache to ensure earthquake effects are applied
+    propertyIncomeCacheValid = false;
+    
+    // Update displays
+    renderAllProperties();
+    renderRentIncome();
+    updateActiveEventDisplay();
+    
+    // Log the event with demolition details
+    const eventDetails = {
+      magnitude: magnitude,
+      rentReduction: rentReduction,
+      demolishCount: demolishCount,
+      demolishedProperties: demolishedProperties
+    };
+    logEvent(`🌍 Earthquake (${magnitude.toFixed(1)})`, "earthquake", eventDetails);
+  }
+  
+  function demolishProperties(count) {
+    if (count <= 0) return {};
+    
+    // Get all properties with counts > 0
+    const availableProperties = Object.entries(properties).filter(([id, count]) => count > 0);
+    if (availableProperties.length === 0) return {};
+    
+    // Track what was demolished
+    const demolishedProperties = {};
+    
+    let remainingToDemolish = count;
+    
+    // Demolish properties randomly
+    while (remainingToDemolish > 0 && availableProperties.length > 0) {
+      // Pick a random property type
+      const randomIndex = Math.floor(Math.random() * availableProperties.length);
+      const [propertyId, currentCount] = availableProperties[randomIndex];
+      
+      // Demolish 1 property of this type
+      properties[propertyId] = Math.max(0, currentCount - 1);
+      remainingToDemolish--;
+      
+      // Track the demolition
+      if (!demolishedProperties[propertyId]) {
+        demolishedProperties[propertyId] = 0;
+      }
+      demolishedProperties[propertyId]++;
+      
+      // Update the available properties list
+      if (properties[propertyId] === 0) {
+        availableProperties.splice(randomIndex, 1);
+      } else {
+        availableProperties[randomIndex][1] = properties[propertyId];
+      }
+    }
+    
+    // Update displays
+    renderAllProperties();
+    renderRentIncome();
+    
+    return demolishedProperties;
+  }
+  
   function triggerDivorce() {
     // Divorce is an instant event (no duration) but follows the same "one event at a time" rule
     // Set cooldown
@@ -1405,6 +1547,18 @@
       updateActiveEventDisplay();
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
+    
+    if (earthquakeActive && now >= earthquakeEndTime) {
+      earthquakeActive = false;
+      showEventNotification("🌍 Earthquake Ended", "Rent income returned to normal", "earthquake-end");
+      
+      // Invalidate property income cache to ensure earthquake effects are removed
+      propertyIncomeCacheValid = false;
+      
+      renderRentIncome(); // Update rent income display
+      updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
+    }
   }
 
   function checkEvents() {
@@ -1421,7 +1575,7 @@
     }
     
     // Check for new events (only one event can be active at a time)
-    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive;
+    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive || earthquakeActive;
     
     // console.log('🎲 Event Check:', {
     //   anyEventActive,
@@ -1450,14 +1604,22 @@
         { name: 'fastFingers', prob: getEventProbability('fastFingers') },
         { name: 'taxCollection', prob: getEventProbability('taxCollection') },
         { name: 'robbery', prob: getEventProbability('robbery') },
-        { name: 'divorce', prob: getEventProbability('divorce') }
+        { name: 'divorce', prob: getEventProbability('divorce') },
+        { name: 'earthquake', prob: getEventProbability('earthquake') }
       ];
       
       // Filter events that can actually trigger
       eventConfigs.forEach(event => {
-        const canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && 
-                          meetsNetWorthThreshold(event.name) && 
-                          meetsEventRequirements(event.name);
+        let canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && 
+                        meetsNetWorthThreshold(event.name) && 
+                        meetsEventRequirements(event.name);
+        
+        // Special requirement for earthquake: need at least 100 properties
+        if (event.name === 'earthquake') {
+          const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
+          canTrigger = canTrigger && totalProperties >= 100;
+        }
+        
         if (canTrigger) {
           availableEvents.push(event);
         }
@@ -1494,7 +1656,8 @@
           fastFingers: now >= EVENT_CONFIG.eventCooldowns.fastFingers,
           taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection,
           robbery: now >= EVENT_CONFIG.eventCooldowns.robbery,
-          divorce: now >= EVENT_CONFIG.eventCooldowns.divorce
+          divorce: now >= EVENT_CONFIG.eventCooldowns.divorce,
+          earthquake: now >= EVENT_CONFIG.eventCooldowns.earthquake
         },
         netWorthChecks: {
           currentNetWorth: getCurrentNetWorth(),
@@ -1505,7 +1668,8 @@
           fastFingers: meetsNetWorthThreshold('fastFingers'),
           taxCollection: meetsNetWorthThreshold('taxCollection'),
           robbery: meetsNetWorthThreshold('robbery'),
-          divorce: meetsNetWorthThreshold('divorce')
+          divorce: meetsNetWorthThreshold('divorce'),
+          earthquake: meetsNetWorthThreshold('earthquake')
         }
       });
       
@@ -1541,6 +1705,9 @@
               break;
             case 'divorce':
         triggerDivorce();
+              break;
+            case 'earthquake':
+        triggerEarthquake();
               break;
       }
           eventTriggered = true;
@@ -1626,6 +1793,11 @@
       endTime = fastFingersEndTime;
       eventType = 'fast-fingers';
       totalDuration = EVENT_CONFIG.durations.fastFingers;
+    } else if (earthquakeActive && now < earthquakeEndTime) {
+      activeEvent = { name: `Earthquake (${earthquakeMagnitude.toFixed(1)})`, icon: '🌍', type: 'earthquake' };
+      endTime = earthquakeEndTime;
+      eventType = 'earthquake';
+      totalDuration = EVENT_CONFIG.durations.earthquake;
     }
     
     if (activeEvent) {
@@ -2749,7 +2921,7 @@
       { name: "Silver", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 50 },
       { name: "Gold", color: "#ffd700", bgColor: "rgba(255, 215, 0, 0.4)", borderColor: "rgba(255, 215, 0, 0.7)", buildingsRequired: 75 },
       { name: "Diamond", color: "#00bfff", bgColor: "rgba(0, 191, 255, 0.4)", borderColor: "rgba(0, 191, 255, 0.7)", buildingsRequired: 100 },
-      { name: "Platinum", color: "#e5e4e2", bgColor: "rgba(229, 228, 226, 0.4)", borderColor: "rgba(229, 228, 226, 0.6)", buildingsRequired: 125 },
+      { name: "Platinum", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 125 },
       { name: "Emerald", color: "#50c878", bgColor: "rgba(80, 200, 120, 0.4)", borderColor: "rgba(80, 200, 120, 0.6)", buildingsRequired: 150 },
       { name: "Ruby", color: "#e0115f", bgColor: "rgba(224, 17, 95, 0.4)", borderColor: "rgba(224, 17, 95, 0.6)", buildingsRequired: 175 },
       { name: "Sapphire", color: "#0f52ba", bgColor: "rgba(15, 82, 186, 0.4)", borderColor: "rgba(15, 82, 186, 0.6)", buildingsRequired: 200 },
@@ -3023,6 +3195,42 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
       `;
+    } else if (tierNumber === 5) {
+      // Platinum tier - same colors as Silver but with shining animation
+      css = `
+        ${className} {
+          background: linear-gradient(135deg, 
+            ${tierInfo.bgColor} 0%, 
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 25%,
+            ${tierInfo.bgColor.replace('0.4', '0.3')} 50%,
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 75%,
+            ${tierInfo.bgColor} 100%);
+          border: 1px solid ${tierInfo.borderColor};
+          box-shadow: 0 2px 8px ${tierInfo.borderColor.replace('0.6', '0.25')};
+          position: relative;
+          overflow: hidden;
+        }
+        
+        ${className}::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.4) 50%, 
+            transparent 100%);
+          animation: platinumShine 2s ease-in-out infinite;
+          pointer-events: none;
+        }
+        
+        ${className}:hover {
+          border-color: ${tierInfo.borderColor.replace('0.6', '0.8')};
+          box-shadow: 0 4px 12px ${tierInfo.borderColor.replace('0.6', '0.35')};
+        }
+      `;
     } else {
       // Regular tiers - standard styling
       css = `
@@ -3091,6 +3299,11 @@
             0 0 25px rgba(78, 205, 196, 0.6),
             0 0 35px rgba(69, 183, 209, 0.4);
         }
+      }
+      
+      @keyframes platinumShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
       }
     `;
     document.head.appendChild(style);
@@ -3320,8 +3533,8 @@
   }
 
   function getTotalPropertyIncome() {
-    // Use cached value if valid
-    if (propertyIncomeCacheValid) {
+    // Use cached value if valid, but not during earthquakes (to ensure real-time updates)
+    if (propertyIncomeCacheValid && !earthquakeActive) {
       return cachedPropertyIncome;
     }
     
@@ -3330,6 +3543,21 @@
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
       total += getPropertyTotalIncome(propertyId);
     });
+    
+    // Apply earthquake rent reduction if active
+    if (earthquakeActive && earthquakeMagnitude > 0) {
+      let rentReduction = 0;
+      if (earthquakeMagnitude >= 4.0 && earthquakeMagnitude < 5.0) {
+        rentReduction = 0.15; // 15% reduction
+      } else if (earthquakeMagnitude >= 5.0 && earthquakeMagnitude < 6.0) {
+        rentReduction = 0.50; // 50% reduction
+      } else if (earthquakeMagnitude >= 6.0 && earthquakeMagnitude < 7.0) {
+        rentReduction = 0.75; // 75% reduction
+      } else if (earthquakeMagnitude >= 7.0 && earthquakeMagnitude <= 8.0) {
+        rentReduction = 1.00; // 100% reduction
+      }
+      total *= (1 - rentReduction);
+    }
     
     cachedPropertyIncome = total;
     propertyIncomeCacheValid = true;
@@ -3343,6 +3571,16 @@
     const totalRent = getTotalPropertyIncome();
     const formattedRent = formatNumberShort(totalRent);
     totalRentElement.textContent = `€${formattedRent}/sec`;
+    
+    // Apply earthquake styling if active
+    if (earthquakeActive) {
+      totalRentElement.style.color = '#dc2626';
+      totalRentElement.style.fontWeight = 'bold';
+    } else {
+      // Reset to normal styling
+      totalRentElement.style.color = '';
+      totalRentElement.style.fontWeight = '';
+    }
   }
 
   // Net worth calculation functions removed for performance
@@ -3677,11 +3915,14 @@
         flashSaleActive,
         greatDepressionActive,
         fastFingersActive,
+        earthquakeActive,
         marketBoomEndTime,
         marketCrashEndTime,
         flashSaleEndTime,
         greatDepressionEndTime,
         fastFingersEndTime,
+        earthquakeEndTime,
+        earthquakeMagnitude,
         eventCooldown,
         skipNextEventCheck,
         eventConfig: EVENT_CONFIG,
@@ -3782,11 +4023,14 @@
         flashSaleActive = gameState.flashSaleActive || false;
         greatDepressionActive = gameState.greatDepressionActive || false;
         fastFingersActive = gameState.fastFingersActive || false;
+        earthquakeActive = gameState.earthquakeActive || false;
         marketBoomEndTime = gameState.marketBoomEndTime || 0;
         marketCrashEndTime = gameState.marketCrashEndTime || 0;
         flashSaleEndTime = gameState.flashSaleEndTime || 0;
         greatDepressionEndTime = gameState.greatDepressionEndTime || 0;
         fastFingersEndTime = gameState.fastFingersEndTime || 0;
+        earthquakeEndTime = gameState.earthquakeEndTime || 0;
+        earthquakeMagnitude = gameState.earthquakeMagnitude || 0;
         eventCooldown = gameState.eventCooldown || 0;
         skipNextEventCheck = gameState.skipNextEventCheck || false;
         
@@ -3861,11 +4105,14 @@
       flashSaleActive = false;
       greatDepressionActive = false;
       fastFingersActive = false;
+      earthquakeActive = false;
       marketBoomEndTime = 0;
       marketCrashEndTime = 0;
       flashSaleEndTime = 0;
       greatDepressionEndTime = 0;
       fastFingersEndTime = 0;
+      earthquakeEndTime = 0;
+      earthquakeMagnitude = 0;
       eventCooldown = 0;
       skipNextEventCheck = false;
       
@@ -3878,6 +4125,7 @@
       EVENT_CONFIG.eventCooldowns.taxCollection = 0;
       EVENT_CONFIG.eventCooldowns.robbery = 0;
       EVENT_CONFIG.eventCooldowns.divorce = 0;
+      EVENT_CONFIG.eventCooldowns.earthquake = 0;
       
       // Reset properties
       properties = {
@@ -4503,7 +4751,7 @@
   // Score URL handling removed - using direct JSONBin submission now
 
   // Event logging functions
-  function logEvent(eventName, eventType) {
+  function logEvent(eventName, eventType, details = null) {
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-US', { 
       hour12: false, 
@@ -4516,7 +4764,8 @@
     eventLogs.unshift({
       time: timeString,
       name: eventName,
-      type: eventType
+      type: eventType,
+      details: details
     });
     
     // Keep only the last 20 events
@@ -4542,13 +4791,92 @@
       return;
     }
     
-    eventLogsContent.innerHTML = eventLogs.map(event => `
-      <div class="event-log-item ${event.type}">
+    eventLogsContent.innerHTML = eventLogs.map((event, index) => `
+      <div class="event-log-item ${event.type}" ${event.type === 'earthquake' && event.details ? `onclick="showEarthquakeDetails(${index})" style="cursor: pointer;"` : ''}>
         <span class="event-time">${event.time}</span>
         <span class="event-name">${event.name}</span>
+        ${event.type === 'earthquake' && event.details ? '<span class="event-details-hint">Click for details</span>' : ''}
       </div>
     `).join('');
   }
+
+  // Make showEarthquakeDetails globally accessible
+  window.showEarthquakeDetails = function(eventIndex) {
+    const event = eventLogs[eventIndex];
+    if (!event || !event.details) return;
+    
+    const details = event.details;
+    
+    // Create modal HTML
+    const modalHTML = `
+      <div class="modal-overlay" id="earthquakeDetailsModal">
+        <div class="modal-content earthquake-details-modal">
+          <div class="modal-header">
+            <h3>🌍 Earthquake Details</h3>
+            <button class="modal-close-btn" onclick="closeEarthquakeDetails()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="earthquake-info">
+              <div class="info-row">
+                <span class="info-label">Magnitude:</span>
+                <span class="info-value magnitude-${details.magnitude >= 7 ? 'high' : details.magnitude >= 6 ? 'medium' : 'low'}">${details.magnitude.toFixed(1)}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Rent Reduction:</span>
+                <span class="info-value rent-reduction">${(details.rentReduction * 100).toFixed(0)}%</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">30 seconds</span>
+              </div>
+            </div>
+            
+            ${details.demolishCount > 0 ? `
+              <div class="demolition-section">
+                <h4>Properties Demolished (${details.demolishCount} total)</h4>
+                <div class="demolition-list">
+                  ${Object.entries(details.demolishedProperties)
+                    .map(([propertyId, count]) => {
+                      const propertyName = PROPERTY_CONFIG[propertyId]?.name || propertyId;
+                      return `
+                        <div class="demolition-item">
+                          <span class="demolition-count">${count}</span>
+                          <span class="demolition-name">${propertyName}${count > 1 ? 's' : ''}</span>
+                        </div>
+                      `;
+                    })
+                    .join('')}
+                </div>
+              </div>
+            ` : `
+              <div class="no-demolition">
+                <p>No properties were demolished.</p>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add click outside to close
+    const modal = document.getElementById('earthquakeDetailsModal');
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeEarthquakeDetails();
+      }
+    });
+  };
+
+  // Make closeEarthquakeDetails globally accessible
+  window.closeEarthquakeDetails = function() {
+    const modal = document.getElementById('earthquakeDetailsModal');
+    if (modal) {
+      modal.remove();
+    }
+  };
 
   if (depositAllBtn) {
     depositAllBtn.addEventListener("click", depositAll);
@@ -6765,6 +7093,22 @@ window.addEventListener('beforeunload', () => {
     
     // Update rent per second (using compact format)
     rentPerSecond.textContent = `€${formattedRent}/s`;
+    
+    // Apply earthquake styling if active
+    if (earthquakeActive) {
+      rentContainer.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%)';
+      rentContainer.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      rentContainer.style.color = '#dc2626';
+      rentPerSecond.style.color = '#dc2626';
+      rentRate.style.color = '#dc2626';
+    } else {
+      // Reset to normal styling
+      rentContainer.style.background = '';
+      rentContainer.style.borderColor = '';
+      rentContainer.style.color = '';
+      rentPerSecond.style.color = '';
+      rentRate.style.color = '';
+    }
   }
 
   // Initialize interest per second display and set up periodic updates
