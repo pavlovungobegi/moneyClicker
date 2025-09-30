@@ -4778,6 +4778,64 @@
     });
     return multiplier;
   }
+
+  // Function to get icon class based on upgrade type
+  function getUpgradeIconClass(type) {
+    const iconMap = {
+      'click': 'fas fa-money-bill-wave upgrade-icon click-icon',
+      'interest': 'fas fa-percentage upgrade-icon interest-icon',
+      'dividend': 'fas fa-coins upgrade-icon dividend-icon',
+      'dividend_speed': 'fas fa-coins upgrade-icon dividend-icon',
+      'dividend_rate': 'fas fa-coins upgrade-icon dividend-icon',
+      'unlock': 'fas fa-unlock upgrade-icon unlock-icon',
+      'prestige': 'fas fa-redo upgrade-icon prestige-icon',
+      'special': 'fas fa-bolt upgrade-icon special-icon',
+      'building_discount': 'fas fa-building upgrade-icon building-icon',
+      'rent_boost': 'fas fa-building upgrade-icon building-icon',
+      'property_discount': 'fas fa-building upgrade-icon building-icon'
+    };
+    return iconMap[type] || 'fas fa-star upgrade-icon';
+  }
+
+  // Function to generate upgrade HTML from configuration
+  function generateUpgradeHTML(upgradeId, config) {
+    const iconClass = getUpgradeIconClass(config.type);
+    const buttonText = config.type === 'prestige' ? 'Reset' : 'Buy';
+    
+    return `
+      <div class="upgrade" data-upgrade-id="${upgradeId}">
+        <div class="upgrade-info">
+          <div class="upgrade-name"><i class="${iconClass}"></i>${config.name}</div>
+          <div class="upgrade-price" id="${upgradeId}Price"></div>
+          <div class="upgrade-desc">${config.effect}</div>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="${upgradeId}Progress"></div>
+            </div>
+            <div class="progress-text" id="${upgradeId}ProgressText">0%</div>
+          </div>
+        </div>
+        <div class="upgrade-actions">
+          <button id="buy${upgradeId.charAt(0).toUpperCase() + upgradeId.slice(1)}Btn" class="buyBtn">${buttonText}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Function to generate all upgrade HTML and insert into DOM
+  function generateAllUpgradeHTML() {
+    const upgradesContainer = document.querySelector('#upgradesSection .scrollable-content');
+    if (!upgradesContainer) return;
+
+    // Clear existing upgrades
+    upgradesContainer.innerHTML = '';
+
+    // Generate HTML for each upgrade in the config
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      const upgradeHTML = generateUpgradeHTML(upgradeId, config);
+      upgradesContainer.insertAdjacentHTML('beforeend', upgradeHTML);
+    });
+  }
   
   const owned = Object.fromEntries(
     Object.keys(UPGRADE_CONFIG).map(id => [id, false])
@@ -5471,6 +5529,9 @@
   
   // Invalidate property income cache to ensure fresh calculation
   propertyIncomeCacheValid = false;
+
+  // Generate upgrade HTML from configuration
+  generateAllUpgradeHTML();
 
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
