@@ -2495,19 +2495,8 @@
     const config = PROPERTY_CONFIG[propertyId];
     const ownedCount = properties[propertyId];
     
-    // Calculate tier based on total owned buildings (every 25 buildings)
-    let tier;
-    if (ownedCount >= 100) {
-      tier = 4; // Diamond (100+) - 16x multiplier
-    } else if (ownedCount >= 75) {
-      tier = 3; // Golden (75-99) - 8x multiplier
-    } else if (ownedCount >= 50) {
-      tier = 2; // Silver (50-74) - 4x multiplier
-    } else if (ownedCount >= 25) {
-      tier = 1; // Bronze (25-49) - 2x multiplier
-    } else {
-      tier = 0; // Default (0-24) - 1x multiplier
-    }
+    // Calculate tier using procedural system
+    const tier = calculateTier(ownedCount);
     
     const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
     
@@ -2688,19 +2677,8 @@
     // Update individual income per unit (with tier system and upgrades)
     const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
     if (individualIncomeEl) {
-              // Calculate tier based on total owned buildings (every 25 buildings)
-              let tier;
-              if (ownedCount >= 100) {
-                tier = 4; // Diamond (100+) - 16x multiplier
-              } else if (ownedCount >= 75) {
-                tier = 3; // Golden (75-99) - 8x multiplier
-              } else if (ownedCount >= 50) {
-                tier = 2; // Silver (50-74) - 4x multiplier
-              } else if (ownedCount >= 25) {
-                tier = 1; // Bronze (25-49) - 2x multiplier
-              } else {
-                tier = 0; // Default (0-24) - 1x multiplier
-              }
+              // Calculate tier using procedural system
+              const tier = calculateTier(ownedCount);
       
       const tierMultiplier = Math.pow(2, tier);
       
@@ -2754,56 +2732,385 @@
     }
   }
 
+  // Centralized tier configuration system
+  const TIER_CONFIG = {
+    // Default tier (0 buildings)
+    default: {
+      name: "Default",
+      color: "#6b7280",
+      bgColor: "rgba(107, 114, 128, 0.1)",
+      borderColor: "rgba(107, 114, 128, 0.3)",
+      buildingsRequired: 0
+    },
+    
+    // All tiers in standard progression (every 25 buildings)
+    standardTiers: [
+      { name: "Bronze", color: "#cd7f32", bgColor: "rgba(205, 127, 50, 0.4)", borderColor: "rgba(205, 127, 50, 0.6)", buildingsRequired: 25 },
+      { name: "Silver", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 50 },
+      { name: "Gold", color: "#ffd700", bgColor: "rgba(255, 215, 0, 0.4)", borderColor: "rgba(255, 215, 0, 0.7)", buildingsRequired: 75 },
+      { name: "Diamond", color: "#00bfff", bgColor: "rgba(0, 191, 255, 0.4)", borderColor: "rgba(0, 191, 255, 0.7)", buildingsRequired: 100 },
+      { name: "Platinum", color: "#e5e4e2", bgColor: "rgba(229, 228, 226, 0.4)", borderColor: "rgba(229, 228, 226, 0.6)", buildingsRequired: 125 },
+      { name: "Emerald", color: "#50c878", bgColor: "rgba(80, 200, 120, 0.4)", borderColor: "rgba(80, 200, 120, 0.6)", buildingsRequired: 150 },
+      { name: "Ruby", color: "#e0115f", bgColor: "rgba(224, 17, 95, 0.4)", borderColor: "rgba(224, 17, 95, 0.6)", buildingsRequired: 175 },
+      { name: "Sapphire", color: "#0f52ba", bgColor: "rgba(15, 82, 186, 0.4)", borderColor: "rgba(15, 82, 186, 0.6)", buildingsRequired: 200 },
+      { name: "Mythic", color: "#8b5cf6", bgColor: "rgba(139, 92, 246, 0.4)", borderColor: "rgba(139, 92, 246, 0.6)", buildingsRequired: 225 },
+      { name: "Legendary", color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.4)", borderColor: "rgba(245, 158, 11, 0.6)", buildingsRequired: 250 },
+      { name: "Transcendent", color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)", buildingsRequired: 275 },
+      { name: "Divine", color: "#ff6b6b", bgColor: "rgba(255, 107, 107, 0.4)", borderColor: "rgba(255, 255, 255, 0.8)", buildingsRequired: 300 }
+    ],
+    
+    // Configuration
+    buildingsPerTier: 25
+  };
+
+  // Get tier information based on building count (not tier number)
+  function getTierInfoByBuildings(buildingCount) {
+    if (buildingCount === 0) {
+      return TIER_CONFIG.default;
+    }
+    
+    // Check all tiers (now all in standardTiers array)
+    for (let i = TIER_CONFIG.standardTiers.length - 1; i >= 0; i--) {
+      const tier = TIER_CONFIG.standardTiers[i];
+      if (buildingCount >= tier.buildingsRequired) {
+        return {
+          name: tier.name,
+          color: tier.color,
+          bgColor: tier.bgColor,
+          borderColor: tier.borderColor,
+          buildingsRequired: tier.buildingsRequired
+        };
+      }
+    }
+    
+    // Default tier for 0 buildings
+    return TIER_CONFIG.default;
+  }
+
+  // Get tier information for a given tier number (for backward compatibility)
+  function getTierInfo(tierNumber) {
+    if (tierNumber === 0) {
+      return TIER_CONFIG.default;
+    }
+    
+    // Calculate buildings required for this tier
+    const buildingsRequired = tierNumber * TIER_CONFIG.buildingsPerTier;
+    
+    // Use the building-based function
+    return getTierInfoByBuildings(buildingsRequired);
+  }
+
+  // Calculate tier number from owned count
+  function calculateTier(ownedCount) {
+    // Get the tier info based on building count
+    const tierInfo = getTierInfoByBuildings(ownedCount);
+    
+    // Find the tier number that corresponds to this tier info
+    if (tierInfo === TIER_CONFIG.default) {
+      return 0;
+    }
+    
+    // Check all tiers (now all in standardTiers array)
+    for (let i = 0; i < TIER_CONFIG.standardTiers.length; i++) {
+      if (TIER_CONFIG.standardTiers[i].buildingsRequired === tierInfo.buildingsRequired) {
+        return i + 1; // tier 1 = index 0, tier 2 = index 1, etc.
+      }
+    }
+    
+    return 0; // Default fallback
+  }
+
+  // Get tier information by building count (useful for future modifications)
+  // This function is now the main implementation above, this is just an alias
+  // function getTierInfoByBuildings(buildingCount) {
+  //   return getTierInfoByBuildings(buildingCount); // This would cause infinite recursion
+  // }
+
+  // Get all tier configurations (useful for debugging or future features)
+  function getAllTierConfigs() {
+    return {
+      default: TIER_CONFIG.default,
+      standardTiers: TIER_CONFIG.standardTiers,
+      config: {
+        buildingsPerTier: TIER_CONFIG.buildingsPerTier
+      }
+    };
+  }
+
   // Apply tier-based styling to property rows
   function applyTierStyling(propertyId, ownedCount, showNotifications = true) {
     const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
     if (!propertyRow) return;
     
+    // Get current tier info based on building count
+    const currentTierInfo = getTierInfoByBuildings(ownedCount);
+    const currentTierNumber = calculateTier(ownedCount);
+    
     // Get previous tier to detect tier changes
     const previousTier = getTierFromClass(propertyRow);
     
-    // Calculate new tier (every 25 buildings: Bronze, Silver, Gold, Diamond)
-    let newTier;
-    if (ownedCount >= 100) {
-      newTier = 4; // Diamond (100+)
-    } else if (ownedCount >= 75) {
-      newTier = 3; // Golden (75-99)
-    } else if (ownedCount >= 50) {
-      newTier = 2; // Silver (50-74)
-    } else if (ownedCount >= 25) {
-      newTier = 1; // Bronze (25-49)
-    } else {
-      newTier = 0; // Default (0-24)
-    }
+    // Remove all existing tier classes
+    const existingClasses = Array.from(propertyRow.classList).filter(cls => cls.startsWith('tier-'));
+    existingClasses.forEach(cls => propertyRow.classList.remove(cls));
     
-    // Remove existing tier classes
-    propertyRow.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3', 'tier-4');
+    // Add new tier class
+    propertyRow.classList.add(`tier-${currentTierNumber}`);
     
-    if (ownedCount >= 100) {
-      propertyRow.classList.add('tier-4'); // Diamond (100+)
-    } else if (ownedCount >= 75) {
-      propertyRow.classList.add('tier-3'); // Golden (75-99)
-    } else if (ownedCount >= 50) {
-      propertyRow.classList.add('tier-2'); // Silver (50-74)
-    } else if (ownedCount >= 25) {
-      propertyRow.classList.add('tier-1'); // Bronze (25-49)
-    } else {
-      propertyRow.classList.add('tier-0'); // Default (0-24)
-    }
+    // Generate CSS for this tier if it doesn't exist
+    generateTierCSS(currentTierNumber);
     
-    // Check if tier increased and celebrate! (only for tiers 1, 2, 3, 4)
-    if (showNotifications && newTier > previousTier && newTier <= 4) {
-      celebrateTierUpgrade(propertyId, newTier, propertyRow);
+    // Check if we reached a new tier (regardless of exact building count)
+    if (showNotifications && currentTierNumber > previousTier && currentTierNumber > 0) {
+      // Celebrate whenever we reach a new tier number
+      celebrateTierUpgrade(propertyId, currentTierNumber, propertyRow);
     }
   }
   
   // Helper function to get tier from CSS class
   function getTierFromClass(propertyRow) {
-    if (propertyRow.classList.contains('tier-4')) return 4;
-    if (propertyRow.classList.contains('tier-3')) return 3;
-    if (propertyRow.classList.contains('tier-2')) return 2;
-    if (propertyRow.classList.contains('tier-1')) return 1;
-    return 0;
+    const tierClasses = Array.from(propertyRow.classList).filter(cls => cls.startsWith('tier-'));
+    if (tierClasses.length === 0) return 0;
+    
+    const tierNumber = parseInt(tierClasses[0].replace('tier-', ''));
+    return isNaN(tierNumber) ? 0 : tierNumber;
+  }
+
+  // Generate CSS for a specific tier dynamically
+  function generateTierCSS(tierNumber) {
+    const tierInfo = getTierInfo(tierNumber);
+    const className = `.property-row.tier-${tierNumber}`;
+    
+    // Check if CSS already exists
+    if (document.querySelector(`style[data-tier="${tierNumber}"]`)) {
+      return;
+    }
+    
+    // Create style element
+    const style = document.createElement('style');
+    style.setAttribute('data-tier', tierNumber);
+    
+    // Generate CSS based on tier type
+    let css = '';
+    
+    if (tierNumber === 0) {
+      // Default tier - no special styling
+      css = `${className} { /* Default tier - no special styling */ }`;
+    } else if (tierNumber === 12) {
+      // Divine tier - special shifting colors and flaming animation with improved background readability
+      css = `
+        ${className} {
+          background: linear-gradient(45deg, 
+            rgba(255, 107, 107, 0.2) 0%, 
+            rgba(78, 205, 196, 0.2) 25%, 
+            rgba(69, 183, 209, 0.2) 50%, 
+            rgba(150, 206, 180, 0.2) 75%, 
+            rgba(254, 202, 87, 0.2) 100%);
+          background-size: 400% 400%;
+          animation: divineShift 3s ease-in-out infinite;
+          border: 2px solid rgba(255, 255, 255, 0.7);
+          box-shadow: 
+            0 0 15px rgba(255, 255, 255, 0.5),
+            0 0 25px rgba(255, 107, 107, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        ${className}::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(45deg, 
+            rgba(255, 107, 107, 0.4), 
+            rgba(78, 205, 196, 0.4), 
+            rgba(69, 183, 209, 0.4), 
+            rgba(150, 206, 180, 0.4), 
+            rgba(254, 202, 87, 0.4), 
+            rgba(255, 107, 107, 0.4));
+          background-size: 400% 400%;
+          animation: divineShift 3s ease-in-out infinite;
+          z-index: -1;
+          border-radius: 8px;
+        }
+        
+        ${className}::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: 
+            radial-gradient(circle at 20% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+          animation: divineGlow 2s ease-in-out infinite alternate;
+          pointer-events: none;
+          border-radius: 6px;
+        }
+        
+        ${className}:hover {
+          animation-duration: 1.5s;
+          box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.7),
+            0 0 35px rgba(255, 107, 107, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Flaming animation for Divine tier - keep original text styling */
+        ${className} .property-name,
+        ${className} .property-count,
+        ${className} .property-income {
+          animation: divineFlicker 0.1s ease-in-out infinite alternate;
+        }
+      `;
+    } else if (tierNumber >= (TIER_CONFIG.eliteTierStart / TIER_CONFIG.buildingsPerTier)) {
+      // Elite tiers - enhanced effects
+      css = `
+        ${className} {
+          background: linear-gradient(135deg, 
+            ${tierInfo.bgColor} 0%, 
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 25%,
+            ${tierInfo.bgColor.replace('0.4', '0.3')} 50%,
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 75%,
+            ${tierInfo.bgColor} 100%);
+          border: 1px solid ${tierInfo.borderColor};
+          box-shadow: 
+            0 2px 8px ${tierInfo.borderColor.replace('0.6', '0.3')},
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+          position: relative;
+        }
+        
+        ${className}::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.6), 
+            rgba(255, 255, 255, 0.8),
+            rgba(255, 255, 255, 0.6),
+            transparent);
+          animation: specialShine 2s infinite;
+          pointer-events: none;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        
+        ${className}::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at 30% 20%, ${tierInfo.borderColor.replace('0.6', '0.2')} 0%, transparent 50%),
+                      radial-gradient(circle at 70% 80%, ${tierInfo.borderColor.replace('0.6', '0.15')} 0%, transparent 50%);
+          pointer-events: none;
+          border-radius: 6px;
+        }
+        
+        ${className}:hover {
+          border-color: ${tierInfo.borderColor.replace('0.6', '0.9')};
+          box-shadow: 
+            0 4px 12px ${tierInfo.borderColor.replace('0.6', '0.4')},
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `;
+    } else {
+      // Regular tiers - standard styling
+      css = `
+        ${className} {
+          background: linear-gradient(135deg, 
+            ${tierInfo.bgColor} 0%, 
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 25%,
+            ${tierInfo.bgColor.replace('0.4', '0.3')} 50%,
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 75%,
+            ${tierInfo.bgColor} 100%);
+          border: 1px solid ${tierInfo.borderColor};
+          box-shadow: 0 2px 8px ${tierInfo.borderColor.replace('0.6', '0.25')};
+        }
+        
+        ${className}:hover {
+          border-color: ${tierInfo.borderColor.replace('0.6', '0.8')};
+          box-shadow: 0 4px 12px ${tierInfo.borderColor.replace('0.6', '0.35')};
+        }
+      `;
+    }
+    
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  // Add special shine animation for high tiers
+  function addSpecialShineAnimation() {
+    if (document.querySelector('style[data-animation="specialShine"]')) return;
+    
+    const style = document.createElement('style');
+    style.setAttribute('data-animation', 'specialShine');
+    style.textContent = `
+      @keyframes specialShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+      
+      @keyframes divineShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      @keyframes divineGlow {
+        0% { 
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        100% { 
+          opacity: 1;
+          transform: scale(1.05);
+        }
+      }
+      
+      @keyframes divineFlicker {
+        0% { 
+          text-shadow: 
+            0 0 5px rgba(255, 255, 255, 0.8),
+            0 0 10px rgba(255, 107, 107, 0.6),
+            0 0 15px rgba(78, 205, 196, 0.4);
+        }
+        100% { 
+          text-shadow: 
+            0 0 8px rgba(255, 255, 255, 1),
+            0 0 15px rgba(255, 107, 107, 0.8),
+            0 0 25px rgba(78, 205, 196, 0.6),
+            0 0 35px rgba(69, 183, 209, 0.4);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Helper function to adjust color brightness
+  function adjustColorBrightness(color, factor) {
+    // Convert hex to RGB
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Adjust brightness
+    const newR = Math.min(255, Math.max(0, Math.round(r * factor)));
+    const newG = Math.min(255, Math.max(0, Math.round(g * factor)));
+    const newB = Math.min(255, Math.max(0, Math.round(b * factor)));
+    
+    // Convert back to hex
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
   }
   
   // Update tier progress line under property card
@@ -2811,40 +3118,14 @@
     const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
     if (!propertyRow) return;
     
-    // Calculate current tier and progress to next tier
-    let currentTier, nextTierThreshold, progress, lineColor;
+    // Calculate current tier and progress to next tier using procedural system
+    const currentTier = calculateTier(ownedCount);
+    const nextTierThreshold = (currentTier + 1) * TIER_CONFIG.buildingsPerTier;
+    const progress = (ownedCount % TIER_CONFIG.buildingsPerTier) / TIER_CONFIG.buildingsPerTier;
     
-    if (ownedCount >= 100) {
-      // Diamond tier (max tier) - hide progress line
-      currentTier = 4;
-      nextTierThreshold = 100;
-      progress = 0;
-      lineColor = '#00bfff'; // Diamond blue
-    } else if (ownedCount >= 75) {
-      // Gold tier - progress to Diamond (100)
-      currentTier = 3;
-      nextTierThreshold = 100;
-      progress = (ownedCount - 75) / 25; // 0-1 progress from 75 to 100
-      lineColor = '#ffd700'; // Gold
-    } else if (ownedCount >= 50) {
-      // Silver tier - progress to Gold (75)
-      currentTier = 2;
-      nextTierThreshold = 75;
-      progress = (ownedCount - 50) / 25; // 0-1 progress from 50 to 75
-      lineColor = '#c0c0c0'; // Silver
-    } else if (ownedCount >= 25) {
-      // Bronze tier - progress to Silver (50)
-      currentTier = 1;
-      nextTierThreshold = 50;
-      progress = (ownedCount - 25) / 25; // 0-1 progress from 25 to 50
-      lineColor = '#cd7f32'; // Bronze
-    } else {
-      // Default tier - progress to Bronze (25)
-      currentTier = 0;
-      nextTierThreshold = 25;
-      progress = ownedCount / 25; // 0-1 progress from 0 to 25
-      lineColor = '#6b7280'; // Gray
-    }
+    // Get tier info for color
+    const tierInfo = getTierInfo(currentTier);
+    const lineColor = tierInfo.color;
     
     // Create or update the progress line
     let progressLine = propertyRow.querySelector('.tier-progress-line');
@@ -2854,22 +3135,18 @@
       propertyRow.appendChild(progressLine);
     }
     
-    // Hide progress line if at max tier (Diamond tier)
-    if (currentTier >= 4) {
-      progressLine.style.display = 'none';
+    // Always show progress line (no max tier limit)
+    progressLine.style.display = 'block';
+    
+    // Update progress line styling
+    progressLine.style.width = `${progress * 100}%`;
+    progressLine.style.backgroundColor = lineColor;
+    
+    // Add glow effect for higher tiers
+    if (currentTier >= 3) {
+      progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
     } else {
-      progressLine.style.display = 'block';
-      
-      // Update progress line styling
-      progressLine.style.width = `${progress * 100}%`;
-      progressLine.style.backgroundColor = lineColor;
-      
-      // Add glow effect for higher tiers
-      if (currentTier >= 3) {
-        progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
-      } else {
-        progressLine.style.boxShadow = 'none';
-      }
+      progressLine.style.boxShadow = 'none';
     }
   }
   
@@ -2892,25 +3169,16 @@
     
     // Create celebration particles based on tier
     let particleCount = 20 + (newTier * 10); // More particles for higher tiers
-    let colors = [];
+    const tierInfo = getTierInfo(newTier);
     
-    switch(newTier) {
-      case 1: // Bronze tier
-        colors = ['#cd7f32', '#b87333', '#a0522d', '#8b4513'];
-        break;
-      case 2: // Silver tier
-        colors = ['#c0c0c0', '#a9a9a9', '#808080', '#696969'];
-        break;
-      case 3: // Gold tier
-        colors = ['#ffd700', '#ffdf00', '#daa520', '#b8860b'];
-        break;
-      case 4: // Diamond tier
-        colors = ['#00bfff', '#1e90ff', '#4169e1', '#0000ff'];
-        break;
-      default: // Higher tiers
-        colors = ['#8b5cf6', '#7c3aed', '#6d28d9'];
-        break;
-    }
+    // Generate color variations based on tier color
+    const baseColor = tierInfo.color;
+    const colors = [
+      baseColor,
+      adjustColorBrightness(baseColor, 0.8),
+      adjustColorBrightness(baseColor, 1.2),
+      adjustColorBrightness(baseColor, 0.6)
+    ];
     
     // Create tier-specific particles
     for (let i = 0; i < particleCount; i++) {
@@ -2994,14 +3262,26 @@
     const notification = document.createElement('div');
     const tierClass = getTierClass(tier);
     const propertyIcon = PROPERTY_CONFIG[propertyId].icon;
+    const tierInfo = getTierInfo(tier);
     
     notification.className = `market-event-notification tier-upgrade ${tierClass}`;
+    
+    // Apply dynamic tier colors
+    const tierColor = tierInfo.color;
+    const bgColor = tierInfo.bgColor.replace('0.4', '0.85');
+    const borderColor = tierInfo.borderColor.replace('0.6', '0.3').replace('0.7', '0.3').replace('0.8', '0.3');
+    
+    notification.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${bgColor.replace('0.85', '0.75')} 100%)`;
+    notification.style.borderColor = borderColor;
+    notification.style.boxShadow = `0 8px 32px ${tierColor}40`;
+    
+    const multiplier = getMultiplierText(tier);
     notification.innerHTML = `
       <div class="event-title">
         <i class="${propertyIcon}"></i>
         ${propertyName} reached ${getTierText(tier)} tier!
       </div>
-      <div class="event-message">Rent is doubled!</div>
+      <div class="event-message">Rent income increased to ${multiplier}!</div>
     `;
     
     document.body.appendChild(notification);
@@ -3017,33 +3297,18 @@
   }
   
   function getTierText(tier) {
-    switch(tier) {
-      case 1: return 'bronze';
-      case 2: return 'silver';
-      case 3: return 'gold';
-      case 4: return 'diamond';
-      default: return 'diamond';
-    }
+    const tierInfo = getTierInfo(tier);
+    return tierInfo.name.toLowerCase();
   }
   
   function getMultiplierText(tier) {
-    switch(tier) {
-      case 1: return '2x';
-      case 2: return '2x';
-      case 3: return '2x';
-      case 4: return '2x';
-      default: return '2x';
-    }
+    const multiplier = Math.pow(2, tier);
+    return `${multiplier}x`;
   }
   
   function getTierClass(tier) {
-    switch(tier) {
-      case 1: return 'tier-bronze';
-      case 2: return 'tier-silver';
-      case 3: return 'tier-gold';
-      case 4: return 'tier-diamond';
-      default: return 'tier-diamond';
-    }
+    const tierInfo = getTierInfo(tier);
+    return `tier-${tierInfo.name.toLowerCase().replace(/\s+/g, '-')}`;
   }
 
   function renderAllProperties() {
@@ -4389,7 +4654,7 @@
   };
 
   // Money cap system
-  const MAX_TOTAL_MONEY = 1000000000000000; // 100 trillion euros
+  const MAX_TOTAL_MONEY = 10000000000000000000; // 100 trillion euros
 
   function getTotalMoney() {
     return currentAccountBalance + investmentAccountBalance;
@@ -4779,7 +5044,8 @@
     u42: { cost: 30000000, name: "Click Frenzy", effect: "Adds +15k euros per click", type: "click", effects: { click_income: 15000 } },
     u43: { cost: 250000000, name: "Just Clicking", effect: "Adds +150k euros per click", type: "click", effects: { click_income: 150000 } },
     u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } },
-    u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } }
+    u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } },
+    u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } }
   };
 
   // Generate upgrade costs and owned objects from config
@@ -5495,10 +5761,10 @@
     if (!investSection) return;
     investSection.classList.toggle('hidden', !owned.u11);
     
-    // Show/hide the entire earnings metrics container when investment is unlocked
+    // Always show the earnings metrics container, but hide individual elements based on unlock status
     const earningsMetricsContainer = document.querySelector('.earnings-metrics-container');
     if (earningsMetricsContainer) {
-      earningsMetricsContainer.classList.toggle('hidden', !owned.u11);
+      earningsMetricsContainer.classList.remove('hidden'); // Always show the container
     }
     
     // Show/hide the entire investment account section in the header when investment is unlocked
@@ -5674,6 +5940,9 @@
   function initializeGame() {
   // Cache DOM elements for performance optimization
   cacheDOMElements();
+  
+  // Initialize procedural tier system
+  addSpecialShineAnimation();
   
   // Invalidate property income cache to ensure fresh calculation
   propertyIncomeCacheValid = false;
@@ -6483,11 +6752,8 @@ window.addEventListener('beforeunload', () => {
     
     if (!rentContainer || !rentRate || !rentPerSecond) return;
     
-    // Check if player has any properties
-    const hasProperties = Object.values(properties).some(count => count > 0);
-    rentContainer.classList.toggle('hidden', !hasProperties);
-    
-    if (!hasProperties) return;
+    // Always show the rent container (no longer hidden when no properties)
+    rentContainer.classList.remove('hidden');
     
     // Calculate total rent income
     const totalRentIncome = getTotalPropertyIncome();
