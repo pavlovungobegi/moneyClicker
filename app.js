@@ -38,17 +38,30 @@
       this.particles = [];
       this.particlePool = [];
       this.animationId = null;
-      
+
       this.resizeCanvas();
       window.addEventListener('resize', () => this.resizeCanvas());
-      this.startAnimation();
     }
-    
+
     resizeCanvas() {
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
     }
-    
+
+    hasParticles() {
+      return this.particles.length > 0;
+    }
+
+    clearCanvas() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    ensureAnimationRunning() {
+      if (!document.hidden && this.hasParticles()) {
+        this.startAnimation();
+      }
+    }
+
     createParticle(type, x, y, options = {}) {
       // Limit total particles to prevent memory bloat
       if (this.particles.length > 200) {
@@ -74,11 +87,12 @@
       particle.gravity = 0.1;
       particle.bounce = 0.6;
       particle.color = '#FFD700';
-      
+
       // Override with options
       Object.assign(particle, options);
-      
+
       this.particles.push(particle);
+      this.ensureAnimationRunning();
     }
     
     createCoinParticles(x, y, count = 1) {
@@ -488,21 +502,43 @@
     }
     
     animate() {
+      // The scheduled frame is running, clear the stored id so new frames can be requested
+      this.animationId = null;
+
+      if (document.hidden) {
+        return;
+      }
+
       this.updateParticles();
+
+      if (!this.hasParticles()) {
+        this.clearCanvas();
+        return;
+      }
+
       this.drawParticles();
+      this.startAnimation();
+    }
+
+    startAnimation() {
+      if (this.animationId || document.hidden || !this.hasParticles()) {
+        return;
+      }
+
       this.animationId = requestAnimationFrame(() => this.animate());
     }
-    
-    startAnimation() {
-      if (!this.animationId) {
-        this.animate();
-      }
-    }
-    
-    stopAnimation() {
+
+    stopAnimation({ clearCanvas = false } = {}) {
       if (this.animationId) {
         cancelAnimationFrame(this.animationId);
         this.animationId = null;
+      }
+
+      if (clearCanvas) {
+        this.clearCanvas();
+        while (this.particles.length > 0) {
+          this.particlePool.push(this.particles.pop());
+        }
       }
     }
   }
@@ -516,7 +552,6 @@
       this.animations = new Map();
       this.animationId = null;
       this.lastValues = new Map(); // Track last animated values
-      this.startAnimation();
     }
     
     animateValue(element, startValue, endValue, duration = 1000, formatter = null, minChange = 0.01) {
@@ -567,9 +602,11 @@
         duration,
         formatter: formatter || this.defaultFormatter
       });
-      
+
       // Update last animated value
       this.lastValues.set(key, endValue);
+
+      this.startAnimation();
     }
     
     defaultFormatter(value) {
@@ -608,11 +645,13 @@
         duration,
         formatter: formatter || this.defaultFormatter
       });
-      
+
       // Update last animated value
       this.lastValues.set(key, endValue);
+
+      this.startAnimation();
     }
-    
+
     updateAnimations() {
       const now = Date.now();
       
@@ -641,23 +680,39 @@
     easeOutCubic(t) {
       return 1 - Math.pow(1 - t, 3);
     }
-    
+
     animate() {
+      // Clear the stored frame id now that this callback is running
+      this.animationId = null;
+
+      if (document.hidden) {
+        return;
+      }
+
       this.updateAnimations();
-      this.animationId = requestAnimationFrame(() => this.animate());
-    }
-    
-    startAnimation() {
-      if (!this.animationId) {
-        this.animate();
+
+      if (this.animations.size > 0) {
+        this.startAnimation();
       }
     }
-    
+
+    startAnimation() {
+      if (this.animationId || document.hidden || this.animations.size === 0) {
+        return;
+      }
+
+      this.animationId = requestAnimationFrame(() => this.animate());
+    }
+
     stopAnimation() {
       if (this.animationId) {
         cancelAnimationFrame(this.animationId);
         this.animationId = null;
       }
+    }
+
+    hasActiveAnimations() {
+      return this.animations.size > 0;
     }
   }
   
@@ -7020,10 +7075,29 @@ window.addEventListener('beforeunload', () => {
   
   // Initialize particle system
   particleSystem = new ParticleSystem();
-  
+
   // Initialize number animator
   numberAnimator = new NumberAnimator();
-  
+
+  // Pause expensive animations when the tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (particleSystem) {
+        particleSystem.stopAnimation({ clearCanvas: true });
+      }
+      if (numberAnimator) {
+        numberAnimator.stopAnimation();
+      }
+    } else {
+      if (particleSystem && particleSystem.hasParticles()) {
+        particleSystem.startAnimation();
+      }
+      if (numberAnimator && numberAnimator.hasActiveAnimations()) {
+        numberAnimator.startAnimation();
+      }
+    }
+  });
+
   // Initialize upgrade visibility state (will be called after DOM is ready)
   function initUpgradeVisibility() {
     const upgradesSection = document.getElementById('upgradesSection');
