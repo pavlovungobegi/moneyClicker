@@ -907,10 +907,10 @@
         extreme: 0.045   // 2% chance (extreme)
       },
       earthquake: {
-        easy: 0.01,     // 1% chance (same for all difficulties)
-        normal: 0.01,   // 1% chance
+        easy: 0.005,     // 1% chance (same for all difficulties)
+        normal: 0.005,   // 1% chance
         hard: 0.01,     // 1% chance
-        extreme: 0.01   // 1% chance
+        extreme: 0.015   // 1% chance
       }
     },
     
