@@ -983,6 +983,18 @@
       taxCollection: 250000,     // No threshold
       robbery: 150000,           // No threshold
       divorce: 1000000      // 1 million euro threshold
+    },
+    
+    // Event requirements (upgrades that must be unlocked for events to trigger)
+    requirements: {
+      marketBoom: "u11",        // Investment must be unlocked
+      marketCrash: "u11",       // Investment must be unlocked
+      greatDepression: "u11",   // Investment must be unlocked
+      taxCollection: "u11",     // Investment must be unlocked (affects investment account)
+      robbery: null,            // No requirements
+      flashSale: null,          // No requirements
+      fastFingers: null,        // No requirements
+      divorce: null             // No requirements
     }
   };
   
@@ -995,6 +1007,13 @@
   function meetsNetWorthThreshold(eventName) {
     const threshold = EVENT_CONFIG.netWorthThresholds[eventName] || 0;
     return getCurrentNetWorth() >= threshold;
+  }
+  
+  // Helper function to check if event requirements are met
+  function meetsEventRequirements(eventName) {
+    const requiredUpgrade = EVENT_CONFIG.requirements[eventName];
+    if (!requiredUpgrade) return true; // No requirements
+    return owned[requiredUpgrade] || false;
   }
   
   // Helper function to get event probability based on current difficulty
@@ -1436,7 +1455,9 @@
       
       // Filter events that can actually trigger
       eventConfigs.forEach(event => {
-        const canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && meetsNetWorthThreshold(event.name);
+        const canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && 
+                          meetsNetWorthThreshold(event.name) && 
+                          meetsEventRequirements(event.name);
         if (canTrigger) {
           availableEvents.push(event);
         }
@@ -4727,7 +4748,7 @@
   const UPGRADE_CONFIG = {
     u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click", effects: { click_income: 1 } },
     u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click", effects: { click_income: 6 } },
-    u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 20%", type: "interest", requires: "u11", effects: { interest_rate: 0.20 } },
+    u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 10%", type: "interest", requires: "u11", effects: { interest_rate: 0.10 } },
     u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
     u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest", requires: "u11", effects: { interest_rate: 0.15 } },
     u9: { cost: 500000000, name: "Befriend a banker", effect: "Increases investment interest by 15%", type: "interest", requires: "u11", effects: { interest_rate: 0.15 } },
