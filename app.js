@@ -50,6 +50,11 @@
     }
     
     createParticle(type, x, y, options = {}) {
+      // Limit total particles to prevent memory bloat
+      if (this.particles.length > 200) {
+        return;
+      }
+      
       let particle = this.particlePool.pop();
       if (!particle) {
         particle = {};
@@ -903,7 +908,7 @@
       },
       earthquake: {
         easy: 0.01,     // 1% chance (same for all difficulties)
-        normal: 0.5,   // 1% chance
+        normal: 0.01,   // 1% chance
         hard: 0.01,     // 1% chance
         extreme: 0.01   // 1% chance
       }
@@ -3052,12 +3057,20 @@
     const tierInfo = getTierInfo(tierNumber);
     const className = `.property-row.tier-${tierNumber}`;
     
-    // Check if CSS already exists
+    // Check if CSS already exists - prevent duplicate style elements
     if (document.querySelector(`style[data-tier="${tierNumber}"]`)) {
       return;
     }
     
-    // Create style element
+    // Use a single consolidated style element for all tiers
+    let consolidatedStyle = document.getElementById('consolidated-tier-styles');
+    if (!consolidatedStyle) {
+      consolidatedStyle = document.createElement('style');
+      consolidatedStyle.id = 'consolidated-tier-styles';
+      document.head.appendChild(consolidatedStyle);
+    }
+    
+    // Create style element for this specific tier (fallback for complex tiers)
     const style = document.createElement('style');
     style.setAttribute('data-tier', tierNumber);
     
@@ -4768,7 +4781,7 @@
       details: details
     });
     
-    // Keep only the last 20 events
+    // Keep only the last 10 events to prevent memory bloat
     if (eventLogs.length > 10) {
       eventLogs = eventLogs.slice(0, 10);
     }
@@ -4863,20 +4876,62 @@
     
     // Add click outside to close
     const modal = document.getElementById('earthquakeDetailsModal');
-    modal.addEventListener('click', function(e) {
+    const clickHandler = function(e) {
       if (e.target === modal) {
         closeEarthquakeDetails();
       }
-    });
+    };
+    modal._clickHandler = clickHandler; // Store reference for cleanup
+    modal.addEventListener('click', clickHandler);
   };
 
   // Make closeEarthquakeDetails globally accessible
   window.closeEarthquakeDetails = function() {
     const modal = document.getElementById('earthquakeDetailsModal');
     if (modal) {
+      // Remove event listeners before removing the modal
+      modal.removeEventListener('click', modal._clickHandler);
       modal.remove();
     }
   };
+
+  // Memory optimization function
+  function optimizeMemory() {
+    // Limit the number of dynamic style elements to prevent memory bloat
+    const styleElements = document.querySelectorAll('style[data-tier]');
+    if (styleElements.length > 15) {
+      // Remove oldest style elements (keep only the most recent 10)
+      const elementsToRemove = Array.from(styleElements).slice(0, styleElements.length - 10);
+      elementsToRemove.forEach(el => el.remove());
+    }
+    
+    // Clean up any orphaned modals
+    const orphanedModals = document.querySelectorAll('.modal-overlay:not(#earthquakeDetailsModal)');
+    orphanedModals.forEach(modal => modal.remove());
+    
+    // Clean up unused tier classes from DOM elements
+    const propertyRows = document.querySelectorAll('.property-row');
+    propertyRows.forEach(row => {
+      const tierClasses = Array.from(row.classList).filter(cls => cls.startsWith('tier-'));
+      if (tierClasses.length > 1) {
+        // Keep only the most recent tier class
+        const latestTier = tierClasses[tierClasses.length - 1];
+        tierClasses.forEach(cls => {
+          if (cls !== latestTier) {
+            row.classList.remove(cls);
+          }
+        });
+      }
+    });
+    
+    // Force garbage collection hint (if available)
+    if (window.gc) {
+      window.gc();
+    }
+  }
+
+  // Run memory optimization periodically
+  setInterval(optimizeMemory, 30000); // Every 30 seconds
 
   if (depositAllBtn) {
     depositAllBtn.addEventListener("click", depositAll);
