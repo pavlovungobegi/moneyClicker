@@ -2175,11 +2175,7 @@
 
   function getPerClickIncome() {
     let base = 1;
-    let bonus = 0;
-    if (owned.u1) bonus += 1;      // elementary school
-    if (owned.u3) bonus += 6;      // high school
-    if (owned.u5) bonus += 30;     // higher education
-    
+    let bonus = getUpgradeEffectTotal('click_income');
     
     let totalIncome = (base + bonus) * prestigeClickMultiplier;
     
@@ -2443,11 +2439,7 @@
   // Property system functions
   function getEffectiveBaseCost(config) {
     // Apply building discount upgrades
-    let totalDiscount = 0;
-    if (owned.u33) totalDiscount += 0.15; // Real Estate Connections: 15% off
-    if (owned.u34) totalDiscount += 0.20; // Hire a contractor: additional 20% off
-    if (owned.u36) totalDiscount += 0.10; // Market awareness: additional 10% off
-    if (owned.u39) totalDiscount += 0.25; // Government Connections: additional 25% off
+    const totalDiscount = getUpgradeEffectTotal('building_discount');
     
     return config.baseCost * (1 - totalDiscount);
   }
@@ -2469,20 +2461,9 @@
     
     let income = config.incomePerSecond * tierMultiplier;
     
-    // Apply Property Management boost (35% increase)
-    if (owned.u35) {
-      income *= 1.35;
-    }
-    
-    // Apply Rental Monopoly boost (20% increase)
-    if (owned.u37) {
-      income *= 1.20;
-    }
-    
-    // Apply Cheesy Landlord boost (5% increase)
-    if (owned.u38) {
-      income *= 1.05;
-    }
+    // Apply rent income boosts
+    const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
+    income *= rentMultiplier;
     
     return Math.floor(income);
   }
@@ -2510,20 +2491,9 @@
     // All buildings get the same income multiplier based on total owned
     let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
     
-    // Apply Property Management boost (35% increase)
-    if (owned.u35) {
-      baseIncome *= 1.35;
-    }
-    
-    // Apply Rental Monopoly boost (20% increase)
-    if (owned.u37) {
-      baseIncome *= 1.20;
-    }
-    
-    // Apply Cheesy Landlord boost (5% increase)
-    if (owned.u38) {
-      baseIncome *= 1.05;
-    }
+    // Apply rent income boosts
+    const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
+    baseIncome *= rentMultiplier;
     
     // Debug logging
     /*
@@ -2713,16 +2683,9 @@
       
       let individualIncome = config.incomePerSecond * tierMultiplier;
       
-      // Apply upgrades
-      if (owned.u35) {
-        individualIncome *= 1.35;
-      }
-      if (owned.u37) {
-        individualIncome *= 1.20;
-      }
-      if (owned.u38) {
-        individualIncome *= 1.05;
-      }
+      // Apply rent income boosts
+      const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
+      individualIncome *= rentMultiplier;
       
       individualIncomeEl.textContent = animationFormatters.currencyEach(Math.floor(individualIncome));
     }
@@ -4762,38 +4725,59 @@
   // 3. Add logic in getPerClickIncome() or getCompoundMultiplierPerTick() if needed
   // That's it! Everything else is automatic.
   const UPGRADE_CONFIG = {
-    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click" },
-    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click" },
-    u4: { cost: 6000, name: "Better credit score", effect: "Increases investment interest by 20%", type: "interest" },
-    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click" },
-    u8: { cost: 15000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest" },
-    u9: { cost: 250000, name: "Befriend a banker", effect: "Increases investment interest by 15%", type: "interest" },
-    u10: { cost: 4000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend" },
-    u11: { cost: 50, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
-    u12: { cost: 8000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed" },
-    u13: { cost: 30000, name: "Mega Dividends", effect: "Increase dividend rate by 25%", type: "dividend_rate" },
-    u14: { cost: 300000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate" },
-    u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate" },
-    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
+    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click", effects: { click_income: 1 } },
+    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click", effects: { click_income: 6 } },
+    u4: { cost: 6000, name: "Better credit score", effect: "Increases investment interest by 20%", type: "interest", requires: "u11", effects: { interest_rate: 0.20 } },
+    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
+    u8: { cost: 15000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest", requires: "u11", effects: { interest_rate: 0.15 } },
+    u9: { cost: 250000, name: "Befriend a banker", effect: "Increases investment interest by 15%", type: "interest", requires: "u11", effects: { interest_rate: 0.15 } },
+    u10: { cost: 4000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend", requires: "u11" },
+    u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
+    u12: { cost: 8000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
+    u13: { cost: 30000, name: "Mega Dividends", effect: "Increase dividend rate by 25%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.25 } },
+    u14: { cost: 300000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
+    u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.25 } },
+    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest", requires: "u11", effects: { interest_rate: 0.15 } },
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
-    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
+    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock", requires: "u11" },
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
     u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
-    u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" },
+    u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest", requires: "u11", effects: { interest_rate: 0.10 } },
     u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
-    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount" },
-    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount" },
-    u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost" },
-    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount" },
-    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost" },
-    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost" },
-    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount" }
+    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount", effects: { building_discount: 0.15 } },
+    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount", effects: { building_discount: 0.20 } },
+    u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost", effects: { rent_income: 0.35 } },
+    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount", effects: { building_discount: 0.10 } },
+    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost", effects: { rent_income: 0.20 } },
+    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost", effects: { rent_income: 0.05 } },
+    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount", effects: { building_discount: 0.25 } }
   };
 
   // Generate upgrade costs and owned objects from config
   const UPGRADE_COSTS = Object.fromEntries(
     Object.entries(UPGRADE_CONFIG).map(([id, config]) => [id, config.cost])
   );
+
+  // Helper functions to calculate upgrade effects dynamically
+  function getUpgradeEffectTotal(effectType) {
+    let total = 0;
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      if (owned[upgradeId] && config.effects && config.effects[effectType]) {
+        total += config.effects[effectType];
+      }
+    });
+    return total;
+  }
+
+  function getUpgradeEffectMultiplier(effectType) {
+    let multiplier = 1;
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      if (owned[upgradeId] && config.effects && config.effects[effectType]) {
+        multiplier *= (1 + config.effects[effectType]);
+      }
+    });
+    return multiplier;
+  }
   
   const owned = Object.fromEntries(
     Object.keys(UPGRADE_CONFIG).map(id => [id, false])
@@ -4801,6 +4785,14 @@
 
   function tryBuyUpgrade(key) {
     if (owned[key]) return;
+    
+    // Check if upgrade has requirements that aren't met
+    const upgradeConfig = UPGRADE_CONFIG[key];
+    if (upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires]) {
+      playErrorSound();
+      return;
+    }
+    
     let cost = UPGRADE_COSTS[key];
     
     // Apply Flash Sale discount
@@ -5006,14 +4998,7 @@
     }
   }
   function getCompoundMultiplierPerTick() {
-    let rateBoost = 1;
-    if (owned.u4) rateBoost *= 1.2; // +20%
-    if (owned.u8) rateBoost *= 1.15; // +15%
-    if (owned.u9) rateBoost *= 1.15; // +15%
-    if (owned.u19) rateBoost *= 1.15; // +15%
-    if (owned.u20) rateBoost *= 1.15; // +15%
-    if (owned.u31) rateBoost *= 1.1; // +10%
-    if (owned.u32) rateBoost *= 1.1; // +10% (Negotiation)
+    let rateBoost = getUpgradeEffectMultiplier('interest_rate');
     
     // Market event effects
     if (marketBoomActive) {
@@ -5040,7 +5025,15 @@
     
     // Check if any upgrade is affordable using only current account balance
     const hasAffordableUpgrade = Object.entries(UPGRADE_COSTS).some(([upgradeId, cost]) => {
-      return !owned[upgradeId] && currentAccountBalance >= cost;
+      if (owned[upgradeId]) return false;
+      
+      // Check if upgrade has requirements that aren't met
+      const upgradeConfig = UPGRADE_CONFIG[upgradeId];
+      if (upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires]) {
+        return false;
+      }
+      
+      return currentAccountBalance >= cost;
     });
     
     if (hasAffordableUpgrade) {
@@ -5088,10 +5081,14 @@
     const hideCompleted = container.classList.contains('hide-completed');
     
     if (hideCompleted) {
-      // Show all unowned upgrades
+      // Show all unowned upgrades that meet requirements
       rows.forEach((row) => {
         const id = row.getAttribute('data-upgrade-id');
-        row.style.display = !owned[id] ? '' : 'none';
+        const upgradeConfig = UPGRADE_CONFIG[id];
+        const hasRequirements = upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires];
+        
+        // Hide if owned, or if requirements not met
+        row.style.display = (!owned[id] && !hasRequirements) ? '' : 'none';
       });
     } else {
       // Show only completed (owned) upgrades when "Show completed" is active
@@ -5117,13 +5114,11 @@
     
     // Calculate speed multipliers (stack multiplicatively)
     let speedMultiplier = 1;
-    if (owned.u12) speedMultiplier *= 0.8; // 20% faster
+    const speedBoost = getUpgradeEffectTotal('dividend_speed');
+    speedMultiplier *= (1 - speedBoost); // Convert percentage to multiplier
     
     // Calculate rate multipliers (stack multiplicatively)
-    let rateMultiplier = 1;
-    if (owned.u13) rateMultiplier *= 1.25; // 25% more
-    if (owned.u14) rateMultiplier *= 1.2;  // 20% more
-    if (owned.u17) rateMultiplier *= 1.25; // 25% more
+    let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
     
     // Market event effects on dividend rate
     if (marketBoomActive) {
@@ -5194,7 +5189,8 @@
     
       // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
-      if (owned.u12) speedMultiplier *= 0.8;
+      const speedBoost = getUpgradeEffectTotal('dividend_speed');
+      speedMultiplier *= (1 - speedBoost);
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     
@@ -5240,12 +5236,10 @@
     
     // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
-      if (owned.u12) speedMultiplier *= 0.8;
+      const speedBoost = getUpgradeEffectTotal('dividend_speed');
+      speedMultiplier *= (1 - speedBoost);
       
-      let rateMultiplier = 1;
-      if (owned.u13) rateMultiplier *= 1.25;
-      if (owned.u14) rateMultiplier *= 1.2;
-      if (owned.u17) rateMultiplier *= 1.25;
+      let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
       
       // Market event effects on dividend rate
       if (marketBoomActive) {
@@ -5302,10 +5296,14 @@
       earningsMetricsContainer.classList.toggle('hidden', !owned.u11);
     }
     
-    // Show/hide the investment amount in the header when investment is unlocked
+    // Show/hide the entire investment account section in the header when investment is unlocked
     const headerInvestmentDisplay = document.getElementById('headerInvestmentDisplay');
+    const headerInvestmentAccount = headerInvestmentDisplay?.closest('.header-account');
     if (headerInvestmentDisplay) {
       headerInvestmentDisplay.classList.toggle('hidden', !owned.u11);
+    }
+    if (headerInvestmentAccount) {
+      headerInvestmentAccount.classList.toggle('hidden', !owned.u11);
     }
     
     // Individual element visibility within the container
