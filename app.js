@@ -3093,7 +3093,7 @@
     
     // Update streak - critical hits fill 3x more
     if (isCritical) {
-      streakCount += 3; // Critical hits fill streak 3x faster
+      streakCount += 4; // Critical hits fill streak 3x faster
     } else {
       streakCount++; // Normal clicks fill streak normally
     }
@@ -4754,7 +4754,6 @@
     u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
     u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
     u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u9: { cost: 500000000, name: "Befriend a banker", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
     u10: { cost: 750000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend", requires: "u11" },
     u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
     u12: { cost: 1000000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
@@ -4779,7 +4778,8 @@
     u41: { cost: 1500000, name: "Clicker Kicker", effect: "Adds +400 euros per click", type: "click", effects: { click_income: 400 } },
     u42: { cost: 30000000, name: "Click Frenzy", effect: "Adds +15k euros per click", type: "click", effects: { click_income: 15000 } },
     u43: { cost: 250000000, name: "Just Clicking", effect: "Adds +150k euros per click", type: "click", effects: { click_income: 150000 } },
-    u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } }
+    u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } },
+    u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } }
   };
 
   // Generate upgrade costs and owned objects from config
