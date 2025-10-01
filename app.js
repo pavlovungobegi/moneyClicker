@@ -22,7 +22,7 @@
 
   // Game difficulty system - now using config
   const DIFFICULTY_MODES = GAME_CONFIG.DIFFICULTY_MODES;
-  let gameDifficulty = GAME_CONFIG.DEFAULT_DIFFICULTY;
+  // gameDifficulty moved to eventTrigger.js
 
   // Particle System - now handled by particles.js
   
@@ -216,20 +216,7 @@
   // Initialize number animator
   let numberAnimator;
   
-  // Event System
-  let marketBoomActive = false;
-  let marketCrashActive = false;
-  let flashSaleActive = false;
-  let greatDepressionActive = false;
-  let fastFingersActive = false;
-  let earthquakeActive = false;
-  let marketBoomEndTime = 0;
-  let marketCrashEndTime = 0;
-  let flashSaleEndTime = 0;
-  let greatDepressionEndTime = 0;
-  let fastFingersEndTime = 0;
-  let earthquakeEndTime = 0;
-  let earthquakeMagnitude = 0;
+  // Event System - state variables moved to eventTrigger.js
   let eventCooldown = 0;
   let skipNextEventCheck = false; // Skip next event check to give breathing room
   
@@ -363,490 +350,17 @@
     return owned[requiredUpgrade] || false;
   }
   
-  // Helper function to get event probability based on current difficulty
-  function getEventProbability(eventName) {
-    const eventProbs = EVENT_CONFIG.probabilities[eventName];
-    if (!eventProbs) return 0;
-    
-    // Return the probability for the current difficulty
-    return eventProbs[gameDifficulty] || eventProbs.normal;
-  }
-
-  function getEventCooldown(eventName) {
-    const eventCooldowns = EVENT_CONFIG.cooldowns[eventName];
-    if (!eventCooldowns) return 60000; // Default 1 minute
-    
-    // Return the cooldown for the current difficulty
-    return eventCooldowns[gameDifficulty] || eventCooldowns.normal;
-  }
+  // Helper functions moved to eventTrigger.js
   
-  // Event Functions
-  function triggerMarketBoom() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
-    
-    marketBoomActive = true;
-    marketBoomEndTime = Date.now() + EVENT_CONFIG.durations.marketBoom;
-    EVENT_CONFIG.eventCooldowns.marketBoom = Date.now() + getEventCooldown('marketBoom');
-    
-    // Show notification
-    showEventNotification("📈 Market Boom!", "Interest & dividend rates increased by 50%!", "boom");
-    
-    // Visual effects
-    screenFlash('#00FF00', 500); // Green flash
-    screenShake(3, 200); // Gentle shake
-    
-    // Sound effect
-        AudioSystem.playMarketBoomSound();
-    
-    // Update interest rate and dividend rate display colors
-    updateInterestRateColor();
-    updateDividendRateColor();
-    updateActiveEventDisplay();
-    
-    // Log the event
-    logEvent("📈 Market Boom", "market-boom");
-  }
-  
-  function triggerMarketCrash() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
-    
-    marketCrashActive = true;
-    marketCrashEndTime = Date.now() + EVENT_CONFIG.durations.marketCrash;
-    EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + getEventCooldown('marketCrash');
-    
-    // Calculate loss based on difficulty
-    const lossRate = gameDifficulty === 'extreme' ? 0.45 : 0.2; // 40% for extreme, 20% for others
-    const lossAmount = investmentAccountBalance * lossRate;
-    investmentAccountBalance -= lossAmount;
-    
-    // Show notification
-    showEventNotification("📉 Market Crash!", `Lost €${formatNumberShort(lossAmount)}! Interest & dividend rates reduced by 70%!`, "crash");
-    
-    // Visual effects
-    screenFlash('#FF0000', 500); // Red flash
-    screenShake(8, 400); // Strong shake
-    
-    // Sound effect
-        AudioSystem.playMarketCrashSound();
-    
-    // Create loss particles
-    if (particleSystem) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      if (particleEffectsEnabled) {
-      particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount);
-      }
-    }
-    
-    // Update interest rate and dividend rate display colors
-    updateInterestRateColor();
-    updateDividendRateColor();
-    updateActiveEventDisplay();
-    
-    // Update displays
-    renderBalances();
-    
-    // Log the event
-    logEvent("📉 Market Crash", "market-crash");
-  }
-  
-  function triggerFlashSale() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
-    
-    flashSaleActive = true;
-    flashSaleEndTime = Date.now() + EVENT_CONFIG.durations.flashSale;
-    EVENT_CONFIG.eventCooldowns.flashSale = Date.now() + getEventCooldown('flashSale');
-    
-    // Show notification
-    showEventNotification("🏷️ Flash Sale!", "25% off all upgrades for 30 seconds!", "flash-sale");
-    
-    // Visual effects
-    screenFlash('#FF6B35', 500); // Orange flash
-    screenShake(4, 300); // Medium shake
-    
-    // Sound effect
-        AudioSystem.playFlashSaleSound();
-    
-    // Create sale particles
-    if (particleSystem) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      if (particleEffectsEnabled) {
-      particleSystem.createFlashSaleParticles(centerX, centerY, 20);
-      }
-    }
-    
-    // Update upgrade prices to show discount
-    renderUpgradePrices();
-    
-    // Add visual styling to upgrades section
-    const upgradesSection = document.getElementById('upgradesSection');
-    if (upgradesSection) {
-      upgradesSection.classList.add('flash-sale-active');
-    }
-    
-    updateActiveEventDisplay();
-    
-    // Log the event
-    logEvent("🏷️ Flash Sale", "flash-sale");
-  }
-  
-  function triggerGreatDepression() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive) return; // Don't trigger if any event is active
-    
-    greatDepressionActive = true;
-    greatDepressionEndTime = Date.now() + EVENT_CONFIG.durations.greatDepression;
-    EVENT_CONFIG.eventCooldowns.greatDepression = Date.now() + getEventCooldown('greatDepression');
-    
-    // Calculate loss based on difficulty and available funds
-    let lossAmount;
-    if (investmentAccountBalance > 0) {
-      // Take from investment account if available
-      const lossRate = gameDifficulty === 'extreme' ? 0.7 : 0.5; // 70% for extreme, 50% for others
-      lossAmount = investmentAccountBalance * lossRate;
-    investmentAccountBalance -= lossAmount;
-    } else {
-      // Take 10% from current account if no investment money
-      lossAmount = currentAccountBalance * 0.1;
-      currentAccountBalance -= lossAmount;
-    }
-    
-    // Show notification
-    showEventNotification("💀 The Great Depression!", `Lost €${formatNumberShort(lossAmount)}! Interest rates decreased by 120% - money is shrinking! Dividends stopped!`, "great-depression");
-    
-    // Visual effects
-    screenFlash('#8B0000', 800); // Dark red flash
-    screenShake(12, 600); // Very strong shake
-    
-    // Sound effect (reuse crash sound for now)
-        AudioSystem.playMarketCrashSound();
-    
-    // Create massive loss particles
-    if (particleSystem) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      if (particleEffectsEnabled) {
-      particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount * 2); // Double particles for dramatic effect
-      }
-    }
-    
-    // Update interest rate and dividend rate display colors
-    updateInterestRateColor();
-    updateDividendRateColor();
-    updateActiveEventDisplay();
-    
-    // Update displays
-    renderBalances();
-    
-    // Log the event
-    logEvent("💀 Great Depression", "great-depression");
-  }
-  
-  function triggerTaxCollection() {
-    // Tax collection is an instant event (no duration) but follows the same "one event at a time" rule
-    // Set cooldown
-    EVENT_CONFIG.eventCooldowns.taxCollection = Date.now() + getEventCooldown('taxCollection');
-    
-    let taxAmount = 0;
-    
-    // Calculate tax based on difficulty and available funds
-    if (investmentAccountBalance > 0) {
-      // Primary: Take from investment account
-      const taxRate = gameDifficulty === 'extreme' ? 0.28 : 0.08; // 28% for extreme, 8% for others
-      taxAmount = investmentAccountBalance * taxRate;
-    investmentAccountBalance -= taxAmount;
-    } else if (currentAccountBalance > 0) {
-      // Fallback: Take 5% from current account if investment account is empty
-      taxAmount = currentAccountBalance * 0.05;
-      currentAccountBalance -= taxAmount;
-    }
-    
-    // Show notification
-    showEventNotification("🏛️ Tax Collection!", `Paid €${formatNumberShort(taxAmount)} in taxes!`, "tax-collection");
-    
-    // Visual effects
-    screenFlash('#8B4513', 400); // Brown flash (tax color)
-    screenShake(3, 200); // Gentle shake
-    
-    // Sound effect (reuse error sound for tax)
-    AudioSystem.playErrorSound();
-    
-    // Create tax particles
-    if (particleSystem) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      if (particleEffectsEnabled) {
-      particleSystem.createMoneyLossParticles(centerX, centerY, taxAmount);
-      }
-    }
-    
-    // Update displays
-    renderBalances();
-    
-    // Log the event
-    logEvent("💰 Tax Collection", "tax-collection");
-  }
-  
-  function triggerRobbery() {
-    // Robbery is an instant event (no duration) but follows the same "one event at a time" rule
-    // Set cooldown
-    EVENT_CONFIG.eventCooldowns.robbery = Date.now() + getEventCooldown('robbery');
-    
-    let stolenAmount = 0;
-    let notificationMessage = "";
-    
-    // Check if current account has money
-    if (currentAccountBalance > 0) {
-      // Steal 25% of money from current account
-      stolenAmount = currentAccountBalance * 0.25;
-      currentAccountBalance -= stolenAmount;
-      notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your current account!`;
-    } else {
-      // If current account is empty, steal from investment account based on difficulty
-      const investmentStealRate = gameDifficulty === 'extreme' ? 0.25 : 0.01; // 20% for extreme, 1% for others
-      stolenAmount = Math.floor(investmentAccountBalance * investmentStealRate);
-      if (stolenAmount > 0) {
-        investmentAccountBalance -= stolenAmount;
-        notificationMessage = `A thief stole €${formatNumberShort(stolenAmount)} from your investment account!`;
-      } else {
-        // If investment account is also empty or very small, steal nothing
-        notificationMessage = "A thief tried to rob you, but you have no money to steal!";
-      }
-    }
-    
-    // Show notification
-    showEventNotification(" You are robbed!", notificationMessage, "robbery");
-    
-    // Visual effects
-    screenFlash('#8B0000', 600); // Dark red flash
-    screenShake(8, 400); // Strong shake
-    
-    // Sound effect (reuse error sound for robbery)
-    AudioSystem.playErrorSound();
-    
-    // Create robbery particles (only if money was actually stolen)
-    if (particleSystem && stolenAmount > 0) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      if (particleEffectsEnabled) {
-      particleSystem.createMoneyLossParticles(centerX, centerY, stolenAmount);
-      }
-    }
-    
-    // Update displays
-    renderBalances();
-    
-    // Log the event
-    logEvent("🔫 Robbery", "robbery");
-  }
-  
-  function triggerEarthquake() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive) return; // Don't trigger if any event is active
-    
-    // Generate earthquake magnitude (4.0 to 8.0)
-    const magnitude = 4.0 + Math.random() * 4.0; // Random between 4.0 and 8.0
-    
-    // Set earthquake as active
-    earthquakeActive = true;
-    earthquakeEndTime = Date.now() + EVENT_CONFIG.durations.earthquake;
-    earthquakeMagnitude = magnitude;
-    EVENT_CONFIG.eventCooldowns.earthquake = Date.now() + getEventCooldown('earthquake');
-    
-    // Calculate effects based on magnitude
-    let rentReduction = 0;
-    let demolishPercentage = 0;
-    let demolishCount = 0;
-    
-    if (magnitude >= 4.0 && magnitude < 5.0) {
-      // 4.0-5.0: 15% rent reduction
-      rentReduction = 0.15;
-    } else if (magnitude >= 5.0 && magnitude < 6.0) {
-      // 5.0-6.0: 50% rent reduction
-      rentReduction = 0.50;
-    } else if (magnitude >= 6.0 && magnitude < 7.0) {
-      // 6.0-7.0: 75% rent reduction + demolish 1-4% of buildings
-      rentReduction = 0.75;
-      demolishPercentage = 0.01 + (magnitude - 6.0) * 0.03; // 1% at 6.0, 4% at 7.0
-    } else if (magnitude >= 7.0 && magnitude <= 8.0) {
-      // 7.0-8.0: 100% rent reduction + demolish 4-25% of buildings
-      rentReduction = 1.00;
-      demolishPercentage = 0.04 + (magnitude - 7.0) * 0.21; // 4% at 7.0, 25% at 8.0
-    }
-    
-    // Calculate total properties for demolition
-    const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
-    demolishCount = Math.floor(totalProperties * demolishPercentage);
-    
-    // Demolish properties if applicable
-    let demolishedProperties = {};
-    if (demolishCount > 0) {
-      demolishedProperties = demolishProperties(demolishCount);
-    }
-    
-    // Show notification
-    let notificationText = `Magnitude ${magnitude.toFixed(1)} earthquake! Rent income reduced by ${(rentReduction * 100).toFixed(0)}% for 30 seconds!`;
-    if (demolishCount > 0) {
-      notificationText += ` ${demolishCount} properties demolished!`;
-    }
-    
-    showEventNotification("🌍 Earthquake!", notificationText, "earthquake");
-    
-    // Visual effects
-    screenFlash('#8B4513', 800); // Brown flash
-    screenShake(Math.min(15, magnitude * 2), 600); // Strong shake based on magnitude
-    
-    // Sound effect (reuse crash sound for now)
-        AudioSystem.playMarketCrashSound();
-    
-    // Create destruction particles
-    if (particleSystem && demolishCount > 0) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      // Create destruction effect with multiple particle types
-      if (particleEffectsEnabled) {
-        particleSystem.createMoneyLossParticles(centerX, centerY, demolishCount * 1000); // Money loss particles for destruction
-        particleSystem.createSparkleParticles(centerX, centerY, Math.min(demolishCount * 2, 10)); // Sparkles for destruction effect
-        particleSystem.createUpgradeParticles(centerX, centerY, Math.min(demolishCount, 5)); // Upgrade particles for building destruction
-      }
-    }
-    
-    // Invalidate property income cache to ensure earthquake effects are applied
-    propertyIncomeCacheValid = false;
-    
-    // Update displays
-    renderAllProperties();
-    renderRentIncome();
-    updateActiveEventDisplay();
-    
-    // Log the event with demolition details
-    const eventDetails = {
-      magnitude: magnitude,
-      rentReduction: rentReduction,
-      demolishCount: demolishCount,
-      demolishedProperties: demolishedProperties
-    };
-    logEvent(`🌍 Earthquake (${magnitude.toFixed(1)})`, "earthquake", eventDetails);
-  }
-  
-  function demolishProperties(count) {
-    if (count <= 0) return {};
-    
-    // Get all properties with counts > 0
-    const availableProperties = Object.entries(properties).filter(([id, count]) => count > 0);
-    if (availableProperties.length === 0) return {};
-    
-    // Track what was demolished
-    const demolishedProperties = {};
-    
-    let remainingToDemolish = count;
-    
-    // Demolish properties randomly
-    while (remainingToDemolish > 0 && availableProperties.length > 0) {
-      // Pick a random property type
-      const randomIndex = Math.floor(Math.random() * availableProperties.length);
-      const [propertyId, currentCount] = availableProperties[randomIndex];
-      
-      // Demolish 1 property of this type
-      properties[propertyId] = Math.max(0, currentCount - 1);
-      remainingToDemolish--;
-      
-      // Track the demolition
-      if (!demolishedProperties[propertyId]) {
-        demolishedProperties[propertyId] = 0;
-      }
-      demolishedProperties[propertyId]++;
-      
-      // Update the available properties list
-      if (properties[propertyId] === 0) {
-        availableProperties.splice(randomIndex, 1);
-      } else {
-        availableProperties[randomIndex][1] = properties[propertyId];
-      }
-    }
-    
-    // Update displays
-    renderAllProperties();
-    renderRentIncome();
-    
-    return demolishedProperties;
-  }
-  
-  function triggerDivorce() {
-    // Divorce is an instant event (no duration) but follows the same "one event at a time" rule
-    // Set cooldown
-    EVENT_CONFIG.eventCooldowns.divorce = Date.now() + getEventCooldown('divorce');
-    
-    // Calculate total net worth and loss based on difficulty
-    const totalNetWorth = currentAccountBalance + investmentAccountBalance;
-    const lossRate = gameDifficulty === 'extreme' ? 0.65 : 0.5; // 65% for extreme, 50% for others
-    const lossAmount = totalNetWorth * lossRate;
-    
-    // Apply loss to both accounts proportionally
-    const currentLoss = currentAccountBalance * lossRate;
-    const investmentLoss = investmentAccountBalance * lossRate;
-    
-    currentAccountBalance -= currentLoss;
-    investmentAccountBalance -= investmentLoss;
-    
-    // Show notification
-    const lossPercentage = Math.round(lossRate * 100);
-    showEventNotification("💔 You are divorced!", `Lost €${formatNumberShort(lossAmount)} (${lossPercentage}% of your net worth)!`, "divorce");
-    
-    // Visual effects
-    screenFlash('#8B008B', 700); // Purple flash (divorce color)
-    screenShake(10, 500); // Very strong shake
-    
-    // Sound effect (reuse error sound for divorce)
-    AudioSystem.playErrorSound();
-    
-    // Create divorce particles
-    if (particleSystem) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      if (particleEffectsEnabled) {
-      particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount);
-      }
-    }
-    
-    // Update displays
-    renderBalances();
-    
-    // Log the event
-    logEvent("💔 Divorce", "divorce");
-  }
-  
-  function triggerFastFingers() {
-    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive) return; // Don't trigger if any event is active
-    
-    fastFingersActive = true;
-    fastFingersEndTime = Date.now() + EVENT_CONFIG.durations.fastFingers;
-    EVENT_CONFIG.eventCooldowns.fastFingers = Date.now() + getEventCooldown('fastFingers');
-    
-    // Show notification
-    showEventNotification("⚡ Fast Fingers!", "Click income boosted by 3x for 15 seconds!", "fast-fingers");
-    
-    // Visual effects
-    screenFlash('#FFD700', 500); // Gold flash
-    screenShake(2, 200); // Light shake
-    
-    // Play sound effect
-    if (AudioSystem.getAudioSettings().soundEnabled) {
-      AudioSystem.playFastFingersSound();
-    }
-    
-    updateActiveEventDisplay();
-    
-    // Log the event
-    logEvent("⚡ Fast Fingers", "fast-fingers");
-  }
+  // Event Functions moved to eventTrigger.js
   
   // Check for expired events immediately (called every second)
   function checkExpiredEvents() {
     const now = Date.now();
     
     // Check if events should end
-    if (marketBoomActive && now >= marketBoomEndTime) {
-      marketBoomActive = false;
+    if (marketBoomActive() && now >= marketBoomEndTime()) {
+      setMarketBoomActive(false);
       updateInterestRateColor();
       updateDividendRateColor();
       renderDividendUI(0); // Update dividend display
@@ -855,8 +369,8 @@
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
-    if (marketCrashActive && now >= marketCrashEndTime) {
-      marketCrashActive = false;
+    if (marketCrashActive() && now >= marketCrashEndTime()) {
+      setMarketCrashActive(false);
       updateInterestRateColor();
       updateDividendRateColor();
       renderDividendUI(0); // Update dividend display
@@ -865,8 +379,8 @@
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
-    if (flashSaleActive && now >= flashSaleEndTime) {
-      flashSaleActive = false;
+    if (flashSaleActive() && now >= flashSaleEndTime()) {
+      setFlashSaleActive(false);
       showEventNotification("🏷️ Sale Ended", "Upgrade prices returned to normal", "flash-sale-end");
       renderUpgradePrices(); // Update prices back to normal
       
@@ -879,8 +393,8 @@
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
-    if (greatDepressionActive && now >= greatDepressionEndTime) {
-      greatDepressionActive = false;
+    if (greatDepressionActive() && now >= greatDepressionEndTime()) {
+      setGreatDepressionActive(false);
       updateInterestRateColor();
       updateDividendRateColor();
       renderDividendUI(0); // Update dividend display
@@ -889,15 +403,15 @@
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
-    if (fastFingersActive && now >= fastFingersEndTime) {
-      fastFingersActive = false;
+    if (fastFingersActive() && now >= fastFingersEndTime()) {
+      setFastFingersActive(false);
       showEventNotification("⚡ Fast Fingers Ended", "Click income returned to normal", "fast-fingers-end");
       updateActiveEventDisplay();
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
     
-    if (earthquakeActive && now >= earthquakeEndTime) {
-      earthquakeActive = false;
+    if (earthquakeActive() && now >= earthquakeEndTime()) {
+      setEarthquakeActive(false);
       showEventNotification("🌍 Earthquake Ended", "Rent income returned to normal", "earthquake-end");
       
       // Invalidate property income cache to ensure earthquake effects are removed
@@ -923,13 +437,13 @@
     }
     
     // Check for new events (only one event can be active at a time)
-    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive || earthquakeActive;
+    const anyEventActive = marketBoomActive() || marketCrashActive() || flashSaleActive() || greatDepressionActive() || fastFingersActive() || earthquakeActive();
     
     // console.log('🎲 Event Check:', {
     //   anyEventActive,
-    //   marketBoomActive,
-    //   marketCrashActive,
-    //   flashSaleActive,
+    //   marketBoomActive(),
+    //   marketCrashActive(),
+    //   flashSaleActive(),
     //   now,
     //   cooldowns: {
     //     marketBoom: EVENT_CONFIG.eventCooldowns.marketBoom,
@@ -1080,11 +594,11 @@
     interestEl.classList.remove('market-boom', 'market-crash', 'great-depression');
     
     // Add appropriate color class
-    if (marketBoomActive) {
+    if (marketBoomActive()) {
       interestEl.classList.add('market-boom');
-    } else if (marketCrashActive) {
+    } else if (marketCrashActive()) {
       interestEl.classList.add('market-crash');
-    } else if (greatDepressionActive) {
+    } else if (greatDepressionActive()) {
       interestEl.classList.add('great-depression');
     }
   }
@@ -1097,11 +611,11 @@
     dividendRateEl.classList.remove('market-boom', 'market-crash', 'great-depression');
     
     // Add appropriate color class
-    if (marketBoomActive) {
+    if (marketBoomActive()) {
       dividendRateEl.classList.add('market-boom');
-    } else if (marketCrashActive) {
+    } else if (marketCrashActive()) {
       dividendRateEl.classList.add('market-crash');
-    } else if (greatDepressionActive) {
+    } else if (greatDepressionActive()) {
       dividendRateEl.classList.add('great-depression');
     }
   }
@@ -1116,34 +630,34 @@
     let totalDuration = 0;
     
     // Determine which event is active
-    if (marketBoomActive && now < marketBoomEndTime) {
+    if (marketBoomActive() && now < marketBoomEndTime()) {
       activeEvent = { name: 'Market Boom', icon: '📈', type: 'market-boom' };
-      endTime = marketBoomEndTime;
+      endTime = marketBoomEndTime();
       eventType = 'market-boom';
       totalDuration = EVENT_CONFIG.durations.marketBoom;
-    } else if (marketCrashActive && now < marketCrashEndTime) {
+    } else if (marketCrashActive() && now < marketCrashEndTime()) {
       activeEvent = { name: 'Market Crash', icon: '📉', type: 'market-crash' };
-      endTime = marketCrashEndTime;
+      endTime = marketCrashEndTime();
       eventType = 'market-crash';
       totalDuration = EVENT_CONFIG.durations.marketCrash;
-    } else if (flashSaleActive && now < flashSaleEndTime) {
+    } else if (flashSaleActive() && now < flashSaleEndTime()) {
       activeEvent = { name: 'Flash Sale', icon: '🏷️', type: 'flash-sale' };
-      endTime = flashSaleEndTime;
+      endTime = flashSaleEndTime();
       eventType = 'flash-sale';
       totalDuration = EVENT_CONFIG.durations.flashSale;
-    } else if (greatDepressionActive && now < greatDepressionEndTime) {
+    } else if (greatDepressionActive() && now < greatDepressionEndTime()) {
       activeEvent = { name: 'Great Depression', icon: '💀', type: 'great-depression' };
-      endTime = greatDepressionEndTime;
+      endTime = greatDepressionEndTime();
       eventType = 'great-depression';
       totalDuration = EVENT_CONFIG.durations.greatDepression;
-    } else if (fastFingersActive && now < fastFingersEndTime) {
+    } else if (fastFingersActive() && now < fastFingersEndTime()) {
       activeEvent = { name: 'Fast Fingers', icon: '⚡', type: 'fast-fingers' };
-      endTime = fastFingersEndTime;
+      endTime = fastFingersEndTime();
       eventType = 'fast-fingers';
       totalDuration = EVENT_CONFIG.durations.fastFingers;
-    } else if (earthquakeActive && now < earthquakeEndTime) {
-      activeEvent = { name: `Earthquake (${earthquakeMagnitude.toFixed(1)})`, icon: '🌍', type: 'earthquake' };
-      endTime = earthquakeEndTime;
+    } else if (earthquakeActive() && now < earthquakeEndTime()) {
+      activeEvent = { name: `Earthquake (${earthquakeMagnitude().toFixed(1)})`, icon: '🌍', type: 'earthquake' };
+      endTime = earthquakeEndTime();
       eventType = 'earthquake';
       totalDuration = EVENT_CONFIG.durations.earthquake;
     }
@@ -1503,7 +1017,7 @@
       let cost = UPGRADE_COSTS[key];
       
       // Apply Flash Sale discount
-      if (flashSaleActive) {
+      if (flashSaleActive()) {
         cost = cost * 0.75; // 25% off
       }
       
@@ -1620,7 +1134,7 @@
     let totalIncome = (base + bonus) * prestigeClickMultiplier;
     
     // Apply Fast Fingers 3x boost
-    if (fastFingersActive) {
+    if (fastFingersActive()) {
       totalIncome *= 3;
     }
     
@@ -1886,23 +1400,6 @@
     return Math.floor(getEffectiveBaseCost(config) * Math.pow(config.priceMultiplier, owned));
   }
 
-  // Helper function to get individual building income based on total owned count
-  function getIndividualBuildingIncome(propertyId, buildingIndex, totalOwned) {
-    const config = PROPERTY_CONFIG[propertyId];
-    
-    // Calculate tier based on total owned buildings (not individual building index)
-    // 0-99 buildings = tier 0 (1x), 100-199 = tier 1 (2x), 200-299 = tier 2 (4x), etc.
-    const tier = Math.floor(totalOwned / 100);
-    const tierMultiplier = Math.pow(3, tier); // 2^tier (1x, 2x, 4x, 8x...)
-    
-    let income = config.incomePerSecond * tierMultiplier;
-    
-    // Apply rent income boosts
-    const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
-    income *= rentMultiplier;
-    
-    return Math.floor(income);
-  }
 
   function getPropertyTotalIncome(propertyId) {
     const config = PROPERTY_CONFIG[propertyId];
@@ -2737,7 +2234,7 @@
 
   function getTotalPropertyIncome() {
     // Use cached value if valid, but not during earthquakes (to ensure real-time updates)
-    if (propertyIncomeCacheValid && !earthquakeActive) {
+    if (propertyIncomeCacheValid && !earthquakeActive()) {
       return cachedPropertyIncome;
     }
     
@@ -2748,15 +2245,15 @@
     });
     
     // Apply earthquake rent reduction if active
-    if (earthquakeActive && earthquakeMagnitude > 0) {
+    if (earthquakeActive() && earthquakeMagnitude() > 0) {
       let rentReduction = 0;
-      if (earthquakeMagnitude >= 4.0 && earthquakeMagnitude < 5.0) {
+      if (earthquakeMagnitude() >= 4.0 && earthquakeMagnitude() < 5.0) {
         rentReduction = 0.15; // 15% reduction
-      } else if (earthquakeMagnitude >= 5.0 && earthquakeMagnitude < 6.0) {
+      } else if (earthquakeMagnitude() >= 5.0 && earthquakeMagnitude() < 6.0) {
         rentReduction = 0.50; // 50% reduction
-      } else if (earthquakeMagnitude >= 6.0 && earthquakeMagnitude < 7.0) {
+      } else if (earthquakeMagnitude() >= 6.0 && earthquakeMagnitude() < 7.0) {
         rentReduction = 0.75; // 75% reduction
-      } else if (earthquakeMagnitude >= 7.0 && earthquakeMagnitude <= 8.0) {
+      } else if (earthquakeMagnitude() >= 7.0 && earthquakeMagnitude() <= 8.0) {
         rentReduction = 1.00; // 100% reduction
       }
       total *= (1 - rentReduction);
@@ -2776,7 +2273,7 @@
     totalRentElement.textContent = `€${formattedRent}/sec`;
     
     // Apply earthquake styling if active
-    if (earthquakeActive) {
+    if (earthquakeActive()) {
       totalRentElement.style.color = '#dc2626';
       totalRentElement.style.fontWeight = 'bold';
     } else {
@@ -3074,25 +2571,25 @@
         soundEffectsEnabled: AudioSystem.getAudioSettings().soundEffectsEnabled,
         
         // Game difficulty
-        gameDifficulty,
+        gameDifficulty: getGameDifficulty(),
         
         // Achievement banner tracking
         achievementsBannerShown: { ...achievementsBannerShown },
         
         // Market events
-        marketBoomActive,
-        marketCrashActive,
-        flashSaleActive,
-        greatDepressionActive,
-        fastFingersActive,
-        earthquakeActive,
-        marketBoomEndTime,
-        marketCrashEndTime,
-        flashSaleEndTime,
-        greatDepressionEndTime,
-        fastFingersEndTime,
-        earthquakeEndTime,
-        earthquakeMagnitude,
+        marketBoomActive: marketBoomActive(),
+        marketCrashActive: marketCrashActive(),
+        flashSaleActive: flashSaleActive(),
+        greatDepressionActive: greatDepressionActive(),
+        fastFingersActive: fastFingersActive(),
+        earthquakeActive: earthquakeActive(),
+        marketBoomEndTime: marketBoomEndTime(),
+        marketCrashEndTime: marketCrashEndTime(),
+        flashSaleEndTime: flashSaleEndTime(),
+        greatDepressionEndTime: greatDepressionEndTime(),
+        fastFingersEndTime: fastFingersEndTime(),
+        earthquakeEndTime: earthquakeEndTime(),
+        earthquakeMagnitude: earthquakeMagnitude(),
         eventCooldown,
         skipNextEventCheck,
         eventConfig: EVENT_CONFIG,
@@ -3177,30 +2674,30 @@
         AudioSystem.setSoundEffectsEnabled(gameState.soundEffectsEnabled !== undefined ? gameState.soundEffectsEnabled : true);
         
         // Restore game difficulty
-        gameDifficulty = gameState.gameDifficulty || DIFFICULTY_MODES.NORMAL;
+        setGameDifficulty(gameState.gameDifficulty || DIFFICULTY_MODES.NORMAL);
         
         // Update difficulty selector UI
         if (difficultySelect) {
-          difficultySelect.value = gameDifficulty;
+          difficultySelect.value = getGameDifficulty();
         }
         
         // Restore achievement banner tracking
         achievementsBannerShown = gameState.achievementsBannerShown || {};
         
         // Restore market events
-        marketBoomActive = gameState.marketBoomActive || false;
-        marketCrashActive = gameState.marketCrashActive || false;
-        flashSaleActive = gameState.flashSaleActive || false;
-        greatDepressionActive = gameState.greatDepressionActive || false;
-        fastFingersActive = gameState.fastFingersActive || false;
-        earthquakeActive = gameState.earthquakeActive || false;
-        marketBoomEndTime = gameState.marketBoomEndTime || 0;
-        marketCrashEndTime = gameState.marketCrashEndTime || 0;
-        flashSaleEndTime = gameState.flashSaleEndTime || 0;
-        greatDepressionEndTime = gameState.greatDepressionEndTime || 0;
-        fastFingersEndTime = gameState.fastFingersEndTime || 0;
-        earthquakeEndTime = gameState.earthquakeEndTime || 0;
-        earthquakeMagnitude = gameState.earthquakeMagnitude || 0;
+        setMarketBoomActive(gameState.marketBoomActive || false);
+        setMarketCrashActive(gameState.marketCrashActive || false);
+        setFlashSaleActive(gameState.flashSaleActive || false);
+        setGreatDepressionActive(gameState.greatDepressionActive || false);
+        setFastFingersActive(gameState.fastFingersActive || false);
+        setEarthquakeActive(gameState.earthquakeActive || false);
+        setMarketBoomEndTime(gameState.marketBoomEndTime || 0);
+        setMarketCrashEndTime(gameState.marketCrashEndTime || 0);
+        setFlashSaleEndTime(gameState.flashSaleEndTime || 0);
+        setGreatDepressionEndTime(gameState.greatDepressionEndTime || 0);
+        setFastFingersEndTime(gameState.fastFingersEndTime || 0);
+        setEarthquakeEndTime(gameState.earthquakeEndTime || 0);
+        setEarthquakeMagnitude(gameState.earthquakeMagnitude || 0);
         eventCooldown = gameState.eventCooldown || 0;
         skipNextEventCheck = gameState.skipNextEventCheck || false;
         
@@ -3213,7 +2710,7 @@
         updateInterestRateColor();
         
         // Update Flash Sale styling if active
-        if (flashSaleActive) {
+        if (flashSaleActive()) {
           const upgradesSection = document.getElementById('upgradesSection');
           if (upgradesSection) {
             upgradesSection.classList.add('flash-sale-active');
@@ -3269,19 +2766,19 @@
       hasMadeFirstInvestment = false;
       
       // Reset market events
-      marketBoomActive = false;
-      marketCrashActive = false;
-      flashSaleActive = false;
-      greatDepressionActive = false;
-      fastFingersActive = false;
-      earthquakeActive = false;
-      marketBoomEndTime = 0;
-      marketCrashEndTime = 0;
-      flashSaleEndTime = 0;
-      greatDepressionEndTime = 0;
-      fastFingersEndTime = 0;
-      earthquakeEndTime = 0;
-      earthquakeMagnitude = 0;
+      setMarketBoomActive(false);
+      setMarketCrashActive(false);
+      setFlashSaleActive(false);
+      setGreatDepressionActive(false);
+      setFastFingersActive(false);
+      setEarthquakeActive(false);
+      setMarketBoomEndTime(0);
+      setMarketCrashEndTime(0);
+      setFlashSaleEndTime(0);
+      setGreatDepressionEndTime(0);
+      setFastFingersEndTime(0);
+      setEarthquakeEndTime(0);
+      setEarthquakeMagnitude(0);
       eventCooldown = 0;
       skipNextEventCheck = false;
       
@@ -4284,7 +3781,7 @@
     let cost = UPGRADE_COSTS[key];
     
     // Apply Flash Sale discount
-    if (flashSaleActive) {
+    if (flashSaleActive()) {
       cost = cost * 0.75; // 25% off
     }
     
@@ -4467,7 +3964,7 @@
   const TICK_MS = GAME_CONFIG.TICK_MS;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
-    switch (gameDifficulty) {
+    switch (getGameDifficulty()) {
       case 'easy': return 1.004;    // 0.5% per second (easier)
       case 'normal': return 1.0022;  // 0.4% per second (original)
       case 'hard': return 1.0018;   // 0.35% per second (harder)
@@ -4479,11 +3976,11 @@
     let rateBoost = getUpgradeEffectMultiplier('interest_rate');
     
     // Market event effects
-    if (marketBoomActive) {
+    if (marketBoomActive()) {
       rateBoost *= 1.5; // +50% during boom
-    } else if (marketCrashActive) {
+    } else if (marketCrashActive()) {
       rateBoost *= 0.3; // -70% during crash
-    } else if (greatDepressionActive) {
+    } else if (greatDepressionActive()) {
       rateBoost *= -0.2; // -120% during depression (negative rate = money shrinking)
     }
     
@@ -4599,11 +4096,11 @@
     let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
     
     // Market event effects on dividend rate
-    if (marketBoomActive) {
+    if (marketBoomActive()) {
       rateMultiplier *= 1.5; // +50% during boom
-    } else if (marketCrashActive) {
+    } else if (marketCrashActive()) {
       rateMultiplier *= 0.3; // -70% during crash
-    } else if (greatDepressionActive) {
+    } else if (greatDepressionActive()) {
       rateMultiplier = 0; // No dividends during depression (0% rate)
     }
     
@@ -4714,11 +4211,11 @@
       let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
       
       // Market event effects on dividend rate
-      if (marketBoomActive) {
+      if (marketBoomActive()) {
         rateMultiplier *= 1.5; // +50% during boom
-      } else if (marketCrashActive) {
+      } else if (marketCrashActive()) {
         rateMultiplier *= 0.3; // -70% during crash
-      } else if (greatDepressionActive) {
+      } else if (greatDepressionActive()) {
         rateMultiplier = 0; // No dividends during depression (0% rate)
       }
       
@@ -5223,9 +4720,9 @@
   const difficultySelect = document.getElementById('difficultySelect');
   if (difficultySelect) {
     difficultySelect.addEventListener('change', (e) => {
-      gameDifficulty = e.target.value;
+      setGameDifficulty(e.target.value);
       saveGameState();
-      console.log('Game difficulty changed to:', gameDifficulty);
+      console.log('Game difficulty changed to:', getGameDifficulty());
     });
   }
 
@@ -5760,9 +5257,9 @@ window.addEventListener('beforeunload', cleanup);
     const interestRow = document.getElementById('interestContainer');
     if (interestRow) {
       interestRow.classList.remove('market-boom', 'market-crash');
-      if (marketBoomActive) {
+      if (marketBoomActive()) {
         interestRow.classList.add('market-boom');
-      } else if (marketCrashActive) {
+      } else if (marketCrashActive()) {
         interestRow.classList.add('market-crash');
       }
     }
@@ -5791,7 +5288,7 @@ window.addEventListener('beforeunload', cleanup);
     rentPerSecond.textContent = `€${formattedRent}/s`;
     
     // Apply earthquake styling if active
-    if (earthquakeActive) {
+    if (earthquakeActive()) {
       rentContainer.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%)';
       rentContainer.style.borderColor = 'rgba(239, 68, 68, 0.4)';
       rentContainer.style.color = '#dc2626';
