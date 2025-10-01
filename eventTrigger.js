@@ -517,6 +517,10 @@
   window.getGameDifficulty = () => gameDifficulty;
   window.setGameDifficulty = (value) => gameDifficulty = value;
 
+  // Note: Variables like currentAccountBalance, investmentAccountBalance, properties, owned
+  // and functions like showEventNotification, screenFlash, screenShake, formatNumberShort
+  // will be made globally accessible by app.js
+
   // Make event state variables globally available
   window.marketBoomActive = () => marketBoomActive;
   window.marketCrashActive = () => marketCrashActive;

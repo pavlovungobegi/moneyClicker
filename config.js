@@ -70,7 +70,7 @@ const GAME_CONFIG = {
       name: "Food Stand",
       baseCost: 400,
       incomePerSecond: 13,
-      priceMultiplier: 1.075,
+      priceMultiplier: 1.07,
       icon: "fas fa-utensils"
     },
     newsstand: {

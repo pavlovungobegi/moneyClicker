@@ -1,6 +1,20 @@
-(() => {
+// Global variables for eventTrigger.js access
   let currentAccountBalance = 0;
   let investmentAccountBalance = 0;
+let properties = {
+  foodStand: 0,
+  newsstand: 0,
+  parkingGarage: 0,
+  convenienceStore: 0,
+  apartment: 0,
+  manufacturingPlant: 0,
+  officeBuilding: 0,
+  skyscraper: 0,
+  operaHouse: 0
+};
+let owned = {};
+
+(() => {
 
   // Active tab tracking for performance optimization
   let activeTab = 'earn'; // Default to earn tab
@@ -229,18 +243,7 @@
   // Property system configuration - now using config
   const PROPERTY_CONFIG = GAME_CONFIG.PROPERTY_CONFIG;
 
-  // Property ownership tracking
-  let properties = {
-    foodStand: 0,
-    newsstand: 0,
-    parkingGarage: 0,
-    convenienceStore: 0,
-    apartment: 0,
-    manufacturingPlant: 0,
-    officeBuilding: 0,
-    skyscraper: 0,
-    operaHouse: 0
-  };
+  // Property ownership tracking - moved to global scope
 
   // Buy multiplier system - now using config
   let buyMultiplier = 1;
@@ -339,13 +342,13 @@
   
   // Helper function to check if event meets net worth threshold
   function meetsNetWorthThreshold(eventName) {
-    const threshold = EVENT_CONFIG.netWorthThresholds[eventName] || 0;
+    const threshold = GAME_CONFIG.EVENT_CONFIG.netWorthThresholds[eventName] || 0;
     return getCurrentNetWorth() >= threshold;
   }
   
   // Helper function to check if event requirements are met
   function meetsEventRequirements(eventName) {
-    const requiredUpgrade = EVENT_CONFIG.requirements[eventName];
+    const requiredUpgrade = GAME_CONFIG.EVENT_CONFIG.requirements[eventName];
     if (!requiredUpgrade) return true; // No requirements
     return owned[requiredUpgrade] || false;
   }
@@ -439,51 +442,30 @@
     // Check for new events (only one event can be active at a time)
     const anyEventActive = marketBoomActive() || marketCrashActive() || flashSaleActive() || greatDepressionActive() || fastFingersActive() || earthquakeActive();
     
-    // console.log('🎲 Event Check:', {
-    //   anyEventActive,
-    //   marketBoomActive(),
-    //   marketCrashActive(),
-    //   flashSaleActive(),
-    //   now,
-    //   cooldowns: {
-    //     marketBoom: EVENT_CONFIG.eventCooldowns.marketBoom,
-    //     marketCrash: EVENT_CONFIG.eventCooldowns.marketCrash,
-    //     flashSale: EVENT_CONFIG.eventCooldowns.flashSale
-    //   }
-    // });
-    
     if (!anyEventActive) {
       // Only check for new events if no event is currently active
       const eventRoll = Math.random();
       
       // Calculate which events can actually trigger (meet thresholds and cooldowns)
       const availableEvents = [];
-      const eventConfigs = [
-        { name: 'marketBoom', prob: getEventProbability('marketBoom') },
-        { name: 'marketCrash', prob: getEventProbability('marketCrash') },
-        { name: 'flashSale', prob: getEventProbability('flashSale') },
-        { name: 'greatDepression', prob: getEventProbability('greatDepression') },
-        { name: 'fastFingers', prob: getEventProbability('fastFingers') },
-        { name: 'taxCollection', prob: getEventProbability('taxCollection') },
-        { name: 'robbery', prob: getEventProbability('robbery') },
-        { name: 'divorce', prob: getEventProbability('divorce') },
-        { name: 'earthquake', prob: getEventProbability('earthquake') }
-      ];
       
-      // Filter events that can actually trigger
-      eventConfigs.forEach(event => {
-        let canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && 
-                        meetsNetWorthThreshold(event.name) && 
-                        meetsEventRequirements(event.name);
+      // Get all event names from config and filter events that can actually trigger
+      Object.keys(GAME_CONFIG.EVENT_CONFIG.probabilities).forEach(eventName => {
+        let canTrigger = now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns[eventName] && 
+                        meetsNetWorthThreshold(eventName) && 
+                        meetsEventRequirements(eventName);
         
         // Special requirement for earthquake: need at least 100 properties
-        if (event.name === 'earthquake') {
+        if (eventName === 'earthquake') {
           const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
           canTrigger = canTrigger && totalProperties >= 100;
         }
         
         if (canTrigger) {
-          availableEvents.push(event);
+          availableEvents.push({
+            name: eventName,
+            prob: getEventProbability(eventName)
+          });
         }
       });
       
@@ -511,15 +493,15 @@
         eventRanges: eventRanges,
         nothingProbability: ((1 - totalAvailableProb) * 100).toFixed(1) + '%',
         cooldownChecks: {
-          marketBoom: now >= EVENT_CONFIG.eventCooldowns.marketBoom,
-          marketCrash: now >= EVENT_CONFIG.eventCooldowns.marketCrash,
-          flashSale: now >= EVENT_CONFIG.eventCooldowns.flashSale,
-          greatDepression: now >= EVENT_CONFIG.eventCooldowns.greatDepression,
-          fastFingers: now >= EVENT_CONFIG.eventCooldowns.fastFingers,
-          taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection,
-          robbery: now >= EVENT_CONFIG.eventCooldowns.robbery,
-          divorce: now >= EVENT_CONFIG.eventCooldowns.divorce,
-          earthquake: now >= EVENT_CONFIG.eventCooldowns.earthquake
+          marketBoom: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.marketBoom,
+          marketCrash: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.marketCrash,
+          flashSale: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.flashSale,
+          greatDepression: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.greatDepression,
+          fastFingers: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.fastFingers,
+          taxCollection: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.taxCollection,
+          robbery: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.robbery,
+          divorce: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.divorce,
+          earthquake: now >= GAME_CONFIG.EVENT_CONFIG.eventCooldowns.earthquake
         },
         netWorthChecks: {
           currentNetWorth: getCurrentNetWorth(),
@@ -586,7 +568,7 @@
     }
   }
   
-  function updateInterestRateColor() {
+  window.updateInterestRateColor = function() {
     const interestEl = document.getElementById('interestPerSec');
     if (!interestEl) return;
     
@@ -603,7 +585,7 @@
     }
   }
   
-  function updateDividendRateColor() {
+  window.updateDividendRateColor = function() {
     const dividendRateEl = document.getElementById('dividendRate');
     if (!dividendRateEl) return;
     
@@ -620,7 +602,7 @@
     }
   }
   
-  function updateActiveEventDisplay() {
+  window.updateActiveEventDisplay = function() {
     if (!activeEventDisplay || !eventIcon || !eventName || !eventTimerFill || !eventTimerText) return;
     
     const now = Date.now();
@@ -634,32 +616,32 @@
       activeEvent = { name: 'Market Boom', icon: '📈', type: 'market-boom' };
       endTime = marketBoomEndTime();
       eventType = 'market-boom';
-      totalDuration = EVENT_CONFIG.durations.marketBoom;
+      totalDuration = GAME_CONFIG.EVENT_CONFIG.durations.marketBoom;
     } else if (marketCrashActive() && now < marketCrashEndTime()) {
       activeEvent = { name: 'Market Crash', icon: '📉', type: 'market-crash' };
       endTime = marketCrashEndTime();
       eventType = 'market-crash';
-      totalDuration = EVENT_CONFIG.durations.marketCrash;
+      totalDuration = GAME_CONFIG.EVENT_CONFIG.durations.marketCrash;
     } else if (flashSaleActive() && now < flashSaleEndTime()) {
       activeEvent = { name: 'Flash Sale', icon: '🏷️', type: 'flash-sale' };
       endTime = flashSaleEndTime();
       eventType = 'flash-sale';
-      totalDuration = EVENT_CONFIG.durations.flashSale;
+      totalDuration = GAME_CONFIG.EVENT_CONFIG.durations.flashSale;
     } else if (greatDepressionActive() && now < greatDepressionEndTime()) {
       activeEvent = { name: 'Great Depression', icon: '💀', type: 'great-depression' };
       endTime = greatDepressionEndTime();
       eventType = 'great-depression';
-      totalDuration = EVENT_CONFIG.durations.greatDepression;
+      totalDuration = GAME_CONFIG.EVENT_CONFIG.durations.greatDepression;
     } else if (fastFingersActive() && now < fastFingersEndTime()) {
       activeEvent = { name: 'Fast Fingers', icon: '⚡', type: 'fast-fingers' };
       endTime = fastFingersEndTime();
       eventType = 'fast-fingers';
-      totalDuration = EVENT_CONFIG.durations.fastFingers;
+      totalDuration = GAME_CONFIG.EVENT_CONFIG.durations.fastFingers;
     } else if (earthquakeActive() && now < earthquakeEndTime()) {
       activeEvent = { name: `Earthquake (${earthquakeMagnitude().toFixed(1)})`, icon: '🌍', type: 'earthquake' };
       endTime = earthquakeEndTime();
       eventType = 'earthquake';
-      totalDuration = EVENT_CONFIG.durations.earthquake;
+      totalDuration = GAME_CONFIG.EVENT_CONFIG.durations.earthquake;
     }
     
     if (activeEvent) {
@@ -692,7 +674,7 @@
     }
   }
   
-  function showEventNotification(title, message, type) {
+  window.showEventNotification = function(title, message, type) {
     const notification = document.createElement('div');
     notification.className = `market-event-notification ${type}`;
     notification.innerHTML = `
@@ -715,7 +697,7 @@
   // Event sound functions are now handled by audio.js
 
   // Screen shake functionality
-  function screenShake(intensity = 5, duration = 200) {
+  window.screenShake = function(intensity = 5, duration = 200) {
     const body = document.body;
     const originalTransform = body.style.transform;
     const startTime = Date.now();
@@ -740,7 +722,7 @@
   }
   
   // Screen flash functionality for achievements
-  function screenFlash(color = '#FFD700', duration = 300) {
+  window.screenFlash = function(color = '#FFD700', duration = 300) {
     const flashOverlay = document.createElement('div');
     flashOverlay.style.cssText = `
       position: fixed;
@@ -886,7 +868,7 @@
   const SIGNIFICANT_CHANGE_THRESHOLD = GAME_CONFIG.CACHE.SIGNIFICANT_CHANGE_THRESHOLD;
 
   // Format numbers with k/m/b/t suffixes for better readability
-  function formatNumberShort(num) {
+  window.formatNumberShort = function(num) {
     formatStats.totalCalls++;
     
     // Handle edge cases quickly
@@ -1086,6 +1068,65 @@
       case 'stats':
         // Stats are rendered on demand, no continuous updates needed
         break;
+    }
+  }
+
+  // Render interest per second from per-tick multiplier (dynamic)
+  function renderInterestPerSecond() {
+    if (!interestPerSecEl) return;
+      const m = getCompoundMultiplierPerTick();
+      const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
+      const percent = (perSecondMultiplier - 1) * 100;
+      
+      // Debug logging
+      // console.log('renderInterestPerSecond called:', {
+      //   multiplier: m,
+      //   perSecondMultiplier: perSecondMultiplier,
+      //   percent: percent,
+      //   owned_u4: owned.u4,
+      //   owned_u32: owned.u32
+      // });
+    
+    // Calculate earnings per second
+    const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
+    
+    // Update rent income display
+    renderRentIncome();
+    
+    if (numberAnimator) {
+      // Parse current percentage from element text
+      const currentText = interestPerSecEl.textContent.replace('%', '');
+      const currentValue = parseFloat(currentText) || 0;
+      
+      // Only animate for significant changes (0.01% or more)
+      const minChange = 0.01;
+      numberAnimator.animateValue(interestPerSecEl, currentValue, percent, 250, (value) => value.toFixed(2) + "%", minChange);
+    } else {
+      // Fallback to instant update
+      interestPerSecEl.textContent = percent.toFixed(2) + "%";
+    }
+    
+    // Update earnings per second display
+    const interestPerSecondEl = document.getElementById('interestPerSecond');
+    if (interestPerSecondEl) {
+      if (numberAnimator) {
+        const currentEarnings = parseDisplayedValue(interestPerSecondEl.textContent);
+        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSecCompact);
+      } else {
+        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/s';
+      }
+    }
+    
+    
+    // Update market event styling
+    const interestRow = document.getElementById('interestContainer');
+    if (interestRow) {
+      interestRow.classList.remove('market-boom', 'market-crash');
+      if (marketBoomActive()) {
+        interestRow.classList.add('market-boom');
+      } else if (marketCrashActive()) {
+        interestRow.classList.add('market-crash');
+      }
     }
   }
 
@@ -2703,7 +2744,7 @@
         
         // Restore event configuration
         if (gameState.eventConfig) {
-          Object.assign(EVENT_CONFIG.eventCooldowns, gameState.eventConfig.eventCooldowns || {});
+          Object.assign(GAME_CONFIG.EVENT_CONFIG.eventCooldowns, gameState.eventConfig.eventCooldowns || {});
         }
         
         // Update interest rate color if market event is active
@@ -2783,15 +2824,15 @@
       skipNextEventCheck = false;
       
       // Reset event cooldowns
-      EVENT_CONFIG.eventCooldowns.marketBoom = 0;
-      EVENT_CONFIG.eventCooldowns.marketCrash = 0;
-      EVENT_CONFIG.eventCooldowns.flashSale = 0;
-      EVENT_CONFIG.eventCooldowns.greatDepression = 0;
-      EVENT_CONFIG.eventCooldowns.fastFingers = 0;
-      EVENT_CONFIG.eventCooldowns.taxCollection = 0;
-      EVENT_CONFIG.eventCooldowns.robbery = 0;
-      EVENT_CONFIG.eventCooldowns.divorce = 0;
-      EVENT_CONFIG.eventCooldowns.earthquake = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.marketBoom = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.marketCrash = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.flashSale = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.greatDepression = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.fastFingers = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.taxCollection = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.robbery = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.divorce = 0;
+      GAME_CONFIG.EVENT_CONFIG.eventCooldowns.earthquake = 0;
       
       // Reset properties
       properties = {
@@ -3125,7 +3166,7 @@
   // Score URL handling removed - using direct JSONBin submission now
 
   // Event logging functions
-  function logEvent(eventName, eventType, details = null) {
+  window.logEvent = function(eventName, eventType, details = null) {
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-US', { 
       hour12: false, 
@@ -3764,7 +3805,8 @@
     });
   }
   
-  const owned = Object.fromEntries(
+  // Initialize owned upgrades from global variable
+  owned = Object.fromEntries(
     Object.keys(UPGRADE_CONFIG).map(id => [id, false])
   );
 
@@ -5206,64 +5248,7 @@ window.addEventListener('beforeunload', cleanup);
     saveGameState();
   }, GAME_CONFIG.INTERVALS.GAME_SAVE);
 
-  // Render interest per second from per-tick multiplier (dynamic)
-  function renderInterestPerSecond() {
-    if (!interestPerSecEl) return;
-      const m = getCompoundMultiplierPerTick();
-      const perSecondMultiplier = Math.pow(m, 1000 / TICK_MS);
-      const percent = (perSecondMultiplier - 1) * 100;
-      
-      // Debug logging
-      // console.log('renderInterestPerSecond called:', {
-      //   multiplier: m,
-      //   perSecondMultiplier: perSecondMultiplier,
-      //   percent: percent,
-      //   owned_u4: owned.u4,
-      //   owned_u32: owned.u32
-      // });
-    
-    // Calculate earnings per second
-    const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
-    
-    // Update rent income display
-    renderRentIncome();
-    
-    if (numberAnimator) {
-      // Parse current percentage from element text
-      const currentText = interestPerSecEl.textContent.replace('%', '');
-      const currentValue = parseFloat(currentText) || 0;
-      
-      // Only animate for significant changes (0.01% or more)
-      const minChange = 0.01;
-      numberAnimator.animateValue(interestPerSecEl, currentValue, percent, 250, (value) => value.toFixed(2) + "%", minChange);
-    } else {
-      // Fallback to instant update
-      interestPerSecEl.textContent = percent.toFixed(2) + "%";
-    }
-    
-    // Update earnings per second display
-    const interestPerSecondEl = document.getElementById('interestPerSecond');
-    if (interestPerSecondEl) {
-      if (numberAnimator) {
-        const currentEarnings = parseDisplayedValue(interestPerSecondEl.textContent);
-        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSecCompact);
-      } else {
-        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/s';
-      }
-    }
-    
-    
-    // Update market event styling
-    const interestRow = document.getElementById('interestContainer');
-    if (interestRow) {
-      interestRow.classList.remove('market-boom', 'market-crash');
-      if (marketBoomActive()) {
-        interestRow.classList.add('market-boom');
-      } else if (marketCrashActive()) {
-        interestRow.classList.add('market-crash');
-      }
-    }
-  }
+  // renderInterestPerSecond function moved earlier in file
 
   // Render rent income display
   function renderRentIncome() {
@@ -5303,6 +5288,9 @@ window.addEventListener('beforeunload', cleanup);
       rentRate.style.color = '';
     }
   }
+
+  // Make renderRentIncome globally accessible for eventTrigger.js
+  window.renderRentIncome = renderRentIncome;
 
   // Initialize interest per second display and set up periodic updates
   (function initInterestPerSecond() {
