@@ -1282,7 +1282,7 @@ let prestigeInterestMultiplier = 1;
     updatePortfolioIndicator();
     
     // Create flying money number with critical hit styling (show actual amount added)
-    createFlyingMoney(cappedIncome, isCritical);
+    createFlyingMoney(income, isCritical);
     
     // Play appropriate sound
     if (isCritical) {
@@ -3933,8 +3933,9 @@ let prestigeInterestMultiplier = 1;
     currentAccountBalance -= cost;
     owned[key] = true;
     
-    // Invalidate property income cache if property-related upgrade was purchased
-    if (key === 'u35' || key === 'u37' || key === 'u38') {
+    // Invalidate property income cache if rent-related upgrade was purchased
+    const purchasedUpgrade = GAME_CONFIG.UPGRADE_CONFIG[key];
+    if (purchasedUpgrade && (purchasedUpgrade.type === 'rent_boost' || purchasedUpgrade.effects?.rent_income)) {
       propertyIncomeCacheValid = false;
     }
     
@@ -3983,6 +3984,7 @@ let prestigeInterestMultiplier = 1;
     updatePortfolioIndicator();
     // Update property displays in case upgrade affects property income
     renderAllProperties();
+    renderRentIncome(); // Update rent income display after upgrade purchase
     
     // Play buy sound
     AudioSystem.playBuySound();

@@ -162,7 +162,9 @@ const GAME_CONFIG = {
     u43: { cost: 250000000, name: "Just Clicking", effect: "Adds +150k euros per click", type: "click", effects: { click_income: 150000 } },
     u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } },
     u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } },
-    u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } }
+    u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } },
+    u47: { cost: 25000000000, name: "Property Pimp", effect: "Increases the rent collected from properties by 25%", type: "rent_boost", effects: { rent_income: 0.25 } },
+    u48: { cost: 100000000000, name: "Oh Long Johnson!", effect: "Increases the rent collected from properties by 15%", type: "rent_boost", effects: { rent_income: 0.15 } }
   },
   
   // =============================================================================
