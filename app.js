@@ -1746,9 +1746,7 @@
       // Resume audio context for iOS PWA compatibility
       AudioSystem.resumeAudioContext();
       // Start background music on first user interaction (browser requirement)
-      if (backgroundMusic) {
-        AudioSystem.startBackgroundMusic();
-      }
+      AudioSystem.startBackgroundMusic();
     }, { once: true });
   }
 
@@ -5711,10 +5709,8 @@ clearCacheOnLoad();
 function handleVisibilityChange() {
   if (document.hidden) {
     // App went to background - pause music and animations
-    if (backgroundMusic && !backgroundMusic.paused) {
-      backgroundMusic.pause();
+    AudioSystem.pauseAllAudio();
       // console.log('Music paused - app went to background');
-    }
     // Stop dividend animation to save resources
     if (dividendAnimationId) {
       cancelAnimationFrame(dividendAnimationId);
@@ -5745,10 +5741,8 @@ document.addEventListener('visibilitychange', handleVisibilityChange);
 
 // Handle page focus/blur events as backup
 window.addEventListener('blur', () => {
-  if (backgroundMusic && !backgroundMusic.paused) {
-    backgroundMusic.pause();
+  AudioSystem.pauseAllAudio();
     // console.log('Music paused - window lost focus');
-  }
   // Stop dividend animation to save resources
   if (dividendAnimationId) {
     cancelAnimationFrame(dividendAnimationId);
@@ -5757,10 +5751,8 @@ window.addEventListener('blur', () => {
 });
 
 window.addEventListener('focus', () => {
-  if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
-    backgroundMusic.play().catch((error) => {
-      console.log('Could not resume music on focus:', error);
-    });
+  if (AudioSystem.getAudioSettings().musicEnabled) {
+    AudioSystem.startBackgroundMusic();
     // console.log('Music resumed - window gained focus');
   }
   // Restart dividend animation if dividends are enabled
@@ -5771,10 +5763,8 @@ window.addEventListener('focus', () => {
 
 // Handle mobile app lifecycle events (for PWA)
 document.addEventListener('pause', () => {
-  if (backgroundMusic && !backgroundMusic.paused) {
-    backgroundMusic.pause();
+  AudioSystem.pauseAllAudio();
     // console.log('Music paused - app paused (mobile)');
-  }
   // Stop dividend animation to save resources
   if (dividendAnimationId) {
     cancelAnimationFrame(dividendAnimationId);
@@ -5783,10 +5773,8 @@ document.addEventListener('pause', () => {
 });
 
 document.addEventListener('resume', () => {
-  if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
-    backgroundMusic.play().catch((error) => {
-      console.log('Could not resume music on resume:', error);
-    });
+  if (AudioSystem.getAudioSettings().musicEnabled) {
+    AudioSystem.startBackgroundMusic();
     // console.log('Music resumed - app resumed (mobile)');
   }
   // Restart dividend animation if dividends are enabled
@@ -5824,9 +5812,7 @@ function cleanup() {
   if (numberAnimator) numberAnimator.destroy();
   
   // Pause background music
-  if (backgroundMusic && !backgroundMusic.paused) {
-    backgroundMusic.pause();
-  }
+  AudioSystem.pauseAllAudio();
   
   // Save game state
   saveGameState();

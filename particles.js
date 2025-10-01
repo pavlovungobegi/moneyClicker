@@ -74,10 +74,10 @@
     }
     
     createCoinParticles(x, y, count = 1) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       // Reduce particles on mobile
-      const actualCount = isMobile ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
+      const actualCount = (typeof isMobile !== 'undefined' && isMobile) ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
       for (let i = 0; i < actualCount; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -91,7 +91,7 @@
     }
     
     createCriticalCoin(x, y) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       // Create a single orange coin for critical hits
       this.createParticle('coin', x, y, {
@@ -105,10 +105,10 @@
     }
     
     createSparkleParticles(x, y, count = 2) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       // Reduce particles on mobile
-      const actualCount = isMobile ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
+      const actualCount = (typeof isMobile !== 'undefined' && isMobile) ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
       for (let i = 0; i < actualCount; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -123,7 +123,7 @@
     }
     
     createUpgradeParticles(x, y, count = 5) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       for (let i = 0; i < count; i++) {
         this.createParticle('upgrade', x, y, {
@@ -140,7 +140,7 @@
     }
     
     createConfettiParticles(x, y, count = 8) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       for (let i = 0; i < count; i++) {
         this.createParticle('confetti', x, y, {
@@ -158,10 +158,10 @@
     }
     
     createMoneyGainParticles(x, y, amount) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       const baseCount = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
-      const count = isMobile ? Math.max(1, Math.floor(baseCount * 0.5)) : baseCount;
+      const count = (typeof isMobile !== 'undefined' && isMobile) ? Math.max(1, Math.floor(baseCount * 0.5)) : baseCount;
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -177,7 +177,7 @@
     }
     
     createFireworkParticles(x, y, count = 8) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2;
@@ -196,7 +196,7 @@
     }
     
     createGoldenParticles(x, y, count = 10) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       for (let i = 0; i < count; i++) {
         this.createParticle('golden', x, y, {
@@ -214,7 +214,7 @@
     }
     
     createMilestoneParticles(x, y, count = 15) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       for (let i = 0; i < count; i++) {
         this.createParticle('milestone', x, y, {
@@ -232,7 +232,7 @@
     }
     
     createRareAchievementParticles(x, y, count = 20) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       // Create multiple bursts for rare achievements
       for (let burst = 0; burst < 3; burst++) {
@@ -255,7 +255,7 @@
     }
     
     createMoneyLossParticles(x, y, amount) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       const count = Math.min(Math.floor(amount / 1000) + 5, 20);
       for (let i = 0; i < count; i++) {
@@ -274,7 +274,7 @@
     }
     
     createFlashSaleParticles(x, y, count = 20) {
-      if (!particleEffectsEnabled) return;
+      if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
       for (let i = 0; i < count; i++) {
         this.createParticle('flash-sale', x, y, {
