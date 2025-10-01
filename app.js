@@ -29,6 +29,35 @@ let prestigeInterestMultiplier = 1;
   // Property income caching for performance optimization
   let cachedPropertyIncome = 0;
   let propertyIncomeCacheValid = false;
+  
+  // Enhanced caching with performance manager
+  function getCachedPropertyIncome() {
+    if (performanceManager) {
+      const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
+      const cached = performanceManager.getCache(cacheKey);
+      if (cached !== null) {
+        return cached;
+      }
+    }
+    
+    // Fallback to old cache system
+    if (propertyIncomeCacheValid) {
+      return cachedPropertyIncome;
+    }
+    
+    return null;
+  }
+  
+  function setCachedPropertyIncome(income) {
+    if (performanceManager) {
+      const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
+      performanceManager.cache(cacheKey, income, 5000); // 5 second cache
+    }
+    
+    // Update old cache system
+    cachedPropertyIncome = income;
+    propertyIncomeCacheValid = true;
+  }
 
   // Mobile detection for particle optimization
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -167,6 +196,27 @@ let prestigeInterestMultiplier = 1;
   // Apply mobile performance mode CSS class
   if (mobilePerformanceMode) {
     document.body.classList.add('mobile-performance-mode');
+  }
+
+  // Initialize new performance systems
+  let gameEngine, renderEngine, performanceManager;
+  
+  function initializePerformanceSystems() {
+    try {
+      // Initialize performance manager first
+      performanceManager = new PerformanceManager();
+      
+      // Initialize game engine
+      gameEngine = new GameEngine();
+      
+      // Initialize render engine
+      renderEngine = new RenderEngine();
+      
+      console.log('Performance systems initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize performance systems:', error);
+      // Fallback to original system
+    }
   }
 
   // Function to get appropriate intervals based on mobile performance mode
@@ -2442,9 +2492,12 @@ let prestigeInterestMultiplier = 1;
   }
 
   function getTotalPropertyIncome() {
-    // Use cached value if valid, but not during earthquakes (to ensure real-time updates)
-    if (propertyIncomeCacheValid && !earthquakeActive()) {
-      return cachedPropertyIncome;
+    // Use enhanced cached value if valid, but not during earthquakes (to ensure real-time updates)
+    if (!earthquakeActive()) {
+      const cached = getCachedPropertyIncome();
+      if (cached !== null) {
+        return cached;
+      }
     }
     
     // Calculate and cache the result
@@ -2468,8 +2521,7 @@ let prestigeInterestMultiplier = 1;
       total *= (1 - rentReduction);
     }
     
-    cachedPropertyIncome = total;
-    propertyIncomeCacheValid = true;
+    setCachedPropertyIncome(total);
     return total;
   }
 
@@ -4584,86 +4636,223 @@ let prestigeInterestMultiplier = 1;
   }
 
 
-  // Main game loop - handles all game mechanics
-  const mainGameInterval = setInterval(() => {
-    try {
-      lastMainGameTick = Date.now(); // Update health tracking
-      
-      // Investment compounding: multiply per tick, boosted by upgrades
-      if (investmentAccountBalance > 0) {
-        const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
-        const growth = grown - investmentAccountBalance;
-        investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
-      }
-
-      // Property income
-      const propertyIncome = getTotalPropertyIncome();
-      if (propertyIncome > 0) {
-        if (autoRentEnabled) {
-          // Auto-rent: add property income to investment account
-          investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-        } else {
-          // Normal: add property income to current account
-          currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
-        }
-      }
-
-      // Dividends
-      tickDividends(TICK_MS);
-
-      // Always render balances (needed for header)
-      renderBalances();
-      
-      // Only render active tab content for performance
-      switch(activeTab) {
-        case 'earn':
-          renderDividendUI(TICK_MS);
-          renderInvestmentUnlocked();
-          renderPrestigeMultipliers();
-          renderAutoInvestSection();
-          renderAutoRentSection();
-          renderClickStreak();
-          renderRentIncome(); // Update rent income display
-          break;
-        case 'upgrades':
-          renderUpgradesOwned();
-          break;
-        case 'portfolio':
-          renderAllProperties();
-          break;
-        case 'achievements':
-          // Achievements are rendered on demand, no continuous updates needed
-          break;
-        case 'stats':
-          // Stats are rendered on demand, no continuous updates needed
-          break;
-      }
-      
-      // Always update these (needed for indicators and events)
-      updateActiveEventDisplay();
-      checkExpiredEvents(); // Check for expired events immediately
-      checkStreakTimeout();
-      updateUpgradeIndicator();
-      updatePortfolioIndicator();
-      updateProgressBars();
-      checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
-    } catch (error) {
-      console.error('Error in main game loop:', error);
-      // Don't let errors stop the game loop
+  // New event-driven game loop
+  function setupEventDrivenGameLoop() {
+    if (!gameEngine) {
+      // Fallback to old system if new system not available
+      setupLegacyGameLoop();
+      return;
     }
-  }, TICK_MS);
+    
+    // Register render functions with render engine
+    if (renderEngine) {
+      renderEngine.registerRenderer('balances', renderBalances);
+      renderEngine.registerRenderer('dividendUI', () => renderDividendUI(TICK_MS));
+      renderEngine.registerRenderer('investmentUnlocked', renderInvestmentUnlocked);
+      renderEngine.registerRenderer('prestigeMultipliers', renderPrestigeMultipliers);
+      renderEngine.registerRenderer('autoInvestSection', renderAutoInvestSection);
+      renderEngine.registerRenderer('autoRentSection', renderAutoRentSection);
+      renderEngine.registerRenderer('clickStreak', renderClickStreak);
+      renderEngine.registerRenderer('rentIncome', renderRentIncome);
+      renderEngine.registerRenderer('upgradesOwned', renderUpgradesOwned);
+      renderEngine.registerRenderer('allProperties', renderAllProperties);
+      renderEngine.registerRenderer('activeEventDisplay', updateActiveEventDisplay);
+      renderEngine.registerRenderer('upgradeIndicator', updateUpgradeIndicator);
+      renderEngine.registerRenderer('portfolioIndicator', updatePortfolioIndicator);
+      renderEngine.registerRenderer('progressBars', updateProgressBars);
+    }
+    
+    // Schedule recurring game mechanics
+    gameEngine.scheduleRecurringEvent('mainGameTick', (deltaTime) => {
+      try {
+        lastMainGameTick = Date.now();
+        
+        // Investment compounding: multiply per tick, boosted by upgrades
+        if (investmentAccountBalance > 0) {
+          const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
+          const growth = grown - investmentAccountBalance;
+          investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
+          renderEngine?.markDirty('balances');
+        }
+
+        // Property income - use async calculation if available
+        if (performanceManager) {
+          performanceManager.calculateAsync('CALCULATE_PROPERTY_INCOME', {
+            properties,
+            owned,
+            upgrades: GAME_CONFIG.UPGRADE_CONFIG,
+            propertyConfigs: GAME_CONFIG.PROPERTY_CONFIG
+          }).then(propertyIncome => {
+            if (propertyIncome > 0) {
+              if (autoRentEnabled) {
+                investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+              } else {
+                currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+              }
+              renderEngine?.markDirty('balances');
+              renderEngine?.markDirty('rentIncome');
+            }
+          }).catch(() => {
+            // Fallback to sync calculation
+            const propertyIncome = getTotalPropertyIncome();
+            if (propertyIncome > 0) {
+              if (autoRentEnabled) {
+                investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+              } else {
+                currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+              }
+              renderEngine?.markDirty('balances');
+              renderEngine?.markDirty('rentIncome');
+            }
+          });
+        } else {
+          // Fallback to sync calculation
+          const propertyIncome = getTotalPropertyIncome();
+          if (propertyIncome > 0) {
+            if (autoRentEnabled) {
+              investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+            } else {
+              currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+            }
+            renderEngine?.markDirty('balances');
+            renderEngine?.markDirty('rentIncome');
+          }
+        }
+
+        // Dividends
+        tickDividends(TICK_MS);
+        renderEngine?.markDirty('dividendUI');
+        
+        // Mark UI elements as dirty based on active tab
+        switch(activeTab) {
+          case 'earn':
+            renderEngine?.markDirty('investmentUnlocked');
+            renderEngine?.markDirty('prestigeMultipliers');
+            renderEngine?.markDirty('autoInvestSection');
+            renderEngine?.markDirty('autoRentSection');
+            renderEngine?.markDirty('clickStreak');
+            break;
+          case 'upgrades':
+            renderEngine?.markDirty('upgradesOwned');
+            break;
+          case 'portfolio':
+            renderEngine?.markDirty('allProperties');
+            break;
+        }
+        
+        // Always update these (needed for indicators and events)
+        renderEngine?.markDirty('activeEventDisplay');
+        renderEngine?.markDirty('upgradeIndicator');
+        renderEngine?.markDirty('portfolioIndicator');
+        renderEngine?.markDirty('progressBars');
+        
+        // Check expired events and streak timeout
+        checkExpiredEvents();
+        checkStreakTimeout();
+        
+        // Use idle time for non-critical tasks
+        if (performanceManager) {
+          performanceManager.runWhenIdle(() => {
+            checkAchievementsOptimized();
+          }, 'low');
+        } else {
+          checkAchievementsOptimized();
+        }
+      } catch (error) {
+        console.error('Error in event-driven game loop:', error);
+      }
+    }, TICK_MS);
+  }
+  
+  // Legacy game loop fallback
+  function setupLegacyGameLoop() {
+    const mainGameInterval = setInterval(() => {
+      try {
+        lastMainGameTick = Date.now();
+        
+        // Investment compounding: multiply per tick, boosted by upgrades
+        if (investmentAccountBalance > 0) {
+          const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
+          const growth = grown - investmentAccountBalance;
+          investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
+        }
+
+        // Property income
+        const propertyIncome = getTotalPropertyIncome();
+        if (propertyIncome > 0) {
+          if (autoRentEnabled) {
+            investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+          } else {
+            currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+          }
+        }
+
+        // Dividends
+        tickDividends(TICK_MS);
+        renderBalances();
+        
+        // Only render active tab content for performance
+        switch(activeTab) {
+          case 'earn':
+            renderDividendUI(TICK_MS);
+            renderInvestmentUnlocked();
+            renderPrestigeMultipliers();
+            renderAutoInvestSection();
+            renderAutoRentSection();
+            renderClickStreak();
+            renderRentIncome();
+            break;
+          case 'upgrades':
+            renderUpgradesOwned();
+            break;
+          case 'portfolio':
+            renderAllProperties();
+            break;
+        }
+        
+        // Always update these (needed for indicators and events)
+        updateActiveEventDisplay();
+        checkExpiredEvents();
+        checkStreakTimeout();
+        updateUpgradeIndicator();
+        updatePortfolioIndicator();
+        updateProgressBars();
+        checkAchievementsOptimized();
+      } catch (error) {
+        console.error('Error in legacy game loop:', error);
+      }
+    }, TICK_MS);
+    
+    // Store reference for cleanup
+    window.mainGameInterval = mainGameInterval;
+  }
 
   // Net worth data collection removed for performance
   
-  // Events check every 15 seconds - reduced frequency for better performance
-  const eventsInterval = setInterval(() => {
-    try {
-      lastEventCheck = Date.now(); // Update health tracking
-      checkEvents();
-    } catch (error) {
-      console.error('Error in events check:', error);
+  // Events check - use new system if available
+  function setupEventDrivenEvents() {
+    if (gameEngine) {
+      gameEngine.scheduleRecurringEvent('eventsCheck', (deltaTime) => {
+        try {
+          lastEventCheck = Date.now();
+          checkEvents();
+        } catch (error) {
+          console.error('Error in event-driven events check:', error);
+        }
+      }, getIntervalConfig('EVENTS_CHECK'));
+    } else {
+      // Fallback to legacy system
+      const eventsInterval = setInterval(() => {
+        try {
+          lastEventCheck = Date.now();
+          checkEvents();
+        } catch (error) {
+          console.error('Error in legacy events check:', error);
+        }
+      }, getIntervalConfig('EVENTS_CHECK'));
+      window.eventsInterval = eventsInterval;
     }
-  }, getIntervalConfig('EVENTS_CHECK'));
+  }
 
   // Loading screen functionality
   function showLoadingScreen() {
@@ -4687,6 +4876,9 @@ let prestigeInterestMultiplier = 1;
   }
 
   function initializeGame() {
+  // Initialize performance systems first
+  initializePerformanceSystems();
+  
   // Cache DOM elements for performance optimization
   cacheDOMElements();
   
@@ -5236,7 +5428,18 @@ if (achievementBannerClose) {
 
 // Cleanup function to prevent memory leaks
 function cleanup() {
-  // Clear all intervals
+  // Stop new performance systems
+  if (gameEngine) {
+    gameEngine.stop();
+  }
+  if (renderEngine) {
+    renderEngine.stop();
+  }
+  if (performanceManager) {
+    performanceManager.destroy();
+  }
+  
+  // Clear all intervals (legacy fallback)
   if (typeof cacheCleanupInterval !== 'undefined') clearInterval(cacheCleanupInterval);
   if (typeof mainGameInterval !== 'undefined') clearInterval(mainGameInterval);
   if (typeof eventsInterval !== 'undefined') clearInterval(eventsInterval);
@@ -5440,15 +5643,30 @@ window.addEventListener('beforeunload', cleanup);
     }, 1000);
   }
   
-  // Periodic saving every 15 seconds
-  const saveInterval = setInterval(() => {
-    try {
-      lastSave = Date.now(); // Update health tracking
-      saveGameState();
-    } catch (error) {
-      console.error('Error in save interval:', error);
+  // Periodic saving - use new system if available
+  function setupEventDrivenSaving() {
+    if (gameEngine) {
+      gameEngine.scheduleRecurringEvent('gameSave', (deltaTime) => {
+        try {
+          lastSave = Date.now();
+          saveGameState();
+        } catch (error) {
+          console.error('Error in event-driven save:', error);
+        }
+      }, getIntervalConfig('GAME_SAVE'));
+    } else {
+      // Fallback to legacy system
+      const saveInterval = setInterval(() => {
+        try {
+          lastSave = Date.now();
+          saveGameState();
+        } catch (error) {
+          console.error('Error in legacy save interval:', error);
+        }
+      }, getIntervalConfig('GAME_SAVE'));
+      window.saveInterval = saveInterval;
     }
-  }, getIntervalConfig('GAME_SAVE'));
+  }
 
   // renderInterestPerSecond function moved earlier in file
 
@@ -5501,9 +5719,21 @@ window.addEventListener('beforeunload', cleanup);
       renderInterestPerSecond();
     };
     update();
-    // Recompute periodically to reflect upgrades - reduced frequency for better performance
-    const upgradeUpdateInterval = setInterval(update, getIntervalConfig('UPGRADE_UPDATE'));
+    
+    // Use new system if available
+    if (gameEngine) {
+      gameEngine.scheduleRecurringEvent('upgradeUpdate', update, getIntervalConfig('UPGRADE_UPDATE'));
+    } else {
+      // Fallback to legacy system
+      const upgradeUpdateInterval = setInterval(update, getIntervalConfig('UPGRADE_UPDATE'));
+      window.upgradeUpdateInterval = upgradeUpdateInterval;
+    }
   })();
+  
+  // Setup new event-driven systems
+  setupEventDrivenGameLoop();
+  setupEventDrivenEvents();
+  setupEventDrivenSaving();
 
   // Mobile horizontal scrolling enhancements
   (function initMobileScrolling() {
