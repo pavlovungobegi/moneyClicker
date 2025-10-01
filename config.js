@@ -14,7 +14,9 @@ const GAME_CONFIG = {
   ANIMATION: {
     TARGET_FPS: 60,
     FRAME_INTERVAL: 1000 / 60, // ~16.67ms for 60fps
-    PARTICLE_REDUCTION_MOBILE: 0.5, // Reduce particles by 50% on mobile
+    PARTICLE_REDUCTION_MOBILE: 0.3, // Reduce particles by 70% on mobile
+    MOBILE_TARGET_FPS: 30, // Lower FPS for mobile to reduce CPU usage
+    MOBILE_FRAME_INTERVAL: 1000 / 30, // ~33.33ms for 30fps on mobile
   },
   
   // Cache and memory management
@@ -34,6 +36,16 @@ const GAME_CONFIG = {
     ACHIEVEMENT_CHECK: 4000, // Achievement check interval
   },
   
+  // Mobile-specific intervals (slower for better performance)
+  MOBILE_INTERVALS: {
+    INVESTMENT_COMPOUNDING: 1500, // Slower compounding on mobile
+    EVENTS_CHECK: 15000, // Less frequent event checks
+    GAME_SAVE: 20000, // Less frequent saves
+    SUBMISSION_STATUS: 2000, // Less frequent status checks
+    UPGRADE_UPDATE: 8000, // Less frequent upgrade updates
+    ACHIEVEMENT_CHECK: 6000, // Less frequent achievement checks
+  },
+  
   // =============================================================================
   // GAME DIFFICULTY CONFIGURATION
   // =============================================================================
@@ -46,6 +58,16 @@ const GAME_CONFIG = {
   },
   
   DEFAULT_DIFFICULTY: 'normal',
+  
+  // Mobile performance mode
+  MOBILE_PERFORMANCE: {
+    ENABLED: true, // Enable mobile performance optimizations
+    REDUCE_ANIMATIONS: true, // Reduce CSS animations on mobile
+    THROTTLE_FPS: true, // Throttle frame rate on mobile
+    PAUSE_BACKGROUND: true, // Pause heavy operations when tab is hidden
+    REDUCE_PARTICLES: true, // Significantly reduce particle effects
+    SIMPLIFY_UI: false, // Keep UI complexity but optimize performance
+  },
   
   // =============================================================================
   // MONEY & ECONOMICS CONFIGURATION

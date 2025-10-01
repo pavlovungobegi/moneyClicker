@@ -12,8 +12,14 @@
       this.animationId = null;
       this.isAnimating = false;
       this.lastFrameTime = 0;
-      this.targetFPS = GAME_CONFIG.ANIMATION.TARGET_FPS;
-      this.frameInterval = GAME_CONFIG.ANIMATION.FRAME_INTERVAL;
+      // Use mobile-optimized frame rates if on mobile
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                       ('ontouchstart' in window) || 
+                       (navigator.maxTouchPoints > 0);
+      const mobilePerformanceMode = isMobile && GAME_CONFIG.MOBILE_PERFORMANCE.ENABLED;
+      
+      this.targetFPS = mobilePerformanceMode ? GAME_CONFIG.ANIMATION.MOBILE_TARGET_FPS : GAME_CONFIG.ANIMATION.TARGET_FPS;
+      this.frameInterval = mobilePerformanceMode ? GAME_CONFIG.ANIMATION.MOBILE_FRAME_INTERVAL : GAME_CONFIG.ANIMATION.FRAME_INTERVAL;
       
       this.resizeCanvas();
       this.resizeHandler = () => this.resizeCanvas();

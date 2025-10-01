@@ -282,6 +282,41 @@ input, textarea {
   user-select: text;
 }
 
+/* Mobile Performance Mode Optimizations */
+.mobile-performance-mode * {
+  /* Reduce animations and transitions for better performance */
+  animation-duration: 0.3s !important;
+  transition-duration: 0.2s !important;
+}
+
+.mobile-performance-mode .property-row::before,
+.mobile-performance-mode .property-row::after {
+  /* Disable shine animations on mobile for better performance */
+  animation: none !important;
+}
+
+.mobile-performance-mode .upgrade {
+  /* Reduce hover effects on mobile */
+  transition: none !important;
+}
+
+.mobile-performance-mode .upgrade:hover {
+  /* Disable hover effects on mobile */
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Reduce particle effects visibility on mobile */
+.mobile-performance-mode .particle-canvas {
+  opacity: 0.6;
+}
+
+/* Optimize scrolling performance */
+.mobile-performance-mode {
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0); /* Force hardware acceleration */
+}
+
 /* General button touch improvements */
 button {
   touch-action: manipulation;

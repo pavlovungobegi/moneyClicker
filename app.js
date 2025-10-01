@@ -35,8 +35,24 @@ let prestigeInterestMultiplier = 1;
                    ('ontouchstart' in window) || 
                    (navigator.maxTouchPoints > 0);
   
+  // Mobile performance mode detection
+  const mobilePerformanceMode = isMobile && GAME_CONFIG.MOBILE_PERFORMANCE.ENABLED;
+  
   // Debug log for mobile detection
-  console.log('Mobile device detected:', isMobile, 'User Agent:', navigator.userAgent);
+  console.log('Mobile device detected:', isMobile, 'Performance mode:', mobilePerformanceMode, 'User Agent:', navigator.userAgent);
+
+  // Apply mobile performance mode CSS class
+  if (mobilePerformanceMode) {
+    document.body.classList.add('mobile-performance-mode');
+  }
+
+  // Function to get appropriate intervals based on mobile performance mode
+  function getIntervalConfig(intervalName) {
+    if (mobilePerformanceMode && GAME_CONFIG.MOBILE_INTERVALS[intervalName]) {
+      return GAME_CONFIG.MOBILE_INTERVALS[intervalName];
+    }
+    return GAME_CONFIG.INTERVALS[intervalName];
+  }
 
   // Game difficulty system - now using config
   const DIFFICULTY_MODES = GAME_CONFIG.DIFFICULTY_MODES;
@@ -4058,8 +4074,8 @@ let prestigeInterestMultiplier = 1;
     });
   }
 
-  // Game loop timing - now using config
-  const TICK_MS = GAME_CONFIG.TICK_MS;
+  // Game loop timing - now using config with mobile optimization
+  const TICK_MS = mobilePerformanceMode ? getIntervalConfig('INVESTMENT_COMPOUNDING') : GAME_CONFIG.TICK_MS;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (getGameDifficulty()) {
@@ -4514,7 +4530,7 @@ let prestigeInterestMultiplier = 1;
   // Events check every 15 seconds - reduced frequency for better performance
   const eventsInterval = setInterval(() => {
     checkEvents();
-  }, GAME_CONFIG.INTERVALS.EVENTS_CHECK);
+  }, getIntervalConfig('EVENTS_CHECK'));
 
   // Loading screen functionality
   function showLoadingScreen() {
@@ -5007,13 +5023,37 @@ function handleVisibilityChange() {
     // App went to background - only pause audio to save battery
     // Game logic continues running for idle game mechanics
     AudioSystem.pauseAllAudio();
+    
+    // Mobile performance optimization: pause heavy operations when backgrounded
+    if (mobilePerformanceMode && GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
+      // Pause particle animations to reduce CPU usage
+      if (particleSystem) {
+        particleSystem.stopAnimation();
+      }
+      // Pause number animations
+      if (numberAnimator) {
+        numberAnimator.stopAnimation();
+      }
+    }
     // console.log('Audio paused - app went to background (game continues running)');
   } else {
     // App came to foreground - resume audio if it was enabled
     if (AudioSystem.getAudioSettings().musicEnabled) {
       AudioSystem.startBackgroundMusic();
-      // console.log('Audio resumed - app came to foreground');
     }
+    
+    // Mobile performance optimization: resume animations when foregrounded
+    if (mobilePerformanceMode && GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
+      // Resume particle animations
+      if (particleSystem && particleEffectsEnabled) {
+        particleSystem.startAnimation();
+      }
+      // Resume number animations
+      if (numberAnimator) {
+        numberAnimator.startAnimation();
+      }
+    }
+    // console.log('Audio resumed - app came to foreground');
   }
 }
 
@@ -5270,7 +5310,7 @@ window.addEventListener('beforeunload', cleanup);
   // Periodic saving every 15 seconds
   const saveInterval = setInterval(() => {
     saveGameState();
-  }, GAME_CONFIG.INTERVALS.GAME_SAVE);
+  }, getIntervalConfig('GAME_SAVE'));
 
   // renderInterestPerSecond function moved earlier in file
 
@@ -5324,7 +5364,7 @@ window.addEventListener('beforeunload', cleanup);
     };
     update();
     // Recompute periodically to reflect upgrades - reduced frequency for better performance
-    const upgradeUpdateInterval = setInterval(update, GAME_CONFIG.INTERVALS.UPGRADE_UPDATE);
+    const upgradeUpdateInterval = setInterval(update, getIntervalConfig('UPGRADE_UPDATE'));
   })();
 
   // Mobile horizontal scrolling enhancements
