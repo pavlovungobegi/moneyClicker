@@ -32,16 +32,23 @@ let prestigeInterestMultiplier = 1;
   
   // Enhanced caching with performance manager
   function getCachedPropertyIncome() {
-    if (performanceManager) {
-      const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
-      const cached = performanceManager.getCache(cacheKey);
-      if (cached !== null) {
-        return cached;
+    console.log('getCachedPropertyIncome called');
+    if (performanceManager && typeof performanceManager.getCache === 'function') {
+      try {
+        const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
+        const cached = performanceManager.getCache(cacheKey);
+        console.log('Performance manager cache result:', cached);
+        if (cached !== null && cached !== undefined && typeof cached === 'number') {
+          return cached;
+        }
+      } catch (error) {
+        console.warn('Failed to get cached property income:', error);
       }
     }
     
     // Fallback to old cache system
-    if (propertyIncomeCacheValid) {
+    console.log('Checking old cache system, propertyIncomeCacheValid:', propertyIncomeCacheValid, 'cachedPropertyIncome:', cachedPropertyIncome);
+    if (propertyIncomeCacheValid && typeof cachedPropertyIncome === 'number') {
       return cachedPropertyIncome;
     }
     
@@ -49,14 +56,21 @@ let prestigeInterestMultiplier = 1;
   }
   
   function setCachedPropertyIncome(income) {
-    if (performanceManager) {
-      const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
-      performanceManager.cache(cacheKey, income, 5000); // 5 second cache
+    console.log('setCachedPropertyIncome called with:', income);
+    if (performanceManager && typeof performanceManager.cache === 'function') {
+      try {
+        const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
+        performanceManager.cache(cacheKey, income, 5000); // 5 second cache
+        console.log('Successfully cached property income');
+      } catch (error) {
+        console.warn('Failed to cache property income:', error);
+      }
     }
     
     // Update old cache system
     cachedPropertyIncome = income;
     propertyIncomeCacheValid = true;
+    console.log('Updated old cache system, cachedPropertyIncome:', cachedPropertyIncome);
   }
 
   // Mobile detection for particle optimization
@@ -192,6 +206,37 @@ let prestigeInterestMultiplier = 1;
   
   // Expose health check function for debugging
   window.checkIntervalHealth = checkIntervalHealth;
+  
+  // Debug function to check property income
+  window.debugPropertyIncome = function() {
+    console.log('=== Property Income Debug ===');
+    console.log('Properties owned:', properties);
+    console.log('PROPERTY_CONFIG available:', !!PROPERTY_CONFIG);
+    console.log('Total property income:', getTotalPropertyIncome());
+    console.log('Game engine available:', !!gameEngine);
+    console.log('Render engine available:', !!renderEngine);
+    console.log('Performance manager available:', !!performanceManager);
+    console.log('Auto-rent enabled:', autoRentEnabled);
+    console.log('Current account balance:', currentAccountBalance);
+    console.log('Investment account balance:', investmentAccountBalance);
+    
+    // Test individual property income calculation
+    Object.keys(properties).forEach(propertyId => {
+      const count = properties[propertyId];
+      if (count > 0) {
+        console.log(`Testing ${propertyId}: ${count} owned`);
+        const config = PROPERTY_CONFIG[propertyId];
+        console.log(`Config for ${propertyId}:`, config);
+        if (config) {
+          const income = getPropertyTotalIncome(propertyId);
+          console.log(`Income for ${propertyId}: ${income}`);
+        } else {
+          console.log(`No config found for ${propertyId}`);
+        }
+      }
+    });
+    console.log('============================');
+  };
 
   // Apply mobile performance mode CSS class
   if (mobilePerformanceMode) {
@@ -205,17 +250,23 @@ let prestigeInterestMultiplier = 1;
     try {
       // Initialize performance manager first
       performanceManager = new PerformanceManager();
+      console.log('Performance manager initialized');
       
       // Initialize game engine
       gameEngine = new GameEngine();
+      console.log('Game engine initialized');
       
       // Initialize render engine
       renderEngine = new RenderEngine();
+      console.log('Render engine initialized');
       
       console.log('Performance systems initialized successfully');
     } catch (error) {
       console.error('Failed to initialize performance systems:', error);
       // Fallback to original system
+      gameEngine = null;
+      renderEngine = null;
+      performanceManager = null;
     }
   }
 
@@ -2492,19 +2543,41 @@ let prestigeInterestMultiplier = 1;
   }
 
   function getTotalPropertyIncome() {
+    console.log('getTotalPropertyIncome called');
     // Use enhanced cached value if valid, but not during earthquakes (to ensure real-time updates)
     if (!earthquakeActive()) {
       const cached = getCachedPropertyIncome();
-      if (cached !== null) {
+      console.log('Cached value:', cached);
+      if (cached !== null && cached !== undefined && typeof cached === 'number') {
+        console.log('Returning cached value:', cached);
         return cached;
       }
     }
     
     // Calculate and cache the result
     let total = 0;
+    let hasProperties = false;
+    
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
-      total += getPropertyTotalIncome(propertyId);
+      const count = properties[propertyId];
+      if (count > 0) {
+        hasProperties = true;
+        const income = getPropertyTotalIncome(propertyId);
+        total += income;
+      }
     });
+    
+    // Debug logging (only when there are properties but no income)
+    if (hasProperties && total === 0) {
+      console.log('WARNING: Properties owned but no income calculated');
+      Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+        const count = properties[propertyId];
+        if (count > 0) {
+          const income = getPropertyTotalIncome(propertyId);
+          console.log(`Property ${propertyId}: ${count} owned, income: ${income}`);
+        }
+      });
+    }
     
     // Apply earthquake rent reduction if active
     if (earthquakeActive() && earthquakeMagnitude() > 0) {
@@ -2519,9 +2592,12 @@ let prestigeInterestMultiplier = 1;
         rentReduction = 1.00; // 100% reduction
       }
       total *= (1 - rentReduction);
+      console.log(`Earthquake active, rent reduction: ${rentReduction * 100}%, final income: ${total}`);
     }
     
+    console.log('Final total before caching:', total);
     setCachedPropertyIncome(total);
+    console.log('Returning total:', total);
     return total;
   }
 
@@ -4640,9 +4716,12 @@ let prestigeInterestMultiplier = 1;
   function setupEventDrivenGameLoop() {
     if (!gameEngine) {
       // Fallback to old system if new system not available
+      console.log('Game engine not available, using legacy game loop');
       setupLegacyGameLoop();
       return;
     }
+    
+    console.log('Using event-driven game loop');
     
     // Register render functions with render engine
     if (renderEngine) {
@@ -4675,47 +4754,23 @@ let prestigeInterestMultiplier = 1;
           renderEngine?.markDirty('balances');
         }
 
-        // Property income - use async calculation if available
-        if (performanceManager) {
-          performanceManager.calculateAsync('CALCULATE_PROPERTY_INCOME', {
-            properties,
-            owned,
-            upgrades: GAME_CONFIG.UPGRADE_CONFIG,
-            propertyConfigs: GAME_CONFIG.PROPERTY_CONFIG
-          }).then(propertyIncome => {
-            if (propertyIncome > 0) {
-              if (autoRentEnabled) {
-                investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-              } else {
-                currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
-              }
-              renderEngine?.markDirty('balances');
-              renderEngine?.markDirty('rentIncome');
-            }
-          }).catch(() => {
-            // Fallback to sync calculation
-            const propertyIncome = getTotalPropertyIncome();
-            if (propertyIncome > 0) {
-              if (autoRentEnabled) {
-                investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-              } else {
-                currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
-              }
-              renderEngine?.markDirty('balances');
-              renderEngine?.markDirty('rentIncome');
-            }
-          });
-        } else {
-          // Fallback to sync calculation
-          const propertyIncome = getTotalPropertyIncome();
-          if (propertyIncome > 0) {
-            if (autoRentEnabled) {
-              investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-            } else {
-              currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
-            }
-            renderEngine?.markDirty('balances');
-            renderEngine?.markDirty('rentIncome');
+        // Property income - always use sync calculation for now to ensure it works
+        const propertyIncome = getTotalPropertyIncome();
+        if (propertyIncome > 0) {
+          if (autoRentEnabled) {
+            investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+          } else {
+            currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+          }
+          renderEngine?.markDirty('balances');
+          renderEngine?.markDirty('rentIncome');
+        }
+        
+        // Debug logging for property income (only when there's an issue)
+        if (propertyIncome > 0) {
+          // Only log occasionally to avoid spam
+          if (Math.random() < 0.01) { // 1% chance
+            console.log('Event-driven: Property income added:', propertyIncome, 'Auto-rent:', autoRentEnabled);
           }
         }
 
@@ -4784,6 +4839,10 @@ let prestigeInterestMultiplier = 1;
             investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
           } else {
             currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+          }
+          // Debug logging for property income (only when there's an issue)
+          if (Math.random() < 0.01) { // 1% chance
+            console.log('Legacy: Property income added:', propertyIncome, 'Auto-rent:', autoRentEnabled);
           }
         }
 
@@ -4878,6 +4937,11 @@ let prestigeInterestMultiplier = 1;
   function initializeGame() {
   // Initialize performance systems first
   initializePerformanceSystems();
+  
+  // Setup new event-driven systems after performance systems are initialized
+  setupEventDrivenGameLoop();
+  setupEventDrivenEvents();
+  setupEventDrivenSaving();
   
   // Cache DOM elements for performance optimization
   cacheDOMElements();
@@ -5730,10 +5794,7 @@ window.addEventListener('beforeunload', cleanup);
     }
   })();
   
-  // Setup new event-driven systems
-  setupEventDrivenGameLoop();
-  setupEventDrivenEvents();
-  setupEventDrivenSaving();
+  // Setup new event-driven systems - moved to initializeGame() function
 
   // Mobile horizontal scrolling enhancements
   (function initMobileScrolling() {

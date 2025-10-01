@@ -15,8 +15,8 @@ const GAME_CONFIG = {
     TARGET_FPS: 60,
     FRAME_INTERVAL: 1000 / 60, // ~16.67ms for 60fps
     PARTICLE_REDUCTION_MOBILE: 0.3, // Reduce particles by 70% on mobile
-    MOBILE_TARGET_FPS: 30, // Lower FPS for mobile to reduce CPU usage
-    MOBILE_FRAME_INTERVAL: 1000 / 30, // ~33.33ms for 30fps on mobile
+    MOBILE_TARGET_FPS: 60, // Lower FPS for mobile to reduce CPU usage
+    MOBILE_FRAME_INTERVAL: 1000 / 60, // ~33.33ms for 30fps on mobile
   },
   
   // Cache and memory management
@@ -38,10 +38,10 @@ const GAME_CONFIG = {
   
   // Mobile-specific intervals (slower for better performance)
   MOBILE_INTERVALS: {
-    INVESTMENT_COMPOUNDING: 1500, // Slower compounding on mobile
+    INVESTMENT_COMPOUNDING: 1000, // Slower compounding on mobile
     EVENTS_CHECK: 15000, // Less frequent event checks
     GAME_SAVE: 20000, // Less frequent saves
-    SUBMISSION_STATUS: 2000, // Less frequent status checks
+    SUBMISSION_STATUS: 10000, // Less frequent status checks
     UPGRADE_UPDATE: 8000, // Less frequent upgrade updates
     ACHIEVEMENT_CHECK: 6000, // Less frequent achievement checks
   },
