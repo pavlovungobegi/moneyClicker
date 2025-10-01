@@ -48,13 +48,32 @@
       window.addEventListener('resize', this.resizeHandler);
       this.startAnimation();
     }
-    
+
     resizeCanvas() {
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
     }
-    
+
+    hasParticles() {
+      return this.particles.length > 0;
+    }
+
+    clearCanvas() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    ensureAnimationRunning() {
+      if (!document.hidden && this.hasParticles()) {
+        this.startAnimation();
+      }
+    }
+
     createParticle(type, x, y, options = {}) {
+      // Limit total particles to prevent memory bloat
+      if (this.particles.length > 200) {
+        return;
+      }
+      
       let particle = this.particlePool.pop();
       if (!particle) {
         particle = {};
@@ -74,11 +93,12 @@
       particle.gravity = 0.1;
       particle.bounce = 0.6;
       particle.color = '#FFD700';
-      
+
       // Override with options
       Object.assign(particle, options);
-      
+
       this.particles.push(particle);
+      this.ensureAnimationRunning();
     }
     
     createCoinParticles(x, y, count = 1) {
@@ -502,12 +522,14 @@
         this.animationId = null;
       }
     }
-    
+
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
         this.animate();
       }
+
+      this.animationId = requestAnimationFrame(() => this.animate());
     }
     
     stopAnimation() {
@@ -596,9 +618,11 @@
         duration,
         formatter: formatter || this.defaultFormatter
       });
-      
+
       // Update last animated value
       this.lastValues.set(key, endValue);
+
+      this.startAnimation();
     }
     
     defaultFormatter(value) {
@@ -637,11 +661,13 @@
         duration,
         formatter: formatter || this.defaultFormatter
       });
-      
+
       // Update last animated value
       this.lastValues.set(key, endValue);
+
+      this.startAnimation();
     }
-    
+
     updateAnimations() {
       const now = Date.now();
       
@@ -685,14 +711,16 @@
         this.animationId = null;
       }
     }
-    
+
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
         this.animate();
       }
+
+      this.animationId = requestAnimationFrame(() => this.animate());
     }
-    
+
     stopAnimation() {
       this.isAnimating = false;
       if (this.animationId) {
@@ -718,11 +746,14 @@
   let flashSaleActive = false;
   let greatDepressionActive = false;
   let fastFingersActive = false;
+  let earthquakeActive = false;
   let marketBoomEndTime = 0;
   let marketCrashEndTime = 0;
   let flashSaleEndTime = 0;
   let greatDepressionEndTime = 0;
   let fastFingersEndTime = 0;
+  let earthquakeEndTime = 0;
+  let earthquakeMagnitude = 0;
   let eventCooldown = 0;
   let skipNextEventCheck = false; // Skip next event check to give breathing room
   
@@ -738,63 +769,63 @@
       name: "Food Stand",
       baseCost: 400,
       incomePerSecond: 13,
-      priceMultiplier: 1.065, // 2.5% increase per purchase
+      priceMultiplier: 1.075, // 2.5% increase per purchase
       icon: "fas fa-utensils"
     },
     newsstand: {
       name: "Newsstand",
       baseCost: 8000,
       incomePerSecond: 100,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-newspaper"
     },
     parkingGarage: {
       name: "Parking Garage",
       baseCost: 30000,
       incomePerSecond: 200,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-car"
     },
     convenienceStore: {
       name: "Convenience Store",
       baseCost: 150000,
       incomePerSecond: 1250,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-store"
     },
     apartment: {
       name: "Apartment",
       baseCost: 500000,
       incomePerSecond: 4000,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-home"
     },
     manufacturingPlant: {
       name: "Manufacturing Plant",
       baseCost: 2500000,
       incomePerSecond: 18000,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-industry"
     },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
       incomePerSecond: 55000,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-building"
     },
     skyscraper: {
       name: "Skyscraper",
       baseCost: 50000000,
       incomePerSecond: 175000,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-city"
     },
     operaHouse: {
       name: "Opera House",
       baseCost: 500000000,
       incomePerSecond: 1500000,
-      priceMultiplier: 1.065, // 4% increase per purchase
+      priceMultiplier: 1.075, // 4% increase per purchase
       icon: "fas fa-theater-masks"
     }
   };
@@ -950,6 +981,12 @@
         normal: 0.01,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.045   // 2% chance (extreme)
+      },
+      earthquake: {
+        easy: 0.005,     // 1% chance (same for all difficulties)
+        normal: 0.005,   // 1% chance
+        hard: 0.01,     // 1% chance
+        extreme: 0.015   // 1% chance
       }
     },
     
@@ -959,7 +996,8 @@
       marketCrash: 30000,   // 30 seconds
       flashSale: 30000,     // 30 seconds
       greatDepression: 30000, // 30 seconds
-      fastFingers: 15000    // 15 seconds
+      fastFingers: 15000,   // 15 seconds
+      earthquake: 30000     // 30 seconds
     },
     
     // Event cooldowns (milliseconds) - different for each difficulty
@@ -1023,7 +1061,8 @@
       fastFingers: 0,
       taxCollection: 0,
       robbery: 0,
-      divorce: 0
+      divorce: 0,
+      earthquake: 0
     },
     
     // Net worth thresholds (minimum net worth required for events to trigger)
@@ -1035,7 +1074,21 @@
       fastFingers: 0,       // No threshold
       taxCollection: 250000,     // No threshold
       robbery: 150000,           // No threshold
-      divorce: 1000000      // 1 million euro threshold
+      divorce: 1000000,     // 1 million euro threshold
+      earthquake: 0         // No net worth threshold, but requires 100 properties
+    },
+    
+    // Event requirements (upgrades that must be unlocked for events to trigger)
+    requirements: {
+      marketBoom: "u11",        // Investment must be unlocked
+      marketCrash: "u11",       // Investment must be unlocked
+      greatDepression: "u11",   // Investment must be unlocked
+      taxCollection: "u11",     // Investment must be unlocked (affects investment account)
+      robbery: null,            // No requirements
+      flashSale: null,          // No requirements
+      fastFingers: null,        // No requirements
+      divorce: null,            // No requirements
+      earthquake: null          // No upgrade requirements (100 property requirement handled separately)
     }
   };
   
@@ -1048,6 +1101,13 @@
   function meetsNetWorthThreshold(eventName) {
     const threshold = EVENT_CONFIG.netWorthThresholds[eventName] || 0;
     return getCurrentNetWorth() >= threshold;
+  }
+  
+  // Helper function to check if event requirements are met
+  function meetsEventRequirements(eventName) {
+    const requiredUpgrade = EVENT_CONFIG.requirements[eventName];
+    if (!requiredUpgrade) return true; // No requirements
+    return owned[requiredUpgrade] || false;
   }
   
   // Helper function to get event probability based on current difficulty
@@ -1317,6 +1377,135 @@
     logEvent("🔫 Robbery", "robbery");
   }
   
+  function triggerEarthquake() {
+    if (marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive) return; // Don't trigger if any event is active
+    
+    // Generate earthquake magnitude (4.0 to 8.0)
+    const magnitude = 4.0 + Math.random() * 4.0; // Random between 4.0 and 8.0
+    
+    // Set earthquake as active
+    earthquakeActive = true;
+    earthquakeEndTime = Date.now() + EVENT_CONFIG.durations.earthquake;
+    earthquakeMagnitude = magnitude;
+    EVENT_CONFIG.eventCooldowns.earthquake = Date.now() + getEventCooldown('earthquake');
+    
+    // Calculate effects based on magnitude
+    let rentReduction = 0;
+    let demolishPercentage = 0;
+    let demolishCount = 0;
+    
+    if (magnitude >= 4.0 && magnitude < 5.0) {
+      // 4.0-5.0: 15% rent reduction
+      rentReduction = 0.15;
+    } else if (magnitude >= 5.0 && magnitude < 6.0) {
+      // 5.0-6.0: 50% rent reduction
+      rentReduction = 0.50;
+    } else if (magnitude >= 6.0 && magnitude < 7.0) {
+      // 6.0-7.0: 75% rent reduction + demolish 1-4% of buildings
+      rentReduction = 0.75;
+      demolishPercentage = 0.01 + (magnitude - 6.0) * 0.03; // 1% at 6.0, 4% at 7.0
+    } else if (magnitude >= 7.0 && magnitude <= 8.0) {
+      // 7.0-8.0: 100% rent reduction + demolish 4-25% of buildings
+      rentReduction = 1.00;
+      demolishPercentage = 0.04 + (magnitude - 7.0) * 0.21; // 4% at 7.0, 25% at 8.0
+    }
+    
+    // Calculate total properties for demolition
+    const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
+    demolishCount = Math.floor(totalProperties * demolishPercentage);
+    
+    // Demolish properties if applicable
+    let demolishedProperties = {};
+    if (demolishCount > 0) {
+      demolishedProperties = demolishProperties(demolishCount);
+    }
+    
+    // Show notification
+    let notificationText = `Magnitude ${magnitude.toFixed(1)} earthquake! Rent income reduced by ${(rentReduction * 100).toFixed(0)}% for 30 seconds!`;
+    if (demolishCount > 0) {
+      notificationText += ` ${demolishCount} properties demolished!`;
+    }
+    
+    showEventNotification("🌍 Earthquake!", notificationText, "earthquake");
+    
+    // Visual effects
+    screenFlash('#8B4513', 800); // Brown flash
+    screenShake(Math.min(15, magnitude * 2), 600); // Strong shake based on magnitude
+    
+    // Sound effect (reuse crash sound for now)
+    playMarketCrashSound();
+    
+    // Create destruction particles
+    if (particleSystem && demolishCount > 0) {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      // Create destruction effect with multiple particle types
+      particleSystem.createMoneyLossParticles(centerX, centerY, demolishCount * 1000); // Money loss particles for destruction
+      particleSystem.createSparkleParticles(centerX, centerY, Math.min(demolishCount * 2, 10)); // Sparkles for destruction effect
+      particleSystem.createUpgradeParticles(centerX, centerY, Math.min(demolishCount, 5)); // Upgrade particles for building destruction
+    }
+    
+    // Invalidate property income cache to ensure earthquake effects are applied
+    propertyIncomeCacheValid = false;
+    
+    // Update displays
+    renderAllProperties();
+    renderRentIncome();
+    updateActiveEventDisplay();
+    
+    // Log the event with demolition details
+    const eventDetails = {
+      magnitude: magnitude,
+      rentReduction: rentReduction,
+      demolishCount: demolishCount,
+      demolishedProperties: demolishedProperties
+    };
+    logEvent(`🌍 Earthquake (${magnitude.toFixed(1)})`, "earthquake", eventDetails);
+  }
+  
+  function demolishProperties(count) {
+    if (count <= 0) return {};
+    
+    // Get all properties with counts > 0
+    const availableProperties = Object.entries(properties).filter(([id, count]) => count > 0);
+    if (availableProperties.length === 0) return {};
+    
+    // Track what was demolished
+    const demolishedProperties = {};
+    
+    let remainingToDemolish = count;
+    
+    // Demolish properties randomly
+    while (remainingToDemolish > 0 && availableProperties.length > 0) {
+      // Pick a random property type
+      const randomIndex = Math.floor(Math.random() * availableProperties.length);
+      const [propertyId, currentCount] = availableProperties[randomIndex];
+      
+      // Demolish 1 property of this type
+      properties[propertyId] = Math.max(0, currentCount - 1);
+      remainingToDemolish--;
+      
+      // Track the demolition
+      if (!demolishedProperties[propertyId]) {
+        demolishedProperties[propertyId] = 0;
+      }
+      demolishedProperties[propertyId]++;
+      
+      // Update the available properties list
+      if (properties[propertyId] === 0) {
+        availableProperties.splice(randomIndex, 1);
+      } else {
+        availableProperties[randomIndex][1] = properties[propertyId];
+      }
+    }
+    
+    // Update displays
+    renderAllProperties();
+    renderRentIncome();
+    
+    return demolishedProperties;
+  }
+  
   function triggerDivorce() {
     // Divorce is an instant event (no duration) but follows the same "one event at a time" rule
     // Set cooldown
@@ -1439,6 +1628,18 @@
       updateActiveEventDisplay();
       skipNextEventCheck = true; // Skip next event check for breathing room
     }
+    
+    if (earthquakeActive && now >= earthquakeEndTime) {
+      earthquakeActive = false;
+      showEventNotification("🌍 Earthquake Ended", "Rent income returned to normal", "earthquake-end");
+      
+      // Invalidate property income cache to ensure earthquake effects are removed
+      propertyIncomeCacheValid = false;
+      
+      renderRentIncome(); // Update rent income display
+      updateActiveEventDisplay();
+      skipNextEventCheck = true; // Skip next event check for breathing room
+    }
   }
 
   function checkEvents() {
@@ -1455,7 +1656,7 @@
     }
     
     // Check for new events (only one event can be active at a time)
-    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive;
+    const anyEventActive = marketBoomActive || marketCrashActive || flashSaleActive || greatDepressionActive || fastFingersActive || earthquakeActive;
     
     // console.log('🎲 Event Check:', {
     //   anyEventActive,
@@ -1484,12 +1685,22 @@
         { name: 'fastFingers', prob: getEventProbability('fastFingers') },
         { name: 'taxCollection', prob: getEventProbability('taxCollection') },
         { name: 'robbery', prob: getEventProbability('robbery') },
-        { name: 'divorce', prob: getEventProbability('divorce') }
+        { name: 'divorce', prob: getEventProbability('divorce') },
+        { name: 'earthquake', prob: getEventProbability('earthquake') }
       ];
       
       // Filter events that can actually trigger
       eventConfigs.forEach(event => {
-        const canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && meetsNetWorthThreshold(event.name);
+        let canTrigger = now >= EVENT_CONFIG.eventCooldowns[event.name] && 
+                        meetsNetWorthThreshold(event.name) && 
+                        meetsEventRequirements(event.name);
+        
+        // Special requirement for earthquake: need at least 100 properties
+        if (event.name === 'earthquake') {
+          const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
+          canTrigger = canTrigger && totalProperties >= 100;
+        }
+        
         if (canTrigger) {
           availableEvents.push(event);
         }
@@ -1526,7 +1737,8 @@
           fastFingers: now >= EVENT_CONFIG.eventCooldowns.fastFingers,
           taxCollection: now >= EVENT_CONFIG.eventCooldowns.taxCollection,
           robbery: now >= EVENT_CONFIG.eventCooldowns.robbery,
-          divorce: now >= EVENT_CONFIG.eventCooldowns.divorce
+          divorce: now >= EVENT_CONFIG.eventCooldowns.divorce,
+          earthquake: now >= EVENT_CONFIG.eventCooldowns.earthquake
         },
         netWorthChecks: {
           currentNetWorth: getCurrentNetWorth(),
@@ -1537,7 +1749,8 @@
           fastFingers: meetsNetWorthThreshold('fastFingers'),
           taxCollection: meetsNetWorthThreshold('taxCollection'),
           robbery: meetsNetWorthThreshold('robbery'),
-          divorce: meetsNetWorthThreshold('divorce')
+          divorce: meetsNetWorthThreshold('divorce'),
+          earthquake: meetsNetWorthThreshold('earthquake')
         }
       });
       
@@ -1573,6 +1786,9 @@
               break;
             case 'divorce':
         triggerDivorce();
+              break;
+            case 'earthquake':
+        triggerEarthquake();
               break;
       }
           eventTriggered = true;
@@ -1658,6 +1874,11 @@
       endTime = fastFingersEndTime;
       eventType = 'fast-fingers';
       totalDuration = EVENT_CONFIG.durations.fastFingers;
+    } else if (earthquakeActive && now < earthquakeEndTime) {
+      activeEvent = { name: `Earthquake (${earthquakeMagnitude.toFixed(1)})`, icon: '🌍', type: 'earthquake' };
+      endTime = earthquakeEndTime;
+      eventType = 'earthquake';
+      totalDuration = EVENT_CONFIG.durations.earthquake;
     }
     
     if (activeEvent) {
@@ -2056,7 +2277,8 @@
     currency: (value) => '€' + formatNumberShort(value),
     currencyPerSec: (value) => '€' + formatNumberShort(value) + '/sec',
     currencyEach: (value) => '€' + formatNumberShort(value) + '/sec each',
-    currencyTotal: (value) => '€' + formatNumberShort(value) + '/sec total'
+    currencyTotal: (value) => '€' + formatNumberShort(value) + '/sec total',
+    currencyPerSecCompact: (value) => '€' + formatNumberShort(value) + '/s' // Shorter version for compact displays
   };
   
   // Debounced formatter for high-frequency updates (prevents excessive formatting)
@@ -2172,6 +2394,7 @@
         renderAutoInvestSection();
         renderAutoRentSection();
         renderClickStreak();
+        renderRentIncome(); // Update rent income display
         break;
       case 'upgrades':
         renderUpgradesOwned();
@@ -2228,11 +2451,7 @@
 
   function getPerClickIncome() {
     let base = 1;
-    let bonus = 0;
-    if (owned.u1) bonus += 1;      // elementary school
-    if (owned.u3) bonus += 6;      // high school
-    if (owned.u5) bonus += 30;     // higher education
-    
+    let bonus = getUpgradeEffectTotal('click_income');
     
     let totalIncome = (base + bonus) * prestigeClickMultiplier;
     
@@ -2496,11 +2715,7 @@
   // Property system functions
   function getEffectiveBaseCost(config) {
     // Apply building discount upgrades
-    let totalDiscount = 0;
-    if (owned.u33) totalDiscount += 0.15; // Real Estate Connections: 15% off
-    if (owned.u34) totalDiscount += 0.20; // Hire a contractor: additional 20% off
-    if (owned.u36) totalDiscount += 0.10; // Market awareness: additional 10% off
-    if (owned.u39) totalDiscount += 0.25; // Government Connections: additional 25% off
+    const totalDiscount = getUpgradeEffectTotal('building_discount');
     
     return config.baseCost * (1 - totalDiscount);
   }
@@ -2522,20 +2737,9 @@
     
     let income = config.incomePerSecond * tierMultiplier;
     
-    // Apply Property Management boost (35% increase)
-    if (owned.u35) {
-      income *= 1.35;
-    }
-    
-    // Apply Rental Monopoly boost (20% increase)
-    if (owned.u37) {
-      income *= 1.20;
-    }
-    
-    // Apply Cheesy Landlord boost (5% increase)
-    if (owned.u38) {
-      income *= 1.05;
-    }
+    // Apply rent income boosts
+    const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
+    income *= rentMultiplier;
     
     return Math.floor(income);
   }
@@ -2544,39 +2748,17 @@
     const config = PROPERTY_CONFIG[propertyId];
     const ownedCount = properties[propertyId];
     
-    // Calculate tier based on total owned buildings (every 25 buildings)
-    let tier;
-    if (ownedCount >= 100) {
-      tier = 4; // Diamond (100+) - 16x multiplier
-    } else if (ownedCount >= 75) {
-      tier = 3; // Golden (75-99) - 8x multiplier
-    } else if (ownedCount >= 50) {
-      tier = 2; // Silver (50-74) - 4x multiplier
-    } else if (ownedCount >= 25) {
-      tier = 1; // Bronze (25-49) - 2x multiplier
-    } else {
-      tier = 0; // Default (0-24) - 1x multiplier
-    }
+    // Calculate tier using procedural system
+    const tier = calculateTier(ownedCount);
     
     const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
     
     // All buildings get the same income multiplier based on total owned
     let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
     
-    // Apply Property Management boost (35% increase)
-    if (owned.u35) {
-      baseIncome *= 1.35;
-    }
-    
-    // Apply Rental Monopoly boost (20% increase)
-    if (owned.u37) {
-      baseIncome *= 1.20;
-    }
-    
-    // Apply Cheesy Landlord boost (5% increase)
-    if (owned.u38) {
-      baseIncome *= 1.05;
-    }
+    // Apply rent income boosts
+    const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
+    baseIncome *= rentMultiplier;
     
     // Debug logging
     /*
@@ -2748,34 +2930,16 @@
     // Update individual income per unit (with tier system and upgrades)
     const individualIncomeEl = document.querySelector(`#${propertyId}Owned`).parentElement.querySelector('.property-income');
     if (individualIncomeEl) {
-              // Calculate tier based on total owned buildings (every 25 buildings)
-              let tier;
-              if (ownedCount >= 100) {
-                tier = 4; // Diamond (100+) - 16x multiplier
-              } else if (ownedCount >= 75) {
-                tier = 3; // Golden (75-99) - 8x multiplier
-              } else if (ownedCount >= 50) {
-                tier = 2; // Silver (50-74) - 4x multiplier
-              } else if (ownedCount >= 25) {
-                tier = 1; // Bronze (25-49) - 2x multiplier
-              } else {
-                tier = 0; // Default (0-24) - 1x multiplier
-              }
+              // Calculate tier using procedural system
+              const tier = calculateTier(ownedCount);
       
       const tierMultiplier = Math.pow(2, tier);
       
       let individualIncome = config.incomePerSecond * tierMultiplier;
       
-      // Apply upgrades
-      if (owned.u35) {
-        individualIncome *= 1.35;
-      }
-      if (owned.u37) {
-        individualIncome *= 1.20;
-      }
-      if (owned.u38) {
-        individualIncome *= 1.05;
-      }
+      // Apply rent income boosts
+      const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
+      individualIncome *= rentMultiplier;
       
       individualIncomeEl.textContent = animationFormatters.currencyEach(Math.floor(individualIncome));
     }
@@ -2821,56 +2985,434 @@
     }
   }
 
+  // Centralized tier configuration system
+  const TIER_CONFIG = {
+    // Default tier (0 buildings)
+    default: {
+      name: "Default",
+      color: "#6b7280",
+      bgColor: "rgba(107, 114, 128, 0.1)",
+      borderColor: "rgba(107, 114, 128, 0.3)",
+      buildingsRequired: 0
+    },
+    
+    // All tiers in standard progression (every 25 buildings)
+    standardTiers: [
+      { name: "Bronze", color: "#cd7f32", bgColor: "rgba(205, 127, 50, 0.4)", borderColor: "rgba(205, 127, 50, 0.6)", buildingsRequired: 25 },
+      { name: "Silver", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 50 },
+      { name: "Gold", color: "#ffd700", bgColor: "rgba(255, 215, 0, 0.4)", borderColor: "rgba(255, 215, 0, 0.7)", buildingsRequired: 75 },
+      { name: "Diamond", color: "#00bfff", bgColor: "rgba(0, 191, 255, 0.4)", borderColor: "rgba(0, 191, 255, 0.7)", buildingsRequired: 100 },
+      { name: "Platinum", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 125 },
+      { name: "Emerald", color: "#50c878", bgColor: "rgba(80, 200, 120, 0.4)", borderColor: "rgba(80, 200, 120, 0.6)", buildingsRequired: 150 },
+      { name: "Ruby", color: "#e0115f", bgColor: "rgba(224, 17, 95, 0.4)", borderColor: "rgba(224, 17, 95, 0.6)", buildingsRequired: 175 },
+      { name: "Sapphire", color: "#0f52ba", bgColor: "rgba(15, 82, 186, 0.4)", borderColor: "rgba(15, 82, 186, 0.6)", buildingsRequired: 200 },
+      { name: "Mythic", color: "#8b5cf6", bgColor: "rgba(139, 92, 246, 0.4)", borderColor: "rgba(139, 92, 246, 0.6)", buildingsRequired: 225 },
+      { name: "Legendary", color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.4)", borderColor: "rgba(245, 158, 11, 0.6)", buildingsRequired: 250 },
+      { name: "Transcendent", color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)", buildingsRequired: 275 },
+      { name: "Divine", color: "#ff6b6b", bgColor: "rgba(255, 107, 107, 0.4)", borderColor: "rgba(255, 255, 255, 0.8)", buildingsRequired: 300 }
+    ],
+    
+    // Configuration
+    buildingsPerTier: 25
+  };
+
+  // Get tier information based on building count (not tier number)
+  function getTierInfoByBuildings(buildingCount) {
+    if (buildingCount === 0) {
+      return TIER_CONFIG.default;
+    }
+    
+    // Check all tiers (now all in standardTiers array)
+    for (let i = TIER_CONFIG.standardTiers.length - 1; i >= 0; i--) {
+      const tier = TIER_CONFIG.standardTiers[i];
+      if (buildingCount >= tier.buildingsRequired) {
+        return {
+          name: tier.name,
+          color: tier.color,
+          bgColor: tier.bgColor,
+          borderColor: tier.borderColor,
+          buildingsRequired: tier.buildingsRequired
+        };
+      }
+    }
+    
+    // Default tier for 0 buildings
+    return TIER_CONFIG.default;
+  }
+
+  // Get tier information for a given tier number (for backward compatibility)
+  function getTierInfo(tierNumber) {
+    if (tierNumber === 0) {
+      return TIER_CONFIG.default;
+    }
+    
+    // Calculate buildings required for this tier
+    const buildingsRequired = tierNumber * TIER_CONFIG.buildingsPerTier;
+    
+    // Use the building-based function
+    return getTierInfoByBuildings(buildingsRequired);
+  }
+
+  // Calculate tier number from owned count
+  function calculateTier(ownedCount) {
+    // Get the tier info based on building count
+    const tierInfo = getTierInfoByBuildings(ownedCount);
+    
+    // Find the tier number that corresponds to this tier info
+    if (tierInfo === TIER_CONFIG.default) {
+      return 0;
+    }
+    
+    // Check all tiers (now all in standardTiers array)
+    for (let i = 0; i < TIER_CONFIG.standardTiers.length; i++) {
+      if (TIER_CONFIG.standardTiers[i].buildingsRequired === tierInfo.buildingsRequired) {
+        return i + 1; // tier 1 = index 0, tier 2 = index 1, etc.
+      }
+    }
+    
+    return 0; // Default fallback
+  }
+
+  // Get tier information by building count (useful for future modifications)
+  // This function is now the main implementation above, this is just an alias
+  // function getTierInfoByBuildings(buildingCount) {
+  //   return getTierInfoByBuildings(buildingCount); // This would cause infinite recursion
+  // }
+
+  // Get all tier configurations (useful for debugging or future features)
+  function getAllTierConfigs() {
+    return {
+      default: TIER_CONFIG.default,
+      standardTiers: TIER_CONFIG.standardTiers,
+      config: {
+        buildingsPerTier: TIER_CONFIG.buildingsPerTier
+      }
+    };
+  }
+
   // Apply tier-based styling to property rows
   function applyTierStyling(propertyId, ownedCount, showNotifications = true) {
     const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
     if (!propertyRow) return;
     
+    // Get current tier info based on building count
+    const currentTierInfo = getTierInfoByBuildings(ownedCount);
+    const currentTierNumber = calculateTier(ownedCount);
+    
     // Get previous tier to detect tier changes
     const previousTier = getTierFromClass(propertyRow);
     
-    // Calculate new tier (every 25 buildings: Bronze, Silver, Gold, Diamond)
-    let newTier;
-    if (ownedCount >= 100) {
-      newTier = 4; // Diamond (100+)
-    } else if (ownedCount >= 75) {
-      newTier = 3; // Golden (75-99)
-    } else if (ownedCount >= 50) {
-      newTier = 2; // Silver (50-74)
-    } else if (ownedCount >= 25) {
-      newTier = 1; // Bronze (25-49)
-    } else {
-      newTier = 0; // Default (0-24)
-    }
+    // Remove all existing tier classes
+    const existingClasses = Array.from(propertyRow.classList).filter(cls => cls.startsWith('tier-'));
+    existingClasses.forEach(cls => propertyRow.classList.remove(cls));
     
-    // Remove existing tier classes
-    propertyRow.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3', 'tier-4');
+    // Add new tier class
+    propertyRow.classList.add(`tier-${currentTierNumber}`);
     
-    if (ownedCount >= 100) {
-      propertyRow.classList.add('tier-4'); // Diamond (100+)
-    } else if (ownedCount >= 75) {
-      propertyRow.classList.add('tier-3'); // Golden (75-99)
-    } else if (ownedCount >= 50) {
-      propertyRow.classList.add('tier-2'); // Silver (50-74)
-    } else if (ownedCount >= 25) {
-      propertyRow.classList.add('tier-1'); // Bronze (25-49)
-    } else {
-      propertyRow.classList.add('tier-0'); // Default (0-24)
-    }
+    // Generate CSS for this tier if it doesn't exist
+    generateTierCSS(currentTierNumber);
     
-    // Check if tier increased and celebrate! (only for tiers 1, 2, 3, 4)
-    if (showNotifications && newTier > previousTier && newTier <= 4) {
-      celebrateTierUpgrade(propertyId, newTier, propertyRow);
+    // Check if we reached a new tier (regardless of exact building count)
+    if (showNotifications && currentTierNumber > previousTier && currentTierNumber > 0) {
+      // Celebrate whenever we reach a new tier number
+      celebrateTierUpgrade(propertyId, currentTierNumber, propertyRow);
     }
   }
   
   // Helper function to get tier from CSS class
   function getTierFromClass(propertyRow) {
-    if (propertyRow.classList.contains('tier-4')) return 4;
-    if (propertyRow.classList.contains('tier-3')) return 3;
-    if (propertyRow.classList.contains('tier-2')) return 2;
-    if (propertyRow.classList.contains('tier-1')) return 1;
-    return 0;
+    const tierClasses = Array.from(propertyRow.classList).filter(cls => cls.startsWith('tier-'));
+    if (tierClasses.length === 0) return 0;
+    
+    const tierNumber = parseInt(tierClasses[0].replace('tier-', ''));
+    return isNaN(tierNumber) ? 0 : tierNumber;
+  }
+
+  // Generate CSS for a specific tier dynamically
+  function generateTierCSS(tierNumber) {
+    const tierInfo = getTierInfo(tierNumber);
+    const className = `.property-row.tier-${tierNumber}`;
+    
+    // Check if CSS already exists - prevent duplicate style elements
+    if (document.querySelector(`style[data-tier="${tierNumber}"]`)) {
+      return;
+    }
+    
+    // Use a single consolidated style element for all tiers
+    let consolidatedStyle = document.getElementById('consolidated-tier-styles');
+    if (!consolidatedStyle) {
+      consolidatedStyle = document.createElement('style');
+      consolidatedStyle.id = 'consolidated-tier-styles';
+      document.head.appendChild(consolidatedStyle);
+    }
+    
+    // Create style element for this specific tier (fallback for complex tiers)
+    const style = document.createElement('style');
+    style.setAttribute('data-tier', tierNumber);
+    
+    // Generate CSS based on tier type
+    let css = '';
+    
+    if (tierNumber === 0) {
+      // Default tier - no special styling
+      css = `${className} { /* Default tier - no special styling */ }`;
+    } else if (tierNumber === 12) {
+      // Divine tier - special shifting colors and flaming animation with improved background readability
+      css = `
+        ${className} {
+          background: linear-gradient(45deg, 
+            rgba(255, 107, 107, 0.2) 0%, 
+            rgba(78, 205, 196, 0.2) 25%, 
+            rgba(69, 183, 209, 0.2) 50%, 
+            rgba(150, 206, 180, 0.2) 75%, 
+            rgba(254, 202, 87, 0.2) 100%);
+          background-size: 400% 400%;
+          animation: divineShift 3s ease-in-out infinite;
+          border: 2px solid rgba(255, 255, 255, 0.7);
+          box-shadow: 
+            0 0 15px rgba(255, 255, 255, 0.5),
+            0 0 25px rgba(255, 107, 107, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        ${className}::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: linear-gradient(45deg, 
+            rgba(255, 107, 107, 0.4), 
+            rgba(78, 205, 196, 0.4), 
+            rgba(69, 183, 209, 0.4), 
+            rgba(150, 206, 180, 0.4), 
+            rgba(254, 202, 87, 0.4), 
+            rgba(255, 107, 107, 0.4));
+          background-size: 400% 400%;
+          animation: divineShift 3s ease-in-out infinite;
+          z-index: -1;
+          border-radius: 8px;
+        }
+        
+        ${className}::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: 
+            radial-gradient(circle at 20% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+          animation: divineGlow 2s ease-in-out infinite alternate;
+          pointer-events: none;
+          border-radius: 6px;
+        }
+        
+        ${className}:hover {
+          animation-duration: 1.5s;
+          box-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.7),
+            0 0 35px rgba(255, 107, 107, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Flaming animation for Divine tier - keep original text styling */
+        ${className} .property-name,
+        ${className} .property-count,
+        ${className} .property-income {
+          animation: divineFlicker 0.1s ease-in-out infinite alternate;
+        }
+      `;
+    } else if (tierNumber >= (TIER_CONFIG.eliteTierStart / TIER_CONFIG.buildingsPerTier)) {
+      // Elite tiers - enhanced effects
+      css = `
+        ${className} {
+          background: linear-gradient(135deg, 
+            ${tierInfo.bgColor} 0%, 
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 25%,
+            ${tierInfo.bgColor.replace('0.4', '0.3')} 50%,
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 75%,
+            ${tierInfo.bgColor} 100%);
+          border: 1px solid ${tierInfo.borderColor};
+          box-shadow: 
+            0 2px 8px ${tierInfo.borderColor.replace('0.6', '0.3')},
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+          position: relative;
+        }
+        
+        ${className}::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.6), 
+            rgba(255, 255, 255, 0.8),
+            rgba(255, 255, 255, 0.6),
+            transparent);
+          animation: specialShine 2s infinite;
+          pointer-events: none;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        
+        ${className}::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle at 30% 20%, ${tierInfo.borderColor.replace('0.6', '0.2')} 0%, transparent 50%),
+                      radial-gradient(circle at 70% 80%, ${tierInfo.borderColor.replace('0.6', '0.15')} 0%, transparent 50%);
+          pointer-events: none;
+          border-radius: 6px;
+        }
+        
+        ${className}:hover {
+          border-color: ${tierInfo.borderColor.replace('0.6', '0.9')};
+          box-shadow: 
+            0 4px 12px ${tierInfo.borderColor.replace('0.6', '0.4')},
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+      `;
+    } else if (tierNumber === 5) {
+      // Platinum tier - same colors as Silver but with shining animation
+      css = `
+        ${className} {
+          background: linear-gradient(135deg, 
+            ${tierInfo.bgColor} 0%, 
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 25%,
+            ${tierInfo.bgColor.replace('0.4', '0.3')} 50%,
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 75%,
+            ${tierInfo.bgColor} 100%);
+          border: 1px solid ${tierInfo.borderColor};
+          box-shadow: 0 2px 8px ${tierInfo.borderColor.replace('0.6', '0.25')};
+          position: relative;
+          overflow: hidden;
+        }
+        
+        ${className}::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.4) 50%, 
+            transparent 100%);
+          animation: platinumShine 2s ease-in-out infinite;
+          pointer-events: none;
+        }
+        
+        ${className}:hover {
+          border-color: ${tierInfo.borderColor.replace('0.6', '0.8')};
+          box-shadow: 0 4px 12px ${tierInfo.borderColor.replace('0.6', '0.35')};
+        }
+      `;
+    } else {
+      // Regular tiers - standard styling
+      css = `
+        ${className} {
+          background: linear-gradient(135deg, 
+            ${tierInfo.bgColor} 0%, 
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 25%,
+            ${tierInfo.bgColor.replace('0.4', '0.3')} 50%,
+            ${tierInfo.bgColor.replace('0.4', '0.35')} 75%,
+            ${tierInfo.bgColor} 100%);
+          border: 1px solid ${tierInfo.borderColor};
+          box-shadow: 0 2px 8px ${tierInfo.borderColor.replace('0.6', '0.25')};
+        }
+        
+        ${className}:hover {
+          border-color: ${tierInfo.borderColor.replace('0.6', '0.8')};
+          box-shadow: 0 4px 12px ${tierInfo.borderColor.replace('0.6', '0.35')};
+        }
+      `;
+    }
+    
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  // Add special shine animation for high tiers
+  function addSpecialShineAnimation() {
+    if (document.querySelector('style[data-animation="specialShine"]')) return;
+    
+    const style = document.createElement('style');
+    style.setAttribute('data-animation', 'specialShine');
+    style.textContent = `
+      @keyframes specialShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+      
+      @keyframes divineShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      @keyframes divineGlow {
+        0% { 
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        100% { 
+          opacity: 1;
+          transform: scale(1.05);
+        }
+      }
+      
+      @keyframes divineFlicker {
+        0% { 
+          text-shadow: 
+            0 0 5px rgba(255, 255, 255, 0.8),
+            0 0 10px rgba(255, 107, 107, 0.6),
+            0 0 15px rgba(78, 205, 196, 0.4);
+        }
+        100% { 
+          text-shadow: 
+            0 0 8px rgba(255, 255, 255, 1),
+            0 0 15px rgba(255, 107, 107, 0.8),
+            0 0 25px rgba(78, 205, 196, 0.6),
+            0 0 35px rgba(69, 183, 209, 0.4);
+        }
+      }
+      
+      @keyframes platinumShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Helper function to adjust color brightness
+  function adjustColorBrightness(color, factor) {
+    // Convert hex to RGB
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Adjust brightness
+    const newR = Math.min(255, Math.max(0, Math.round(r * factor)));
+    const newG = Math.min(255, Math.max(0, Math.round(g * factor)));
+    const newB = Math.min(255, Math.max(0, Math.round(b * factor)));
+    
+    // Convert back to hex
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
   }
   
   // Update tier progress line under property card
@@ -2878,40 +3420,14 @@
     const propertyRow = document.querySelector(`[data-property-id="${propertyId}"]`);
     if (!propertyRow) return;
     
-    // Calculate current tier and progress to next tier
-    let currentTier, nextTierThreshold, progress, lineColor;
+    // Calculate current tier and progress to next tier using procedural system
+    const currentTier = calculateTier(ownedCount);
+    const nextTierThreshold = (currentTier + 1) * TIER_CONFIG.buildingsPerTier;
+    const progress = (ownedCount % TIER_CONFIG.buildingsPerTier) / TIER_CONFIG.buildingsPerTier;
     
-    if (ownedCount >= 100) {
-      // Diamond tier (max tier) - hide progress line
-      currentTier = 4;
-      nextTierThreshold = 100;
-      progress = 0;
-      lineColor = '#00bfff'; // Diamond blue
-    } else if (ownedCount >= 75) {
-      // Gold tier - progress to Diamond (100)
-      currentTier = 3;
-      nextTierThreshold = 100;
-      progress = (ownedCount - 75) / 25; // 0-1 progress from 75 to 100
-      lineColor = '#ffd700'; // Gold
-    } else if (ownedCount >= 50) {
-      // Silver tier - progress to Gold (75)
-      currentTier = 2;
-      nextTierThreshold = 75;
-      progress = (ownedCount - 50) / 25; // 0-1 progress from 50 to 75
-      lineColor = '#c0c0c0'; // Silver
-    } else if (ownedCount >= 25) {
-      // Bronze tier - progress to Silver (50)
-      currentTier = 1;
-      nextTierThreshold = 50;
-      progress = (ownedCount - 25) / 25; // 0-1 progress from 25 to 50
-      lineColor = '#cd7f32'; // Bronze
-    } else {
-      // Default tier - progress to Bronze (25)
-      currentTier = 0;
-      nextTierThreshold = 25;
-      progress = ownedCount / 25; // 0-1 progress from 0 to 25
-      lineColor = '#6b7280'; // Gray
-    }
+    // Get tier info for color
+    const tierInfo = getTierInfo(currentTier);
+    const lineColor = tierInfo.color;
     
     // Create or update the progress line
     let progressLine = propertyRow.querySelector('.tier-progress-line');
@@ -2921,22 +3437,18 @@
       propertyRow.appendChild(progressLine);
     }
     
-    // Hide progress line if at max tier (Diamond tier)
-    if (currentTier >= 4) {
-      progressLine.style.display = 'none';
+    // Always show progress line (no max tier limit)
+    progressLine.style.display = 'block';
+    
+    // Update progress line styling
+    progressLine.style.width = `${progress * 100}%`;
+    progressLine.style.backgroundColor = lineColor;
+    
+    // Add glow effect for higher tiers
+    if (currentTier >= 3) {
+      progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
     } else {
-      progressLine.style.display = 'block';
-      
-      // Update progress line styling
-      progressLine.style.width = `${progress * 100}%`;
-      progressLine.style.backgroundColor = lineColor;
-      
-      // Add glow effect for higher tiers
-      if (currentTier >= 3) {
-        progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
-      } else {
-        progressLine.style.boxShadow = 'none';
-      }
+      progressLine.style.boxShadow = 'none';
     }
   }
   
@@ -2959,25 +3471,16 @@
     
     // Create celebration particles based on tier
     let particleCount = 20 + (newTier * 10); // More particles for higher tiers
-    let colors = [];
+    const tierInfo = getTierInfo(newTier);
     
-    switch(newTier) {
-      case 1: // Bronze tier
-        colors = ['#cd7f32', '#b87333', '#a0522d', '#8b4513'];
-        break;
-      case 2: // Silver tier
-        colors = ['#c0c0c0', '#a9a9a9', '#808080', '#696969'];
-        break;
-      case 3: // Gold tier
-        colors = ['#ffd700', '#ffdf00', '#daa520', '#b8860b'];
-        break;
-      case 4: // Diamond tier
-        colors = ['#00bfff', '#1e90ff', '#4169e1', '#0000ff'];
-        break;
-      default: // Higher tiers
-        colors = ['#8b5cf6', '#7c3aed', '#6d28d9'];
-        break;
-    }
+    // Generate color variations based on tier color
+    const baseColor = tierInfo.color;
+    const colors = [
+      baseColor,
+      adjustColorBrightness(baseColor, 0.8),
+      adjustColorBrightness(baseColor, 1.2),
+      adjustColorBrightness(baseColor, 0.6)
+    ];
     
     // Create tier-specific particles
     for (let i = 0; i < particleCount; i++) {
@@ -3061,14 +3564,26 @@
     const notification = document.createElement('div');
     const tierClass = getTierClass(tier);
     const propertyIcon = PROPERTY_CONFIG[propertyId].icon;
+    const tierInfo = getTierInfo(tier);
     
     notification.className = `market-event-notification tier-upgrade ${tierClass}`;
+    
+    // Apply dynamic tier colors
+    const tierColor = tierInfo.color;
+    const bgColor = tierInfo.bgColor.replace('0.4', '0.85');
+    const borderColor = tierInfo.borderColor.replace('0.6', '0.3').replace('0.7', '0.3').replace('0.8', '0.3');
+    
+    notification.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${bgColor.replace('0.85', '0.75')} 100%)`;
+    notification.style.borderColor = borderColor;
+    notification.style.boxShadow = `0 8px 32px ${tierColor}40`;
+    
+    const multiplier = getMultiplierText(tier);
     notification.innerHTML = `
       <div class="event-title">
         <i class="${propertyIcon}"></i>
         ${propertyName} reached ${getTierText(tier)} tier!
       </div>
-      <div class="event-message">Rent is doubled!</div>
+      <div class="event-message">Rent income increased to ${multiplier}!</div>
     `;
     
     document.body.appendChild(notification);
@@ -3084,33 +3599,18 @@
   }
   
   function getTierText(tier) {
-    switch(tier) {
-      case 1: return 'bronze';
-      case 2: return 'silver';
-      case 3: return 'gold';
-      case 4: return 'diamond';
-      default: return 'diamond';
-    }
+    const tierInfo = getTierInfo(tier);
+    return tierInfo.name.toLowerCase();
   }
   
   function getMultiplierText(tier) {
-    switch(tier) {
-      case 1: return '2x';
-      case 2: return '2x';
-      case 3: return '2x';
-      case 4: return '2x';
-      default: return '2x';
-    }
+    const multiplier = Math.pow(2, tier);
+    return `${multiplier}x`;
   }
   
   function getTierClass(tier) {
-    switch(tier) {
-      case 1: return 'tier-bronze';
-      case 2: return 'tier-silver';
-      case 3: return 'tier-gold';
-      case 4: return 'tier-diamond';
-      default: return 'tier-diamond';
-    }
+    const tierInfo = getTierInfo(tier);
+    return `tier-${tierInfo.name.toLowerCase().replace(/\s+/g, '-')}`;
   }
 
   function renderAllProperties() {
@@ -3118,11 +3618,12 @@
       renderPropertyUI(propertyId);
     });
     updateTotalRentDisplay();
+    renderRentIncome(); // Update rent income display in earn panel
   }
 
   function getTotalPropertyIncome() {
-    // Use cached value if valid
-    if (propertyIncomeCacheValid) {
+    // Use cached value if valid, but not during earthquakes (to ensure real-time updates)
+    if (propertyIncomeCacheValid && !earthquakeActive) {
       return cachedPropertyIncome;
     }
     
@@ -3131,6 +3632,21 @@
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
       total += getPropertyTotalIncome(propertyId);
     });
+    
+    // Apply earthquake rent reduction if active
+    if (earthquakeActive && earthquakeMagnitude > 0) {
+      let rentReduction = 0;
+      if (earthquakeMagnitude >= 4.0 && earthquakeMagnitude < 5.0) {
+        rentReduction = 0.15; // 15% reduction
+      } else if (earthquakeMagnitude >= 5.0 && earthquakeMagnitude < 6.0) {
+        rentReduction = 0.50; // 50% reduction
+      } else if (earthquakeMagnitude >= 6.0 && earthquakeMagnitude < 7.0) {
+        rentReduction = 0.75; // 75% reduction
+      } else if (earthquakeMagnitude >= 7.0 && earthquakeMagnitude <= 8.0) {
+        rentReduction = 1.00; // 100% reduction
+      }
+      total *= (1 - rentReduction);
+    }
     
     cachedPropertyIncome = total;
     propertyIncomeCacheValid = true;
@@ -3144,6 +3660,16 @@
     const totalRent = getTotalPropertyIncome();
     const formattedRent = formatNumberShort(totalRent);
     totalRentElement.textContent = `€${formattedRent}/sec`;
+    
+    // Apply earthquake styling if active
+    if (earthquakeActive) {
+      totalRentElement.style.color = '#dc2626';
+      totalRentElement.style.fontWeight = 'bold';
+    } else {
+      // Reset to normal styling
+      totalRentElement.style.color = '';
+      totalRentElement.style.fontWeight = '';
+    }
   }
 
   // Net worth calculation functions removed for performance
@@ -3159,7 +3685,7 @@
     
     // Update streak - critical hits fill 3x more
     if (isCritical) {
-      streakCount += 3; // Critical hits fill streak 3x faster
+      streakCount += 4; // Critical hits fill streak 3x faster
     } else {
       streakCount++; // Normal clicks fill streak normally
     }
@@ -3478,11 +4004,14 @@
         flashSaleActive,
         greatDepressionActive,
         fastFingersActive,
+        earthquakeActive,
         marketBoomEndTime,
         marketCrashEndTime,
         flashSaleEndTime,
         greatDepressionEndTime,
         fastFingersEndTime,
+        earthquakeEndTime,
+        earthquakeMagnitude,
         eventCooldown,
         skipNextEventCheck,
         eventConfig: EVENT_CONFIG,
@@ -3583,11 +4112,14 @@
         flashSaleActive = gameState.flashSaleActive || false;
         greatDepressionActive = gameState.greatDepressionActive || false;
         fastFingersActive = gameState.fastFingersActive || false;
+        earthquakeActive = gameState.earthquakeActive || false;
         marketBoomEndTime = gameState.marketBoomEndTime || 0;
         marketCrashEndTime = gameState.marketCrashEndTime || 0;
         flashSaleEndTime = gameState.flashSaleEndTime || 0;
         greatDepressionEndTime = gameState.greatDepressionEndTime || 0;
         fastFingersEndTime = gameState.fastFingersEndTime || 0;
+        earthquakeEndTime = gameState.earthquakeEndTime || 0;
+        earthquakeMagnitude = gameState.earthquakeMagnitude || 0;
         eventCooldown = gameState.eventCooldown || 0;
         skipNextEventCheck = gameState.skipNextEventCheck || false;
         
@@ -3662,11 +4194,14 @@
       flashSaleActive = false;
       greatDepressionActive = false;
       fastFingersActive = false;
+      earthquakeActive = false;
       marketBoomEndTime = 0;
       marketCrashEndTime = 0;
       flashSaleEndTime = 0;
       greatDepressionEndTime = 0;
       fastFingersEndTime = 0;
+      earthquakeEndTime = 0;
+      earthquakeMagnitude = 0;
       eventCooldown = 0;
       skipNextEventCheck = false;
       
@@ -3679,6 +4214,7 @@
       EVENT_CONFIG.eventCooldowns.taxCollection = 0;
       EVENT_CONFIG.eventCooldowns.robbery = 0;
       EVENT_CONFIG.eventCooldowns.divorce = 0;
+      EVENT_CONFIG.eventCooldowns.earthquake = 0;
       
       // Reset properties
       properties = {
@@ -4304,7 +4840,7 @@
   // Score URL handling removed - using direct JSONBin submission now
 
   // Event logging functions
-  function logEvent(eventName, eventType) {
+  function logEvent(eventName, eventType, details = null) {
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-US', { 
       hour12: false, 
@@ -4317,10 +4853,11 @@
     eventLogs.unshift({
       time: timeString,
       name: eventName,
-      type: eventType
+      type: eventType,
+      details: details
     });
     
-    // Keep only the last 20 events
+    // Keep only the last 10 events to prevent memory bloat
     if (eventLogs.length > 10) {
       eventLogs = eventLogs.slice(0, 10);
     }
@@ -4343,13 +4880,320 @@
       return;
     }
     
-    eventLogsContent.innerHTML = eventLogs.map(event => `
-      <div class="event-log-item ${event.type}">
+    eventLogsContent.innerHTML = eventLogs.map((event, index) => `
+      <div class="event-log-item ${event.type}" ${event.type === 'earthquake' && event.details ? `onclick="showEarthquakeDetails(${index})" style="cursor: pointer;"` : ''}>
         <span class="event-time">${event.time}</span>
         <span class="event-name">${event.name}</span>
+        ${event.type === 'earthquake' && event.details ? '<span class="event-details-hint">Click for details</span>' : ''}
       </div>
     `).join('');
   }
+
+  // Make showEarthquakeDetails globally accessible
+  window.showEarthquakeDetails = function(eventIndex) {
+    const event = eventLogs[eventIndex];
+    if (!event || !event.details) return;
+    
+    const details = event.details;
+    
+    // Create modal HTML
+    const modalHTML = `
+      <div class="modal-overlay" id="earthquakeDetailsModal">
+        <div class="modal-content earthquake-details-modal">
+          <div class="modal-header">
+            <h3>🌍 Earthquake Details</h3>
+            <button class="modal-close-btn" onclick="closeEarthquakeDetails()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="earthquake-info">
+              <div class="info-row">
+                <span class="info-label">Magnitude:</span>
+                <span class="info-value magnitude-${details.magnitude >= 7 ? 'high' : details.magnitude >= 6 ? 'medium' : 'low'}">${details.magnitude.toFixed(1)}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Rent Reduction:</span>
+                <span class="info-value rent-reduction">${(details.rentReduction * 100).toFixed(0)}%</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">30 seconds</span>
+              </div>
+            </div>
+            
+            ${details.demolishCount > 0 ? `
+              <div class="demolition-section">
+                <h4>Properties Demolished (${details.demolishCount} total)</h4>
+                <div class="demolition-list">
+                  ${Object.entries(details.demolishedProperties)
+                    .map(([propertyId, count]) => {
+                      const propertyName = PROPERTY_CONFIG[propertyId]?.name || propertyId;
+                      return `
+                        <div class="demolition-item">
+                          <span class="demolition-count">${count}</span>
+                          <span class="demolition-name">${propertyName}${count > 1 ? 's' : ''}</span>
+                        </div>
+                      `;
+                    })
+                    .join('')}
+                </div>
+              </div>
+            ` : `
+              <div class="no-demolition">
+                <p>No properties were demolished.</p>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Add click outside to close
+    const modal = document.getElementById('earthquakeDetailsModal');
+    const clickHandler = function(e) {
+      if (e.target === modal) {
+        closeEarthquakeDetails();
+      }
+    };
+    modal._clickHandler = clickHandler; // Store reference for cleanup
+    modal.addEventListener('click', clickHandler);
+  };
+
+  // Make closeEarthquakeDetails globally accessible
+  window.closeEarthquakeDetails = function() {
+    const modal = document.getElementById('earthquakeDetailsModal');
+    if (modal) {
+      // Remove event listeners before removing the modal
+      modal.removeEventListener('click', modal._clickHandler);
+      modal.remove();
+    }
+  };
+
+  // Memory optimization function
+  function optimizeMemory() {
+    // Limit the number of dynamic style elements to prevent memory bloat
+    const styleElements = document.querySelectorAll('style[data-tier]');
+    if (styleElements.length > 10) {
+      // Remove oldest style elements (keep only the most recent 8)
+      const elementsToRemove = Array.from(styleElements).slice(0, styleElements.length - 8);
+      elementsToRemove.forEach(el => el.remove());
+    }
+    
+    // Clean up any orphaned modals
+    const orphanedModals = document.querySelectorAll('.modal-overlay:not(#earthquakeDetailsModal)');
+    orphanedModals.forEach(modal => modal.remove());
+    
+    // Clean up unused tier classes from DOM elements
+    const propertyRows = document.querySelectorAll('.property-row');
+    propertyRows.forEach(row => {
+      const tierClasses = Array.from(row.classList).filter(cls => cls.startsWith('tier-'));
+      if (tierClasses.length > 1) {
+        // Keep only the most recent tier class
+        const latestTier = tierClasses[tierClasses.length - 1];
+        tierClasses.forEach(cls => {
+          if (cls !== latestTier) {
+            row.classList.remove(cls);
+          }
+        });
+      }
+    });
+    
+    // Clear property income cache periodically to prevent accumulation
+    propertyIncomeCacheValid = false;
+    cachedPropertyIncome = 0;
+    
+    // MAJOR MEMORY LEAK FIX: Clean up accumulating objects
+    // Clean up achievementsBannerShown object (grows indefinitely)
+    if (achievementsBannerShown && Object.keys(achievementsBannerShown).length > 100) {
+      // Keep only the most recent 50 achievement banners
+      const entries = Object.entries(achievementsBannerShown);
+      const recentEntries = entries.slice(-50);
+      achievementsBannerShown = Object.fromEntries(recentEntries);
+    }
+    
+    // Clean up cachedElements object
+    if (cachedElements && Object.keys(cachedElements).length > 20) {
+      // Clear old cached elements
+      cachedElements = {};
+      cacheDOMElements(); // Re-cache essential elements
+    }
+    
+    // Clean up eventLogs array (already limited to 10, but ensure it's not growing)
+    if (eventLogs && eventLogs.length > 10) {
+      eventLogs = eventLogs.slice(0, 10);
+    }
+    
+    // Clean up leaderboardData array
+    if (leaderboardData && leaderboardData.length > 50) {
+      leaderboardData = leaderboardData.slice(0, 50);
+    }
+    
+    // Clean up any accumulated DOM references
+    if (window.performance && window.performance.memory) {
+      const memInfo = window.performance.memory;
+      if (memInfo.usedJSHeapSize > 100 * 1024 * 1024) { // If using more than 100MB
+        // Force more aggressive cleanup
+        propertyIncomeCacheValid = false;
+        if (particleSystem) {
+          particleSystem.stopAnimation({ clearCanvas: true });
+        }
+      }
+    }
+    
+    // Force garbage collection hint (if available)
+    if (window.gc) {
+      window.gc();
+    }
+  }
+
+  // Track intervals to prevent accumulation
+  let memoryOptimizationInterval = null;
+  let aggressiveCleanupInterval = null;
+  
+  // Run memory optimization periodically
+  if (!memoryOptimizationInterval) {
+    memoryOptimizationInterval = setInterval(optimizeMemory, 30000); // Every 30 seconds
+  }
+  
+  // More aggressive memory cleanup every 5 minutes
+  if (!aggressiveCleanupInterval) {
+    aggressiveCleanupInterval = setInterval(() => {
+    // Clear all caches
+    propertyIncomeCacheValid = false;
+    cachedPropertyIncome = 0;
+    
+    // MAJOR CLEANUP: Reset accumulating objects to prevent memory bloat
+    // Reset achievementsBannerShown to prevent indefinite growth
+    const currentAchievements = Object.keys(achievements).filter(id => achievements[id].unlocked);
+    achievementsBannerShown = {};
+    currentAchievements.forEach(id => {
+      achievementsBannerShown[id] = true; // Mark current achievements as shown
+    });
+    
+    // Clear cachedElements and re-cache only essential ones
+    cachedElements = {};
+    cacheDOMElements();
+    
+    // Ensure arrays are properly limited
+    if (eventLogs.length > 10) {
+      eventLogs = eventLogs.slice(0, 10);
+    }
+    if (leaderboardData.length > 50) {
+      leaderboardData = leaderboardData.slice(0, 50);
+    }
+    
+    // Clear DOM cache if it exists
+    if (typeof clearDOMCache === 'function') {
+      clearDOMCache();
+    }
+    
+    // Force particle system cleanup
+    if (particleSystem) {
+      particleSystem.stopAnimation({ clearCanvas: true });
+    }
+    
+    // Clear any accumulated intervals or timeouts
+    const highestTimeoutId = setTimeout(() => {}, 0);
+    for (let i = 0; i < highestTimeoutId; i++) {
+      clearTimeout(i);
+    }
+    
+    // Force garbage collection
+    if (window.gc) {
+      window.gc();
+    }
+    
+    console.log('Aggressive memory cleanup completed');
+    }, 300000); // Every 5 minutes
+  }
+
+  // Event delegation to prevent event listener accumulation
+  document.addEventListener('click', function(e) {
+    // Handle property buy buttons
+    if (e.target.matches('[data-property-id] .buy-btn, [data-property-id] .buy-btn *')) {
+      const propertyRow = e.target.closest('[data-property-id]');
+      if (propertyRow) {
+        const propertyId = propertyRow.getAttribute('data-property-id');
+        buyProperty(propertyId);
+      }
+    }
+    
+    // Handle upgrade buy buttons
+    if (e.target.matches('[data-upgrade-id] .buy-btn, [data-upgrade-id] .buy-btn *')) {
+      const upgradeRow = e.target.closest('[data-upgrade-id]');
+      if (upgradeRow) {
+        const upgradeId = upgradeRow.getAttribute('data-upgrade-id');
+        tryBuyUpgrade(upgradeId);
+      }
+    }
+  });
+
+  // Memory monitoring function
+  function logMemoryUsage() {
+    if (window.performance && window.performance.memory) {
+      const memInfo = window.performance.memory;
+      const usedMB = Math.round(memInfo.usedJSHeapSize / 1024 / 1024);
+      const totalMB = Math.round(memInfo.totalJSHeapSize / 1024 / 1024);
+      const limitMB = Math.round(memInfo.jsHeapSizeLimit / 1024 / 1024);
+      
+      console.log(`Memory Usage: ${usedMB}MB / ${totalMB}MB (Limit: ${limitMB}MB)`);
+      
+      // If memory usage is high, trigger aggressive cleanup
+      if (usedMB > 200) {
+        console.warn('High memory usage detected, triggering cleanup...');
+        optimizeMemory();
+        if (particleSystem) {
+          particleSystem.stopAnimation({ clearCanvas: true });
+        }
+      }
+    }
+  }
+
+  // Log memory usage every minute for debugging
+  setInterval(logMemoryUsage, 60000);
+
+  // Emergency memory reset function (can be called manually)
+  window.emergencyMemoryReset = function() {
+    console.log('Emergency memory reset triggered...');
+    
+    // Reset all accumulating objects
+    achievementsBannerShown = {};
+    cachedElements = {};
+    propertyIncomeCacheValid = false;
+    cachedPropertyIncome = 0;
+    
+    // Limit arrays
+    eventLogs = eventLogs.slice(0, 10);
+    leaderboardData = leaderboardData.slice(0, 50);
+    
+    // Stop all animations
+    if (particleSystem) {
+      particleSystem.stopAnimation({ clearCanvas: true });
+    }
+    if (numberAnimator) {
+      numberAnimator.stopAnimation();
+    }
+    
+    // Clear all style elements
+    const styleElements = document.querySelectorAll('style[data-tier]');
+    styleElements.forEach(el => el.remove());
+    
+    // Clear all modals
+    const modals = document.querySelectorAll('.modal-overlay');
+    modals.forEach(modal => modal.remove());
+    
+    // Force garbage collection
+    if (window.gc) {
+      window.gc();
+    }
+    
+    // Re-initialize essential elements
+    cacheDOMElements();
+    
+    console.log('Emergency memory reset completed');
+  };
 
   if (depositAllBtn) {
     depositAllBtn.addEventListener("click", depositAll);
@@ -4455,7 +5299,7 @@
   };
 
   // Money cap system
-  const MAX_TOTAL_MONEY = 1000000000000000; // 100 trillion euros
+  const MAX_TOTAL_MONEY = 10000000000000000000; // 100 trillion euros
 
   function getTotalMoney() {
     return currentAccountBalance + investmentAccountBalance;
@@ -4815,38 +5659,254 @@
   // 3. Add logic in getPerClickIncome() or getCompoundMultiplierPerTick() if needed
   // That's it! Everything else is automatic.
   const UPGRADE_CONFIG = {
-    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click" },
-    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click" },
-    u4: { cost: 6000, name: "Better credit score", effect: "Increases investment interest by 20%", type: "interest" },
-    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click" },
-    u8: { cost: 15000, name: "Create a network of influenced people", effect: "Increases investment interest by 15%", type: "interest" },
-    u9: { cost: 250000, name: "Befriend a banker", effect: "Increases investment interest by 15%", type: "interest" },
-    u10: { cost: 4000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend" },
-    u11: { cost: 50, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
-    u12: { cost: 8000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed" },
-    u13: { cost: 30000, name: "Mega Dividends", effect: "Increase dividend rate by 25%", type: "dividend_rate" },
-    u14: { cost: 300000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate" },
-    u17: { cost: 2000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate" },
-    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 15%", type: "interest" },
+    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click", effects: { click_income: 1 } },
+    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click", effects: { click_income: 6 } },
+    u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
+    u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u10: { cost: 750000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend", requires: "u11" },
+    u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
+    u12: { cost: 1000000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
+    u13: { cost: 3000000, name: "Mega Dividends", effect: "Increase dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
+    u14: { cost: 15000000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
+    u17: { cost: 60000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.25 } },
+    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
     u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
-    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock" },
+    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock", requires: "u11" },
     u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
     u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
-    u31: { cost: 75000, name: "Strong Credit Score", effect: "Increases interest rate by 10%", type: "interest" },
-    u32: { cost: 5000000, name: "Automated Rent Collection", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
-    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount" },
-    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount" },
-    u35: { cost: 1250000, name: "Property Management", effect: "Increases rent income from properties by 35%", type: "rent_boost" },
-    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount" },
-    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost" },
-    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost" },
-    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount" }
+    u31: { cost: 150000000, name: "Strong Credit Score", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u32: { cost: 5000000, name: "Automated Rent Investment", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
+    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount", effects: { building_discount: 0.15 } },
+    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount", effects: { building_discount: 0.20 } },
+    u35: { cost: 100000000, name: "Property Management", effect: "Increases rent income from properties by 10%", type: "rent_boost", effects: { rent_income: 0.10 } },
+    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount", effects: { building_discount: 0.10 } },
+    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost", effects: { rent_income: 0.20 } },
+    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost", effects: { rent_income: 0.05 } },
+    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount", effects: { building_discount: 0.25 } },
+    u40: { cost: 250000, name: "Zen Clicks", effect: "Adds +150 euros per click", type: "click", effects: { click_income: 150 } },
+    u41: { cost: 1500000, name: "Clicker Kicker", effect: "Adds +400 euros per click", type: "click", effects: { click_income: 400 } },
+    u42: { cost: 30000000, name: "Click Frenzy", effect: "Adds +15k euros per click", type: "click", effects: { click_income: 15000 } },
+    u43: { cost: 250000000, name: "Just Clicking", effect: "Adds +150k euros per click", type: "click", effects: { click_income: 150000 } },
+    u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } },
+    u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } },
+    u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } }
   };
 
   // Generate upgrade costs and owned objects from config
   const UPGRADE_COSTS = Object.fromEntries(
     Object.entries(UPGRADE_CONFIG).map(([id, config]) => [id, config.cost])
   );
+
+  // Helper functions to calculate upgrade effects dynamically
+  function getUpgradeEffectTotal(effectType) {
+    let total = 0;
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      if (owned[upgradeId] && config.effects && config.effects[effectType]) {
+        total += config.effects[effectType];
+      }
+    });
+    return total;
+  }
+
+  function getUpgradeEffectMultiplier(effectType) {
+    let multiplier = 1;
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      if (owned[upgradeId] && config.effects && config.effects[effectType]) {
+        multiplier *= (1 + config.effects[effectType]);
+      }
+    });
+    return multiplier;
+  }
+
+  // Function to get icon class based on upgrade type
+  function getUpgradeIconClass(type) {
+    const iconMap = {
+      'click': 'fas fa-money-bill-wave upgrade-icon click-icon',
+      'interest': 'fas fa-percentage upgrade-icon interest-icon',
+      'dividend': 'fas fa-coins upgrade-icon dividend-icon',
+      'dividend_speed': 'fas fa-coins upgrade-icon dividend-icon',
+      'dividend_rate': 'fas fa-coins upgrade-icon dividend-icon',
+      'unlock': 'fas fa-unlock upgrade-icon unlock-icon',
+      'prestige': 'fas fa-redo upgrade-icon prestige-icon',
+      'special': 'fas fa-bolt upgrade-icon special-icon',
+      'building_discount': 'fas fa-building upgrade-icon building-icon',
+      'rent_boost': 'fas fa-building upgrade-icon building-icon',
+      'property_discount': 'fas fa-building upgrade-icon building-icon'
+    };
+    return iconMap[type] || 'fas fa-star upgrade-icon';
+  }
+
+  // Function to generate upgrade HTML from configuration
+  function generateUpgradeHTML(upgradeId, config) {
+    const iconClass = getUpgradeIconClass(config.type);
+    const buttonText = config.type === 'prestige' ? 'Reset' : 'Buy';
+    
+    return `
+      <div class="upgrade" data-upgrade-id="${upgradeId}">
+        <div class="upgrade-info">
+          <div class="upgrade-name"><i class="${iconClass}"></i>${config.name}</div>
+          <div class="upgrade-price" id="${upgradeId}Price"></div>
+          <div class="upgrade-desc">${config.effect}</div>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="${upgradeId}Progress"></div>
+            </div>
+            <div class="progress-text" id="${upgradeId}ProgressText">0%</div>
+          </div>
+        </div>
+        <div class="upgrade-actions">
+          <button id="buy${upgradeId.charAt(0).toUpperCase() + upgradeId.slice(1)}Btn" class="buyBtn">${buttonText}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Function to generate all upgrade HTML and insert into DOM
+  function generateAllUpgradeHTML() {
+    const upgradesContainer = document.querySelector('#upgradesSection .scrollable-content');
+    if (!upgradesContainer) return;
+
+    // Clear existing upgrades
+    upgradesContainer.innerHTML = '';
+
+    // Generate HTML for each upgrade in the config
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      const upgradeHTML = generateUpgradeHTML(upgradeId, config);
+      upgradesContainer.insertAdjacentHTML('beforeend', upgradeHTML);
+    });
+  }
+
+  // Achievement configuration with display information
+  const ACHIEVEMENT_CONFIG = {
+    ach1: { 
+      name: "First Steps", 
+      description: "Earn your first €1,000", 
+      icon: "💰" 
+    },
+    ach2: { 
+      name: "Thousandaire", 
+      description: "Reach €10,000 total wealth", 
+      icon: "💎" 
+    },
+    ach3: { 
+      name: "Millionaire", 
+      description: "Reach €1,000,000 total wealth", 
+      icon: "🏆" 
+    },
+    ach4: { 
+      name: "Billionaire", 
+      description: "Reach €1,000,000,000 total wealth", 
+      icon: "👑" 
+    },
+    ach5: { 
+      name: "Trillionaire", 
+      description: "Reach €1,000,000,000,000 total wealth", 
+      icon: "🚀" 
+    },
+    ach6: { 
+      name: "Click Master", 
+      description: "Click 1,000 times", 
+      icon: "🎯" 
+    },
+    ach7: { 
+      name: "Critical Hit", 
+      description: "Get 100 critical hits", 
+      icon: "⚡" 
+    },
+    ach8: { 
+      name: "Streak Master", 
+      description: "Reach maximum click streak (3.0x)", 
+      icon: "🔥" 
+    },
+    ach9: { 
+      name: "Educated", 
+      description: "Complete Higher Education", 
+      icon: "🎓" 
+    },
+    ach10: { 
+      name: "Investor", 
+      description: "Invest €100,000 in the investment account", 
+      icon: "💼" 
+    },
+    ach11: { 
+      name: "Dividend King", 
+      description: "Receive €1,000,000 in dividends", 
+      icon: "📈" 
+    },
+    ach13: { 
+      name: "First Investment", 
+      description: "Invest your first euro", 
+      icon: "💳" 
+    },
+    ach14: { 
+      name: "Property Pioneer", 
+      description: "Buy your first property", 
+      icon: "🏠" 
+    },
+    ach15: { 
+      name: "Rent Rookie", 
+      description: "Generate €1,000 per second in rent", 
+      icon: "💰" 
+    },
+    ach16: { 
+      name: "Rent Royalty", 
+      description: "Generate €100,000 per second in rent", 
+      icon: "👑" 
+    },
+    ach17: { 
+      name: "Rent Empire", 
+      description: "Generate €1,000,000 per second in rent", 
+      icon: "🏰" 
+    },
+    ach18: { 
+      name: "Rent Billionaire", 
+      description: "Generate €1,000,000,000 per second in rent", 
+      icon: "🌍" 
+    }
+  };
+
+  // Function to generate achievement HTML from configuration
+  function generateAchievementHTML(achievementId, config) {
+    return `
+      <div class="achievement" data-achievement-id="${achievementId}">
+        <div class="achievement-icon">${config.icon}</div>
+        <div class="achievement-info">
+          <div class="achievement-name">${config.name}</div>
+          <div class="achievement-desc">${config.description}</div>
+        </div>
+        <div class="achievement-status" id="${achievementId}Status">🔒</div>
+      </div>
+    `;
+  }
+
+  // Function to generate all achievement HTML and insert into DOM
+  function generateAllAchievementHTML() {
+    const achievementsContainer = document.getElementById('achievementsSection');
+    if (!achievementsContainer) return;
+
+    // Clear existing achievements
+    achievementsContainer.innerHTML = '';
+
+    // Generate HTML for each achievement in the config
+    Object.entries(ACHIEVEMENT_CONFIG).forEach(([achievementId, config]) => {
+      const achievementHTML = generateAchievementHTML(achievementId, config);
+      achievementsContainer.insertAdjacentHTML('beforeend', achievementHTML);
+    });
+  }
+
+  // Function to set up event listeners for upgrade buy buttons
+  function setupUpgradeButtonEventListeners() {
+    Object.keys(UPGRADE_CONFIG).forEach(id => {
+      const buyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
+      if (buyBtn) {
+        // Remove any existing event listeners to prevent duplicates
+        buyBtn.replaceWith(buyBtn.cloneNode(true));
+        const newBuyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
+        newBuyBtn.addEventListener("click", () => tryBuyUpgrade(id));
+      }
+    });
+  }
   
   const owned = Object.fromEntries(
     Object.keys(UPGRADE_CONFIG).map(id => [id, false])
@@ -4854,6 +5914,14 @@
 
   function tryBuyUpgrade(key) {
     if (owned[key]) return;
+    
+    // Check if upgrade has requirements that aren't met
+    const upgradeConfig = UPGRADE_CONFIG[key];
+    if (upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires]) {
+      playErrorSound();
+      return;
+    }
+    
     let cost = UPGRADE_COSTS[key];
     
     // Apply Flash Sale discount
@@ -5002,13 +6070,6 @@
     saveGameState();
   }
 
-  // Automatically add event listeners for all upgrade buy buttons
-  Object.keys(UPGRADE_CONFIG).forEach(id => {
-    const buyBtn = document.getElementById(`buy${id.charAt(0).toUpperCase() + id.slice(1)}Btn`);
-    if (buyBtn) {
-      buyBtn.addEventListener("click", () => tryBuyUpgrade(id));
-    }
-  });
 
   // Auto-invest toggle event listener
   if (autoInvestToggle) {
@@ -5051,22 +6112,15 @@
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (gameDifficulty) {
-      case 'easy': return 1.005;    // 0.5% per second (easier)
-      case 'normal': return 1.004;  // 0.4% per second (original)
-      case 'hard': return 1.0033;   // 0.35% per second (harder)
-      case 'extreme': return 1.0027; // 0.3% per second (extreme)
-      default: return 1.004;        // fallback to normal
+      case 'easy': return 1.004;    // 0.5% per second (easier)
+      case 'normal': return 1.0022;  // 0.4% per second (original)
+      case 'hard': return 1.0018;   // 0.35% per second (harder)
+      case 'extreme': return 1.0012; // 0.3% per second (extreme)
+      default: return 1.0022;        // fallback to normal
     }
   }
   function getCompoundMultiplierPerTick() {
-    let rateBoost = 1;
-    if (owned.u4) rateBoost *= 1.2; // +20%
-    if (owned.u8) rateBoost *= 1.15; // +15%
-    if (owned.u9) rateBoost *= 1.15; // +15%
-    if (owned.u19) rateBoost *= 1.15; // +15%
-    if (owned.u20) rateBoost *= 1.15; // +15%
-    if (owned.u31) rateBoost *= 1.1; // +10%
-    if (owned.u32) rateBoost *= 1.1; // +10% (Negotiation)
+    let rateBoost = getUpgradeEffectMultiplier('interest_rate');
     
     // Market event effects
     if (marketBoomActive) {
@@ -5093,7 +6147,15 @@
     
     // Check if any upgrade is affordable using only current account balance
     const hasAffordableUpgrade = Object.entries(UPGRADE_COSTS).some(([upgradeId, cost]) => {
-      return !owned[upgradeId] && currentAccountBalance >= cost;
+      if (owned[upgradeId]) return false;
+      
+      // Check if upgrade has requirements that aren't met
+      const upgradeConfig = UPGRADE_CONFIG[upgradeId];
+      if (upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires]) {
+        return false;
+      }
+      
+      return currentAccountBalance >= cost;
     });
     
     if (hasAffordableUpgrade) {
@@ -5141,10 +6203,14 @@
     const hideCompleted = container.classList.contains('hide-completed');
     
     if (hideCompleted) {
-      // Show all unowned upgrades
+      // Show all unowned upgrades that meet requirements
       rows.forEach((row) => {
         const id = row.getAttribute('data-upgrade-id');
-        row.style.display = !owned[id] ? '' : 'none';
+        const upgradeConfig = UPGRADE_CONFIG[id];
+        const hasRequirements = upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires];
+        
+        // Hide if owned, or if requirements not met
+        row.style.display = (!owned[id] && !hasRequirements) ? '' : 'none';
       });
     } else {
       // Show only completed (owned) upgrades when "Show completed" is active
@@ -5170,13 +6236,11 @@
     
     // Calculate speed multipliers (stack multiplicatively)
     let speedMultiplier = 1;
-    if (owned.u12) speedMultiplier *= 0.8; // 20% faster
+    const speedBoost = getUpgradeEffectTotal('dividend_speed');
+    speedMultiplier *= (1 - speedBoost); // Convert percentage to multiplier
     
     // Calculate rate multipliers (stack multiplicatively)
-    let rateMultiplier = 1;
-    if (owned.u13) rateMultiplier *= 1.25; // 25% more
-    if (owned.u14) rateMultiplier *= 1.2;  // 20% more
-    if (owned.u17) rateMultiplier *= 1.25; // 25% more
+    let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
     
     // Market event effects on dividend rate
     if (marketBoomActive) {
@@ -5208,13 +6272,13 @@
         
         // Create flying money particles for dividend payout
         if (particleSystem && particleSystem.createMoneyParticles) {
-          const dividendCircle = document.getElementById('dividendCircle');
-          if (dividendCircle) {
-            const rect = dividendCircle.getBoundingClientRect();
+          const dividendProgress = document.getElementById('dividendProgressBar');
+          if (dividendProgress) {
+            const rect = dividendProgress.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
             
-            // Create money particles from the dividend circle
+            // Create money particles from the dividend progress bar
             particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(cappedPayout / 2000000, 6));
           }
         }
@@ -5247,7 +6311,8 @@
     
       // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
-      if (owned.u12) speedMultiplier *= 0.8;
+      const speedBoost = getUpgradeEffectTotal('dividend_speed');
+      speedMultiplier *= (1 - speedBoost);
       
       const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
     
@@ -5257,16 +6322,10 @@
     const percent = timeInCycle / interval;
       const dashOffset = 100 - percent * 100;
     
-    // Update countdown timer smoothly
-    const countdownEl = document.getElementById('dividendCountdown');
-    if (countdownEl) {
-      countdownEl.textContent = `${remaining}s`;
-    }
-    
-    // Update circle fill smoothly
-    const circleFill = document.querySelector('.dividend-circle .circle-fill');
-    if (circleFill) {
-      circleFill.setAttribute('stroke-dashoffset', String(dashOffset));
+    // Update progress bar smoothly
+    const progressFill = document.getElementById('dividendProgressFill');
+    if (progressFill) {
+      progressFill.style.width = `${percent * 100}%`;
     }
     
     // Continue animation
@@ -5293,12 +6352,10 @@
     
     // Calculate speed multipliers (same as tickDividends)
       let speedMultiplier = 1;
-      if (owned.u12) speedMultiplier *= 0.8;
+      const speedBoost = getUpgradeEffectTotal('dividend_speed');
+      speedMultiplier *= (1 - speedBoost);
       
-      let rateMultiplier = 1;
-      if (owned.u13) rateMultiplier *= 1.25;
-      if (owned.u14) rateMultiplier *= 1.2;
-      if (owned.u17) rateMultiplier *= 1.25;
+      let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
       
       // Market event effects on dividend rate
       if (marketBoomActive) {
@@ -5349,16 +6406,20 @@
     if (!investSection) return;
     investSection.classList.toggle('hidden', !owned.u11);
     
-    // Show/hide the entire earnings metrics container when investment is unlocked
+    // Always show the earnings metrics container, but hide individual elements based on unlock status
     const earningsMetricsContainer = document.querySelector('.earnings-metrics-container');
     if (earningsMetricsContainer) {
-      earningsMetricsContainer.classList.toggle('hidden', !owned.u11);
+      earningsMetricsContainer.classList.remove('hidden'); // Always show the container
     }
     
-    // Show/hide the investment amount in the header when investment is unlocked
+    // Show/hide the entire investment account section in the header when investment is unlocked
     const headerInvestmentDisplay = document.getElementById('headerInvestmentDisplay');
+    const headerInvestmentAccount = headerInvestmentDisplay?.closest('.header-account');
     if (headerInvestmentDisplay) {
       headerInvestmentDisplay.classList.toggle('hidden', !owned.u11);
+    }
+    if (headerInvestmentAccount) {
+      headerInvestmentAccount.classList.toggle('hidden', !owned.u11);
     }
     
     // Individual element visibility within the container
@@ -5460,6 +6521,7 @@
     renderAutoInvestSection();
         renderAutoRentSection();
     renderClickStreak();
+    renderRentIncome(); // Update rent income display
         break;
       case 'upgrades':
         renderUpgradesOwned();
@@ -5524,8 +6586,20 @@
   // Cache DOM elements for performance optimization
   cacheDOMElements();
   
+  // Initialize procedural tier system
+  addSpecialShineAnimation();
+  
   // Invalidate property income cache to ensure fresh calculation
   propertyIncomeCacheValid = false;
+
+  // Generate upgrade HTML from configuration
+  generateAllUpgradeHTML();
+
+  // Set up event listeners for upgrade buy buttons
+  setupUpgradeButtonEventListeners();
+
+  // Generate achievement HTML from configuration
+  generateAllAchievementHTML();
 
   // Initialize upgrade visibility state before rendering
   initUpgradeVisibility();
@@ -6232,10 +7306,29 @@ window.addEventListener('beforeunload', cleanup);
   
   // Initialize particle system
   particleSystem = new ParticleSystem();
-  
+
   // Initialize number animator
   numberAnimator = new NumberAnimator();
-  
+
+  // Pause expensive animations when the tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (particleSystem) {
+        particleSystem.stopAnimation({ clearCanvas: true });
+      }
+      if (numberAnimator) {
+        numberAnimator.stopAnimation();
+      }
+    } else {
+      if (particleSystem && particleSystem.hasParticles()) {
+        particleSystem.startAnimation();
+      }
+      if (numberAnimator && numberAnimator.hasActiveAnimations()) {
+        numberAnimator.startAnimation();
+      }
+    }
+  });
+
   // Initialize upgrade visibility state (will be called after DOM is ready)
   function initUpgradeVisibility() {
     const upgradesSection = document.getElementById('upgradesSection');
@@ -6299,6 +7392,9 @@ window.addEventListener('beforeunload', cleanup);
     // Calculate earnings per second
     const earningsPerSecond = investmentAccountBalance * (perSecondMultiplier - 1);
     
+    // Update rent income display
+    renderRentIncome();
+    
     if (numberAnimator) {
       // Parse current percentage from element text
       const currentText = interestPerSecEl.textContent.replace('%', '');
@@ -6317,9 +7413,9 @@ window.addEventListener('beforeunload', cleanup);
     if (interestPerSecondEl) {
       if (numberAnimator) {
         const currentEarnings = parseDisplayedValue(interestPerSecondEl.textContent);
-        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSec);
+        numberAnimator.animateValue(interestPerSecondEl, currentEarnings, earningsPerSecond, 250, animationFormatters.currencyPerSecCompact);
       } else {
-        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/sec';
+        interestPerSecondEl.textContent = '€' + formatNumberShort(earningsPerSecond) + '/s';
       }
     }
     
@@ -6333,6 +7429,45 @@ window.addEventListener('beforeunload', cleanup);
       } else if (marketCrashActive) {
         interestRow.classList.add('market-crash');
       }
+    }
+  }
+
+  // Render rent income display
+  function renderRentIncome() {
+    const rentContainer = document.getElementById('rentContainer');
+    const rentRate = document.getElementById('rentRate');
+    const rentPerSecond = document.getElementById('rentPerSecond');
+    
+    if (!rentContainer || !rentRate || !rentPerSecond) return;
+    
+    // Always show the rent container (no longer hidden when no properties)
+    rentContainer.classList.remove('hidden');
+    
+    // Calculate total rent income
+    const totalRentIncome = getTotalPropertyIncome();
+    const formattedRent = formatNumberShort(totalRentIncome);
+    
+    // Update rent rate (number of properties)
+    const totalProperties = Object.values(properties).reduce((sum, count) => sum + count, 0);
+    rentRate.textContent = totalProperties.toString();
+    
+    // Update rent per second (using compact format)
+    rentPerSecond.textContent = `€${formattedRent}/s`;
+    
+    // Apply earthquake styling if active
+    if (earthquakeActive) {
+      rentContainer.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%)';
+      rentContainer.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+      rentContainer.style.color = '#dc2626';
+      rentPerSecond.style.color = '#dc2626';
+      rentRate.style.color = '#dc2626';
+    } else {
+      // Reset to normal styling
+      rentContainer.style.background = '';
+      rentContainer.style.borderColor = '';
+      rentContainer.style.color = '';
+      rentPerSecond.style.color = '';
+      rentRate.style.color = '';
     }
   }
 
