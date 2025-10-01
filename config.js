@@ -27,7 +27,7 @@ const GAME_CONFIG = {
   // Interval timings (in milliseconds)
   INTERVALS: {
     INVESTMENT_COMPOUNDING: 1000, // Investment compounding interval
-    EVENTS_CHECK: 15000, // Event check interval
+    EVENTS_CHECK: 10000, // Event check interval
     GAME_SAVE: 15000, // Auto-save interval
     SUBMISSION_STATUS: 1000, // Leaderboard submission status check
     UPGRADE_UPDATE: 5000, // Upgrade display update interval
@@ -312,8 +312,8 @@ const GAME_CONFIG = {
         extreme: 0.095   // 4% chance (extreme)
       },
       divorce: {
-        easy: 0.005,    // 0.5% chance (easier)
-        normal: 0.01,   // 1% chance (original)
+        easy: 0.001,    // 0.5% chance (easier)
+        normal: 0.005,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.045   // 2% chance (extreme)
       },
@@ -368,20 +368,20 @@ const GAME_CONFIG = {
         extreme: 60000    // 30 seconds (extreme)
       },
       taxCollection: {
-        easy: 90000,      // 1.5 minutes (easier)
-        normal: 60000,    // 1 minute (original)
+        easy: 120000,      // 1.5 minutes (easier)
+        normal: 90000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
         extreme: 10000    // 30 seconds (extreme)
       },
       robbery: {
-        easy: 90000,      // 1.5 minutes (easier)
-        normal: 60000,    // 1 minute (original)
+        easy: 120000,      // 1.5 minutes (easier)
+        normal: 90000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
         extreme: 10000    // 30 seconds (extreme)
       },
       divorce: {
-        easy: 120000,     // 2 minutes (easier)
-        normal: 90000,    // 1.5 minutes (original)
+        easy: 900000,     // 2 minutes (easier)
+        normal: 600000,    // 1.5 minutes (original)
         hard: 60000,      // 1 minute (harder)
         extreme: 20000    // 45 seconds (extreme)
       }

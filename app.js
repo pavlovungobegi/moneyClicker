@@ -1,6 +1,6 @@
 // Global variables for eventTrigger.js access
-  let currentAccountBalance = 0;
-  let investmentAccountBalance = 0;
+let currentAccountBalance = 0;
+let investmentAccountBalance = 0;
 let properties = {
   foodStand: 0,
   newsstand: 0,
@@ -13,6 +13,8 @@ let properties = {
   operaHouse: 0
 };
 let owned = {};
+let particleSystem;
+let particleEffectsEnabled = true;
 
 (() => {
 
@@ -40,8 +42,7 @@ let owned = {};
 
   // Particle System - now handled by particles.js
   
-  // Initialize particle system
-  let particleSystem;
+  // Initialize particle system - moved to global scope
   
   // Number Animation System
   class NumberAnimator {
@@ -989,7 +990,7 @@ let owned = {};
     }
   }, GAME_CONFIG.CACHE.CLEANUP_INTERVAL);
 
-  function renderUpgradePrices() {
+  window.renderUpgradePrices = function() {
     // Generate upgrade price elements mapping automatically
     const map = Object.fromEntries(
       Object.keys(UPGRADE_CONFIG).map(id => [id, document.getElementById(id + 'Price')])
@@ -1130,7 +1131,7 @@ let owned = {};
     }
   }
 
-  function renderBalances() {
+  window.renderBalances = function() {
     if (currentDisplay && numberAnimator) {
       const currentValue = parseDisplayedValue(currentDisplay.textContent);
       // Only animate for significant changes (1% or more)
@@ -3659,8 +3660,7 @@ let owned = {};
 
   // Audio system - now handled by audio.js
   
-  // Particle effects system
-  let particleEffectsEnabled = true;
+  // Particle effects system - moved to global scope
   
   // Number animations system
   let numberAnimationsEnabled = true;
