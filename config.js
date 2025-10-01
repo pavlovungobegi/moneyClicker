@@ -580,156 +580,124 @@ const GAME_CONFIG = {
     // Event probabilities (per check) - different for each difficulty
     probabilities: {
       marketBoom: {
-        easy: 0.15,
-        normal: 0.10,
-        hard: 0.08,
-        extreme: 0.05
+        easy: 0.08,     // 7.5% chance (easier)
+        normal: 0.055,  // 5.5% chance (original)
+        hard: 0.04,     // 4% chance (harder)
+        extreme: 0.005   // 2% chance (extreme)
       },
       marketCrash: {
-        easy: 0.05,
-        normal: 0.08,
-        hard: 0.12,
-        extreme: 0.18
+        easy: 0.02,     // 2% chance (easier)
+        normal: 0.04,   // 4% chance (original)
+        hard: 0.06,     // 6% chance (harder)
+        extreme: 0.08   // 8% chance (extreme)
       },
       flashSale: {
-        easy: 0.12,
-        normal: 0.10,
-        hard: 0.08,
-        extreme: 0.06
+        easy: 0.05,     // 5% chance (easier)
+        normal: 0.03,   // 3% chance (original)
+        hard: 0.02,     // 2% chance (harder)
+        extreme: 0.005   // 1% chance (extreme)
       },
       greatDepression: {
-        easy: 0.02,
-        normal: 0.05,
-        hard: 0.08,
-        extreme: 0.12
+        easy: 0.005,    // 0.5% chance (easier)
+        normal: 0.01,   // 1% chance (original)
+        hard: 0.015,    // 1.5% chance (harder)
+        extreme: 0.045   // 2% chance (extreme)
       },
       fastFingers: {
-        easy: 0.20,
-        normal: 0.15,
-        hard: 0.10,
-        extreme: 0.08
+        easy: 0.04,     // 4% chance (easier)
+        normal: 0.02,   // 2% chance (original)
+        hard: 0.01,     // 1% chance (harder)
+        extreme: 0.005  // 0.5% chance (extreme)
       },
       taxCollection: {
-        easy: 0.03,
-        normal: 0.05,
-        hard: 0.08,
-        extreme: 0.12
+        easy: 0.01,     // 1% chance (easier)
+        normal: 0.02,   // 2% chance (original)
+        hard: 0.03,     // 3% chance (harder)
+        extreme: 0.095   // 4% chance (extreme)
       },
       robbery: {
-        easy: 0.02,
-        normal: 0.04,
-        hard: 0.06,
-        extreme: 0.10
+        easy: 0.01,     // 1% chance (easier)
+        normal: 0.02,   // 2% chance (original)
+        hard: 0.03,     // 3% chance (harder)
+        extreme: 0.095   // 4% chance (extreme)
       },
       divorce: {
-        easy: 0.01,
-        normal: 0.02,
-        hard: 0.04,
-        extreme: 0.06
+        easy: 0.005,    // 0.5% chance (easier)
+        normal: 0.01,   // 1% chance (original)
+        hard: 0.015,    // 1.5% chance (harder)
+        extreme: 0.045   // 2% chance (extreme)
       },
       earthquake: {
-        easy: 0.01,
-        normal: 0.02,
-        hard: 0.03,
-        extreme: 0.05
+        easy: 0.005,     // 1% chance (same for all difficulties)
+        normal: 0.005,   // 1% chance
+        hard: 0.01,     // 1% chance
+        extreme: 0.015   // 1% chance
       }
     },
     
-    // Event durations (in milliseconds)
+    // Event durations (milliseconds)
     durations: {
-      marketBoom: 30000, // 30 seconds
-      marketCrash: 45000, // 45 seconds
-      flashSale: 30000, // 30 seconds
-      greatDepression: 60000, // 60 seconds
-      fastFingers: 15000, // 15 seconds
-      earthquake: 30000 // 30 seconds
+      marketBoom: 30000,    // 30 seconds
+      marketCrash: 30000,   // 30 seconds
+      flashSale: 30000,     // 30 seconds
+      greatDepression: 30000, // 30 seconds
+      fastFingers: 15000,   // 15 seconds
+      earthquake: 30000     // 30 seconds
     },
     
-    // Event cooldowns (in milliseconds)
+    // Event cooldowns (milliseconds) - different for each difficulty
     cooldowns: {
       marketBoom: {
-        easy: 300000, // 5 minutes
-        normal: 240000, // 4 minutes
-        hard: 180000, // 3 minutes
-        extreme: 120000 // 2 minutes
+        easy: 60000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 60000,      // 45 seconds (harder)
+        extreme: 60000    // 30 seconds (extreme)
       },
       marketCrash: {
-        easy: 600000, // 10 minutes
-        normal: 480000, // 8 minutes
-        hard: 360000, // 6 minutes
-        extreme: 240000 // 4 minutes
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 30000    // 30 seconds (extreme)
       },
       flashSale: {
-        easy: 300000, // 5 minutes
-        normal: 240000, // 4 minutes
-        hard: 180000, // 3 minutes
-        extreme: 120000 // 2 minutes
+        easy: 180000,     // 4 minutes (easier)
+        normal: 180000,   // 3 minutes (original)
+        hard: 180000,     // 2 minutes (harder)
+        extreme: 180000    // 1.5 minutes (extreme)
       },
       greatDepression: {
-        easy: 900000, // 15 minutes
-        normal: 720000, // 12 minutes
-        hard: 540000, // 9 minutes
-        extreme: 360000 // 6 minutes
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 30000    // 30 seconds (extreme)
       },
       fastFingers: {
-        easy: 180000, // 3 minutes
-        normal: 150000, // 2.5 minutes
-        hard: 120000, // 2 minutes
-        extreme: 90000 // 1.5 minutes
+        easy: 60000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 60000,      // 45 seconds (harder)
+        extreme: 60000    // 30 seconds (extreme)
       },
       taxCollection: {
-        easy: 1200000, // 20 minutes
-        normal: 900000, // 15 minutes
-        hard: 600000, // 10 minutes
-        extreme: 300000 // 5 minutes
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 10000    // 30 seconds (extreme)
       },
       robbery: {
-        easy: 1800000, // 30 minutes
-        normal: 1200000, // 20 minutes
-        hard: 900000, // 15 minutes
-        extreme: 600000 // 10 minutes
+        easy: 90000,      // 1.5 minutes (easier)
+        normal: 60000,    // 1 minute (original)
+        hard: 45000,      // 45 seconds (harder)
+        extreme: 10000    // 30 seconds (extreme)
       },
       divorce: {
-        easy: 3600000, // 60 minutes
-        normal: 2700000, // 45 minutes
-        hard: 1800000, // 30 minutes
-        extreme: 1200000 // 20 minutes
-      },
-      earthquake: {
-        easy: 2400000, // 40 minutes
-        normal: 1800000, // 30 minutes
-        hard: 1200000, // 20 minutes
-        extreme: 900000 // 15 minutes
+        easy: 120000,     // 2 minutes (easier)
+        normal: 90000,    // 1.5 minutes (original)
+        hard: 60000,      // 1 minute (harder)
+        extreme: 20000    // 45 seconds (extreme)
       }
     },
     
-    // Net worth thresholds for events
-    netWorthThresholds: {
-      marketBoom: 10000,
-      marketCrash: 50000,
-      flashSale: 25000,
-      greatDepression: 100000,
-      fastFingers: 5000,
-      taxCollection: 500000,
-      robbery: 1000000,
-      divorce: 5000000,
-      earthquake: 2000000
-    },
-    
-    // Event requirements (upgrades needed)
-    requirements: {
-      marketBoom: null,
-      marketCrash: null,
-      flashSale: null,
-      greatDepression: null,
-      fastFingers: null,
-      taxCollection: null,
-      robbery: null,
-      divorce: null,
-      earthquake: null
-    },
-    
-    // Event cooldown tracking
+    // Event-specific cooldowns
     eventCooldowns: {
       marketBoom: 0,
       marketCrash: 0,
@@ -740,6 +708,32 @@ const GAME_CONFIG = {
       robbery: 0,
       divorce: 0,
       earthquake: 0
+    },
+    
+    // Net worth thresholds (minimum net worth required for events to trigger)
+    netWorthThresholds: {
+      marketBoom: 500,        // No threshold
+      marketCrash: 100000,       // No threshold
+      flashSale: 1000,         // No threshold
+      greatDepression: 2000000,   // No threshold
+      fastFingers: 0,       // No threshold
+      taxCollection: 250000,     // No threshold
+      robbery: 150000,           // No threshold
+      divorce: 1000000,     // 1 million euro threshold
+      earthquake: 0         // No net worth threshold, but requires 100 properties
+    },
+    
+    // Event requirements (upgrades that must be unlocked for events to trigger)
+    requirements: {
+      marketBoom: "u11",        // Investment must be unlocked
+      marketCrash: "u11",       // Investment must be unlocked
+      greatDepression: "u11",   // Investment must be unlocked
+      taxCollection: "u11",     // Investment must be unlocked (affects investment account)
+      robbery: null,            // No requirements
+      flashSale: null,          // No requirements
+      fastFingers: null,        // No requirements
+      divorce: null,            // No requirements
+      earthquake: null          // No upgrade requirements (100 property requirement handled separately)
     }
   },
   
