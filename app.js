@@ -20,15 +20,9 @@
   // Debug log for mobile detection
   console.log('Mobile device detected:', isMobile, 'User Agent:', navigator.userAgent);
 
-  // Game difficulty system
-  const DIFFICULTY_MODES = {
-    EASY: 'easy',
-    NORMAL: 'normal',
-    HARD: 'hard',
-    EXTREME: 'extreme'
-  };
-  
-  let gameDifficulty = DIFFICULTY_MODES.NORMAL; // Default difficulty
+  // Game difficulty system - now using config
+  const DIFFICULTY_MODES = GAME_CONFIG.DIFFICULTY_MODES;
+  let gameDifficulty = GAME_CONFIG.DEFAULT_DIFFICULTY;
 
   // Particle System
   class ParticleSystem {
@@ -40,15 +34,15 @@
       this.animationId = null;
       this.isAnimating = false;
       this.lastFrameTime = 0;
-      this.targetFPS = 60;
-      this.frameInterval = 1000 / this.targetFPS;
+      this.targetFPS = GAME_CONFIG.ANIMATION.TARGET_FPS;
+      this.frameInterval = GAME_CONFIG.ANIMATION.FRAME_INTERVAL;
       
       this.resizeCanvas();
       this.resizeHandler = () => this.resizeCanvas();
       window.addEventListener('resize', this.resizeHandler);
       this.startAnimation();
     }
-
+    
     resizeCanvas() {
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
@@ -67,7 +61,7 @@
         this.startAnimation();
       }
     }
-
+    
     createParticle(type, x, y, options = {}) {
       // Limit total particles to prevent memory bloat
       if (this.particles.length > 200) {
@@ -93,10 +87,10 @@
       particle.gravity = 0.1;
       particle.bounce = 0.6;
       particle.color = '#FFD700';
-
+      
       // Override with options
       Object.assign(particle, options);
-
+      
       this.particles.push(particle);
       this.ensureAnimationRunning();
     }
@@ -105,7 +99,7 @@
       if (!particleEffectsEnabled) return;
       
       // Reduce particles on mobile
-      const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.5)) : count;
+      const actualCount = isMobile ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
       for (let i = 0; i < actualCount; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
@@ -136,7 +130,7 @@
       if (!particleEffectsEnabled) return;
       
       // Reduce particles on mobile
-      const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.5)) : count;
+      const actualCount = isMobile ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
       for (let i = 0; i < actualCount; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
@@ -510,8 +504,8 @@
     animate(currentTime = 0) {
       // Throttle animation to target FPS
       if (currentTime - this.lastFrameTime >= this.frameInterval) {
-        this.updateParticles();
-        this.drawParticles();
+      this.updateParticles();
+      this.drawParticles();
         this.lastFrameTime = currentTime;
       }
       
@@ -522,7 +516,7 @@
         this.animationId = null;
       }
     }
-
+    
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
@@ -565,8 +559,8 @@
       this.lastValues = new Map(); // Track last animated values
       this.isAnimating = false;
       this.lastFrameTime = 0;
-      this.targetFPS = 60;
-      this.frameInterval = 1000 / this.targetFPS;
+      this.targetFPS = GAME_CONFIG.ANIMATION.TARGET_FPS;
+      this.frameInterval = GAME_CONFIG.ANIMATION.FRAME_INTERVAL;
       this.startAnimation();
     }
     
@@ -618,7 +612,7 @@
         duration,
         formatter: formatter || this.defaultFormatter
       });
-
+      
       // Update last animated value
       this.lastValues.set(key, endValue);
 
@@ -661,13 +655,13 @@
         duration,
         formatter: formatter || this.defaultFormatter
       });
-
+      
       // Update last animated value
       this.lastValues.set(key, endValue);
 
       this.startAnimation();
     }
-
+    
     updateAnimations() {
       const now = Date.now();
       
@@ -700,7 +694,7 @@
     animate(currentTime = 0) {
       // Throttle animation to target FPS
       if (currentTime - this.lastFrameTime >= this.frameInterval) {
-        this.updateAnimations();
+      this.updateAnimations();
         this.lastFrameTime = currentTime;
       }
       
@@ -711,7 +705,7 @@
         this.animationId = null;
       }
     }
-
+    
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
@@ -720,7 +714,7 @@
 
       this.animationId = requestAnimationFrame(() => this.animate());
     }
-
+    
     stopAnimation() {
       this.isAnimating = false;
       if (this.animationId) {
@@ -763,72 +757,8 @@
   let eventName = null;
   let eventTimer = null;
   
-  // Property system configuration
-  const PROPERTY_CONFIG = {
-    foodStand: {
-      name: "Food Stand",
-      baseCost: 400,
-      incomePerSecond: 13,
-      priceMultiplier: 1.075, // 2.5% increase per purchase
-      icon: "fas fa-utensils"
-    },
-    newsstand: {
-      name: "Newsstand",
-      baseCost: 8000,
-      incomePerSecond: 100,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-newspaper"
-    },
-    parkingGarage: {
-      name: "Parking Garage",
-      baseCost: 30000,
-      incomePerSecond: 200,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-car"
-    },
-    convenienceStore: {
-      name: "Convenience Store",
-      baseCost: 150000,
-      incomePerSecond: 1250,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-store"
-    },
-    apartment: {
-      name: "Apartment",
-      baseCost: 500000,
-      incomePerSecond: 4000,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-home"
-    },
-    manufacturingPlant: {
-      name: "Manufacturing Plant",
-      baseCost: 2500000,
-      incomePerSecond: 18000,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-industry"
-    },
-    officeBuilding: {
-      name: "Office Building",
-      baseCost: 10000000,
-      incomePerSecond: 55000,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-building"
-    },
-    skyscraper: {
-      name: "Skyscraper",
-      baseCost: 50000000,
-      incomePerSecond: 175000,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-city"
-    },
-    operaHouse: {
-      name: "Opera House",
-      baseCost: 500000000,
-      incomePerSecond: 1500000,
-      priceMultiplier: 1.075, // 4% increase per purchase
-      icon: "fas fa-theater-masks"
-    }
-  };
+  // Property system configuration - now using config
+  const PROPERTY_CONFIG = GAME_CONFIG.PROPERTY_CONFIG;
 
   // Property ownership tracking
   let properties = {
@@ -843,9 +773,9 @@
     operaHouse: 0
   };
 
-  // Buy multiplier system (1x, 10x, 25x, MAX)
+  // Buy multiplier system - now using config
   let buyMultiplier = 1;
-  const BUY_MULTIPLIERS = [1, 10, 25, 'MAX'];
+  const BUY_MULTIPLIERS = GAME_CONFIG.BUY_MULTIPLIERS;
 
   function cycleBuyMultiplier() {
     const currentIndex = BUY_MULTIPLIERS.indexOf(buyMultiplier);
@@ -2204,8 +2134,8 @@
 
   // Optimized number formatting with caching and performance improvements
   const numberFormatCache = new Map();
-  const CACHE_SIZE_LIMIT = 250; // Reduced to prevent memory leaks
-  const SIGNIFICANT_CHANGE_THRESHOLD = 0.01; // 1% change threshold
+  const CACHE_SIZE_LIMIT = GAME_CONFIG.CACHE.NUMBER_FORMAT_CACHE_LIMIT;
+  const SIGNIFICANT_CHANGE_THRESHOLD = GAME_CONFIG.CACHE.SIGNIFICANT_CHANGE_THRESHOLD;
 
   // Format numbers with k/m/b/t suffixes for better readability
   function formatNumberShort(num) {
@@ -2327,7 +2257,7 @@
     if (numberFormatCache.size > CACHE_SIZE_LIMIT) {
       numberFormatCache.clear();
     }
-  }, 15000); // Reset every 15 seconds (more frequent cleanup)
+  }, GAME_CONFIG.CACHE.CLEANUP_INTERVAL);
 
   function renderUpgradePrices() {
     // Generate upgrade price elements mapping automatically
@@ -3438,17 +3368,17 @@
     }
     
     // Always show progress line (no max tier limit)
-    progressLine.style.display = 'block';
-    
-    // Update progress line styling
-    progressLine.style.width = `${progress * 100}%`;
-    progressLine.style.backgroundColor = lineColor;
-    
-    // Add glow effect for higher tiers
-    if (currentTier >= 3) {
-      progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
-    } else {
-      progressLine.style.boxShadow = 'none';
+      progressLine.style.display = 'block';
+      
+      // Update progress line styling
+      progressLine.style.width = `${progress * 100}%`;
+      progressLine.style.backgroundColor = lineColor;
+      
+      // Add glow effect for higher tiers
+      if (currentTier >= 3) {
+        progressLine.style.boxShadow = `0 0 8px ${lineColor}`;
+      } else {
+        progressLine.style.boxShadow = 'none';
     }
   }
   
@@ -6559,7 +6489,7 @@
   // Events check every 15 seconds - reduced frequency for better performance
   const eventsInterval = setInterval(() => {
     checkEvents();
-  }, 15000);
+  }, GAME_CONFIG.INTERVALS.EVENTS_CHECK);
 
   // Loading screen functionality
   function showLoadingScreen() {
@@ -7306,7 +7236,7 @@ window.addEventListener('beforeunload', cleanup);
   
   // Initialize particle system
   particleSystem = new ParticleSystem();
-
+  
   // Initialize number animator
   numberAnimator = new NumberAnimator();
 
@@ -7328,7 +7258,7 @@ window.addEventListener('beforeunload', cleanup);
       }
     }
   });
-
+  
   // Initialize upgrade visibility state (will be called after DOM is ready)
   function initUpgradeVisibility() {
     const upgradesSection = document.getElementById('upgradesSection');
@@ -7371,7 +7301,7 @@ window.addEventListener('beforeunload', cleanup);
   // Periodic saving every 15 seconds
   const saveInterval = setInterval(() => {
     saveGameState();
-  }, 15000);
+  }, GAME_CONFIG.INTERVALS.GAME_SAVE);
 
   // Render interest per second from per-tick multiplier (dynamic)
   function renderInterestPerSecond() {
@@ -7479,7 +7409,7 @@ window.addEventListener('beforeunload', cleanup);
     };
     update();
     // Recompute periodically to reflect upgrades - reduced frequency for better performance
-    const upgradeUpdateInterval = setInterval(update, 10000);
+    const upgradeUpdateInterval = setInterval(update, GAME_CONFIG.INTERVALS.UPGRADE_UPDATE);
   })();
 
   // Mobile horizontal scrolling enhancements
