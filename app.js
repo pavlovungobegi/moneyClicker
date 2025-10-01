@@ -4927,33 +4927,19 @@ function clearCacheOnLoad() {
 // Clear cache immediately on page load
 clearCacheOnLoad();
 
-// Handle app visibility changes (pause music when app goes to background)
+// Handle app visibility changes (only pause audio for idle game)
 function handleVisibilityChange() {
   if (document.hidden) {
-    // App went to background - pause music and animations
+    // App went to background - only pause audio to save battery
+    // Game logic continues running for idle game mechanics
     AudioSystem.pauseAllAudio();
-      // console.log('Music paused - app went to background');
-    // Stop dividend animation to save resources
-    if (dividendAnimationId) {
-      cancelAnimationFrame(dividendAnimationId);
-      dividendAnimationId = null;
-    }
-    // Pause particle and number animations to save CPU
-    if (particleSystem) particleSystem.stopAnimation();
-    if (numberAnimator) numberAnimator.stopAnimation();
+    // console.log('Audio paused - app went to background (game continues running)');
   } else {
-    // App came to foreground - resume music if it was enabled
+    // App came to foreground - resume audio if it was enabled
     if (AudioSystem.getAudioSettings().musicEnabled) {
       AudioSystem.startBackgroundMusic();
-      // console.log('Music resumed - app came to foreground');
+      // console.log('Audio resumed - app came to foreground');
     }
-    // Restart dividend animation if dividends are enabled
-    if (owned.u10 && !dividendAnimationId) {
-      animateDividendTimer();
-    }
-    // Resume particle and number animations
-    if (particleSystem) particleSystem.startAnimation();
-    if (numberAnimator) numberAnimator.startAnimation();
   }
 }
 
@@ -4961,47 +4947,29 @@ function handleVisibilityChange() {
 document.addEventListener('visibilitychange', handleVisibilityChange);
 
 
-// Handle page focus/blur events as backup
+// Handle page focus/blur events (only pause audio for idle game)
 window.addEventListener('blur', () => {
   AudioSystem.pauseAllAudio();
-    // console.log('Music paused - window lost focus');
-  // Stop dividend animation to save resources
-  if (dividendAnimationId) {
-    cancelAnimationFrame(dividendAnimationId);
-    dividendAnimationId = null;
-  }
+  // console.log('Audio paused - window lost focus (game continues running)');
 });
 
 window.addEventListener('focus', () => {
   if (AudioSystem.getAudioSettings().musicEnabled) {
     AudioSystem.startBackgroundMusic();
-    // console.log('Music resumed - window gained focus');
-  }
-  // Restart dividend animation if dividends are enabled
-  if (owned.u10 && !dividendAnimationId) {
-    animateDividendTimer();
+    // console.log('Audio resumed - window gained focus');
   }
 });
 
-// Handle mobile app lifecycle events (for PWA)
+// Handle mobile app lifecycle events (only pause audio for idle game)
 document.addEventListener('pause', () => {
   AudioSystem.pauseAllAudio();
-    // console.log('Music paused - app paused (mobile)');
-  // Stop dividend animation to save resources
-  if (dividendAnimationId) {
-    cancelAnimationFrame(dividendAnimationId);
-    dividendAnimationId = null;
-  }
+  // console.log('Audio paused - app paused (mobile, game continues running)');
 });
 
 document.addEventListener('resume', () => {
   if (AudioSystem.getAudioSettings().musicEnabled) {
     AudioSystem.startBackgroundMusic();
-    // console.log('Music resumed - app resumed (mobile)');
-  }
-  // Restart dividend animation if dividends are enabled
-  if (owned.u10 && !dividendAnimationId) {
-    animateDividendTimer();
+    // console.log('Audio resumed - app resumed (mobile)');
   }
 });
 
@@ -5188,24 +5156,8 @@ window.addEventListener('beforeunload', cleanup);
   // Initialize number animator
   numberAnimator = new NumberAnimator();
 
-  // Pause expensive animations when the tab is hidden
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (particleSystem) {
-        particleSystem.stopAnimation({ clearCanvas: true });
-      }
-      if (numberAnimator) {
-        numberAnimator.stopAnimation();
-      }
-    } else {
-      if (particleSystem && particleSystem.hasParticles()) {
-        particleSystem.startAnimation();
-      }
-      if (numberAnimator && numberAnimator.hasActiveAnimations()) {
-        numberAnimator.startAnimation();
-      }
-    }
-  });
+  // Note: Removed visibility-based animation pausing for idle game
+  // Game continues running even when tab is hidden
   
   // Initialize upgrade visibility state (will be called after DOM is ready)
   function initUpgradeVisibility() {
