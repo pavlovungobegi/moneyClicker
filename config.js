@@ -164,7 +164,11 @@ const GAME_CONFIG = {
     u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } },
     u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } },
     u47: { cost: 25000000000, name: "Property Pimp", effect: "Increases the rent collected from properties by 25%", type: "rent_boost", effects: { rent_income: 0.25 } },
-    u48: { cost: 100000000000, name: "Oh Long Johnson!", effect: "Increases the rent collected from properties by 15%", type: "rent_boost", effects: { rent_income: 0.15 } }
+    u48: { cost: 100000000000, name: "Oh Long Johnson!", effect: "Increases the rent collected from properties by 15%", type: "rent_boost", effects: { rent_income: 0.15 } },
+    u49: { cost: 1000000, name: "Hot Dogs", effect: "Doubles the income of Food Stands", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "foodStand" },
+    u50: { cost: 3000000, name: "Popular Magazines", effect: "Doubles the income of Newsstand", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "newsstand" },
+    u51: { cost: 750000, name: "Clicking is Love!", effect: "Adds +250 euros per click", type: "click", effects: { click_income: 250 } },
+    u52: { cost: 1000000, name: "Extended Streak", effect: "Increases maximum streak multiplier to 5x", type: "streak_boost", effects: { max_streak: 5 }, requires: "u30" }
   },
   
   // =============================================================================

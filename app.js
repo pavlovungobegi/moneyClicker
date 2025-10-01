@@ -1480,9 +1480,13 @@ let prestigeInterestMultiplier = 1;
     // All buildings get the same income multiplier based on total owned
     let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
     
-    // Apply rent income boosts
+    // Apply general rent income boosts
     const rentMultiplier = getUpgradeEffectMultiplier('rent_income');
     baseIncome *= rentMultiplier;
+    
+    // Apply property-specific rent income boosts
+    const propertyRentMultiplier = getPropertySpecificRentMultiplier(propertyId);
+    baseIncome *= propertyRentMultiplier;
     
     // Debug logging
     /*
@@ -2354,7 +2358,7 @@ let prestigeInterestMultiplier = 1;
     
     // Update streak - critical hits fill 3x more
     if (isCritical) {
-      streakCount += 4; // Critical hits fill streak 3x faster
+      streakCount += 5; // Critical hits fill streak 3x faster
     } else {
       streakCount++; // Normal clicks fill streak normally
     }
@@ -2364,10 +2368,10 @@ let prestigeInterestMultiplier = 1;
     // Streak builds up over time, reaching max at around 50-60 clicks
     const maxStreakForMaxMultiplier = 60;
     const progress = Math.min(streakCount / maxStreakForMaxMultiplier, 1);
-    streakMultiplier = 1 + (progress * (MAX_STREAK_MULTIPLIER - 1));
+    streakMultiplier = 1 + (progress * (getMaxStreakMultiplier() - 1));
     
     // Check if max streak is reached
-    if (streakMultiplier >= MAX_STREAK_MULTIPLIER && !maxStreakReached) {
+    if (streakMultiplier >= getMaxStreakMultiplier() && !maxStreakReached) {
       maxStreakReached = true;
     }
     
@@ -2400,11 +2404,11 @@ let prestigeInterestMultiplier = 1;
     streakMultiplierEl.textContent = `${streakMultiplier.toFixed(1)}x`;
     
     // Update progress bar
-    const progress = ((streakMultiplier - 1) / (MAX_STREAK_MULTIPLIER - 1)) * 100;
+    const progress = ((streakMultiplier - 1) / (getMaxStreakMultiplier() - 1)) * 100;
     streakProgressFill.style.width = `${progress}%`;
     
     // Update progress text
-    streakProgressText.textContent = `${MAX_STREAK_MULTIPLIER.toFixed(1)}x`;
+    streakProgressText.textContent = `${getMaxStreakMultiplier().toFixed(1)}x`;
   }
 
   function checkAchievements() {
@@ -3627,7 +3631,15 @@ let prestigeInterestMultiplier = 1;
   let streakCount = 0;
   let streakMultiplier = 1;
   const STREAK_TIMEOUT_MS = 2000; // 2 seconds
-  const MAX_STREAK_MULTIPLIER = 3;
+  const BASE_MAX_STREAK_MULTIPLIER = 3;
+  
+  function getMaxStreakMultiplier() {
+    // Check if Extended Streak upgrade is owned
+    if (owned.u52) {
+      return 5; // Extended to 5x
+    }
+    return BASE_MAX_STREAK_MULTIPLIER; // Default 3x
+  }
 
   // Auto clicker system
   let autoClickTimer = 0;
@@ -3724,8 +3736,26 @@ let prestigeInterestMultiplier = 1;
     return multiplier;
   }
 
+  function getPropertySpecificRentMultiplier(propertyId) {
+    let multiplier = 1;
+    Object.entries(UPGRADE_CONFIG).forEach(([upgradeId, config]) => {
+      if (owned[upgradeId] && config.type === 'property_rent_boost' && config.property === propertyId) {
+        multiplier *= (1 + config.effects.property_rent_income);
+      }
+    });
+    return multiplier;
+  }
+
   // Function to get icon class based on upgrade type
-  function getUpgradeIconClass(type) {
+  function getUpgradeIconClass(type, config = null) {
+    // For property-specific rent boosts, use the property's icon
+    if (type === 'property_rent_boost' && config && config.property) {
+      const propertyConfig = PROPERTY_CONFIG[config.property];
+      if (propertyConfig && propertyConfig.icon) {
+        return `${propertyConfig.icon} upgrade-icon property-icon`;
+      }
+    }
+    
     const iconMap = {
       'click': 'fas fa-money-bill-wave upgrade-icon click-icon',
       'interest': 'fas fa-percentage upgrade-icon interest-icon',
@@ -3737,14 +3767,16 @@ let prestigeInterestMultiplier = 1;
       'special': 'fas fa-bolt upgrade-icon special-icon',
       'building_discount': 'fas fa-building upgrade-icon building-icon',
       'rent_boost': 'fas fa-building upgrade-icon building-icon',
-      'property_discount': 'fas fa-building upgrade-icon building-icon'
+      'property_discount': 'fas fa-building upgrade-icon building-icon',
+      'property_rent_boost': 'fas fa-building upgrade-icon building-icon', // fallback
+      'streak_boost': 'fas fa-fire upgrade-icon streak-icon'
     };
     return iconMap[type] || 'fas fa-star upgrade-icon';
   }
 
   // Function to generate upgrade HTML from configuration
   function generateUpgradeHTML(upgradeId, config) {
-    const iconClass = getUpgradeIconClass(config.type);
+    const iconClass = getUpgradeIconClass(config.type, config);
     const buttonText = config.type === 'prestige' ? 'Reset' : 'Buy';
     
     return `
@@ -3935,7 +3967,7 @@ let prestigeInterestMultiplier = 1;
     
     // Invalidate property income cache if rent-related upgrade was purchased
     const purchasedUpgrade = GAME_CONFIG.UPGRADE_CONFIG[key];
-    if (purchasedUpgrade && (purchasedUpgrade.type === 'rent_boost' || purchasedUpgrade.effects?.rent_income)) {
+    if (purchasedUpgrade && (purchasedUpgrade.type === 'rent_boost' || purchasedUpgrade.type === 'property_rent_boost' || purchasedUpgrade.effects?.rent_income || purchasedUpgrade.effects?.property_rent_income)) {
       propertyIncomeCacheValid = false;
     }
     
