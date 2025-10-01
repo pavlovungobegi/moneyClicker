@@ -38,9 +38,14 @@
       this.particles = [];
       this.particlePool = [];
       this.animationId = null;
+      this.isAnimating = false;
+      this.lastFrameTime = 0;
+      this.targetFPS = 60;
+      this.frameInterval = 1000 / this.targetFPS;
       
       this.resizeCanvas();
-      window.addEventListener('resize', () => this.resizeCanvas());
+      this.resizeHandler = () => this.resizeCanvas();
+      window.addEventListener('resize', this.resizeHandler);
       this.startAnimation();
     }
     
@@ -482,22 +487,47 @@
       });
     }
     
-    animate() {
-      this.updateParticles();
-      this.drawParticles();
-      this.animationId = requestAnimationFrame(() => this.animate());
+    animate(currentTime = 0) {
+      // Throttle animation to target FPS
+      if (currentTime - this.lastFrameTime >= this.frameInterval) {
+        this.updateParticles();
+        this.drawParticles();
+        this.lastFrameTime = currentTime;
+      }
+      
+      // Only continue animation if there are particles or we're actively animating
+      if (this.particles.length > 0 || this.isAnimating) {
+        this.animationId = requestAnimationFrame((time) => this.animate(time));
+      } else {
+        this.animationId = null;
+      }
     }
     
     startAnimation() {
+      this.isAnimating = true;
       if (!this.animationId) {
         this.animate();
       }
     }
     
     stopAnimation() {
+      this.isAnimating = false;
       if (this.animationId) {
         cancelAnimationFrame(this.animationId);
         this.animationId = null;
+      }
+    }
+    
+    // Cleanup method to prevent memory leaks
+    destroy() {
+      this.stopAnimation();
+      if (this.resizeHandler) {
+        window.removeEventListener('resize', this.resizeHandler);
+      }
+      this.particles = [];
+      this.particlePool = [];
+      if (this.canvas && this.canvas.parentNode) {
+        this.canvas.parentNode.removeChild(this.canvas);
       }
     }
   }
@@ -511,6 +541,10 @@
       this.animations = new Map();
       this.animationId = null;
       this.lastValues = new Map(); // Track last animated values
+      this.isAnimating = false;
+      this.lastFrameTime = 0;
+      this.targetFPS = 60;
+      this.frameInterval = 1000 / this.targetFPS;
       this.startAnimation();
     }
     
@@ -637,22 +671,41 @@
       return 1 - Math.pow(1 - t, 3);
     }
     
-    animate() {
-      this.updateAnimations();
-      this.animationId = requestAnimationFrame(() => this.animate());
+    animate(currentTime = 0) {
+      // Throttle animation to target FPS
+      if (currentTime - this.lastFrameTime >= this.frameInterval) {
+        this.updateAnimations();
+        this.lastFrameTime = currentTime;
+      }
+      
+      // Only continue animation if there are active animations or we're actively animating
+      if (this.animations.size > 0 || this.isAnimating) {
+        this.animationId = requestAnimationFrame((time) => this.animate(time));
+      } else {
+        this.animationId = null;
+      }
     }
     
     startAnimation() {
+      this.isAnimating = true;
       if (!this.animationId) {
         this.animate();
       }
     }
     
     stopAnimation() {
+      this.isAnimating = false;
       if (this.animationId) {
         cancelAnimationFrame(this.animationId);
         this.animationId = null;
       }
+    }
+    
+    // Cleanup method to prevent memory leaks
+    destroy() {
+      this.stopAnimation();
+      this.animations.clear();
+      this.lastValues.clear();
     }
   }
   
@@ -1930,7 +1983,7 @@
 
   // Optimized number formatting with caching and performance improvements
   const numberFormatCache = new Map();
-  const CACHE_SIZE_LIMIT = 500; // Prevent memory leaks
+  const CACHE_SIZE_LIMIT = 250; // Reduced to prevent memory leaks
   const SIGNIFICANT_CHANGE_THRESHOLD = 0.01; // 1% change threshold
 
   // Format numbers with k/m/b/t suffixes for better readability
@@ -2046,13 +2099,13 @@
   }
   
   // Reset stats and clean cache periodically to prevent overflow
-  setInterval(() => {
+  const cacheCleanupInterval = setInterval(() => {
     formatStats = { cacheHits: 0, cacheMisses: 0, totalCalls: 0 };
     // Clear cache more frequently to prevent memory buildup
-    if (numberFormatCache.size > 250) {
+    if (numberFormatCache.size > CACHE_SIZE_LIMIT) {
       numberFormatCache.clear();
     }
-  }, 30000); // Reset every 30 seconds
+  }, 15000); // Reset every 15 seconds (more frequent cleanup)
 
   function renderUpgradePrices() {
     // Generate upgrade price elements mapping automatically
@@ -5368,7 +5421,7 @@
   }
 
 
-  setInterval(() => {
+  const investmentInterval = setInterval(() => {
     // Investment compounding: multiply per tick, boosted by upgrades
     if (investmentAccountBalance > 0) {
       const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
@@ -5441,10 +5494,10 @@
 
   // Net worth data collection removed for performance
   
-  // Events check every 10 seconds - reduced frequency for mobile performance
-  setInterval(() => {
+  // Events check every 15 seconds - reduced frequency for better performance
+  const eventsInterval = setInterval(() => {
     checkEvents();
-  }, 10000);
+  }, 15000);
 
   // Loading screen functionality
   function showLoadingScreen() {
@@ -5505,7 +5558,6 @@
     updateSubmissionStatus();
     
     // Set up timer to update submission status every second
-    setInterval(updateSubmissionStatus, 1000);
     
     // Add leaderboard event listeners
     const submitBtn = document.getElementById('submitScoreBtn');
@@ -5922,6 +5974,9 @@ function handleVisibilityChange() {
       cancelAnimationFrame(dividendAnimationId);
       dividendAnimationId = null;
     }
+    // Pause particle and number animations to save CPU
+    if (particleSystem) particleSystem.stopAnimation();
+    if (numberAnimator) numberAnimator.stopAnimation();
   } else {
     // App came to foreground - resume music if it was enabled
     if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
@@ -5934,11 +5989,15 @@ function handleVisibilityChange() {
     if (owned.u10 && !dividendAnimationId) {
       animateDividendTimer();
     }
+    // Resume particle and number animations
+    if (particleSystem) particleSystem.startAnimation();
+    if (numberAnimator) numberAnimator.startAnimation();
   }
 }
 
 // Add event listener for visibility changes
 document.addEventListener('visibilitychange', handleVisibilityChange);
+
 
 // Handle page focus/blur events as backup
 window.addEventListener('blur', () => {
@@ -6006,13 +6065,31 @@ if (achievementBannerClose) {
   });
 }
 
-// Handle page unload (when user closes tab/app)
-window.addEventListener('beforeunload', () => {
+// Cleanup function to prevent memory leaks
+function cleanup() {
+  // Clear all intervals
+  if (typeof cacheCleanupInterval !== 'undefined') clearInterval(cacheCleanupInterval);
+  if (typeof investmentInterval !== 'undefined') clearInterval(investmentInterval);
+  if (typeof eventsInterval !== 'undefined') clearInterval(eventsInterval);
+  if (typeof saveInterval !== 'undefined') clearInterval(saveInterval);
+  if (typeof submissionStatusInterval !== 'undefined') clearInterval(submissionStatusInterval);
+  if (typeof upgradeUpdateInterval !== 'undefined') clearInterval(upgradeUpdateInterval);
+  
+  // Stop animation systems
+  if (particleSystem) particleSystem.destroy();
+  if (numberAnimator) numberAnimator.destroy();
+  
+  // Pause background music
   if (backgroundMusic && !backgroundMusic.paused) {
     backgroundMusic.pause();
-    // console.log('Music paused - app closing');
   }
-});
+  
+  // Save game state
+  saveGameState();
+}
+
+// Handle page unload (when user closes tab/app)
+window.addEventListener('beforeunload', cleanup);
 
   
   // Console debugging functions
@@ -6199,7 +6276,7 @@ window.addEventListener('beforeunload', () => {
   }
   
   // Periodic saving every 15 seconds
-  setInterval(() => {
+  const saveInterval = setInterval(() => {
     saveGameState();
   }, 15000);
 
@@ -6266,8 +6343,8 @@ window.addEventListener('beforeunload', () => {
       renderInterestPerSecond();
     };
     update();
-    // Recompute periodically to reflect upgrades - reduced frequency for mobile performance
-    setInterval(update, 5000);
+    // Recompute periodically to reflect upgrades - reduced frequency for better performance
+    const upgradeUpdateInterval = setInterval(update, 10000);
   })();
 
   // Mobile horizontal scrolling enhancements
@@ -6294,8 +6371,14 @@ window.addEventListener('beforeunload', () => {
       }
     }
 
-    // Only add scroll listener for visual indicators
-    panelsContainer.addEventListener('scroll', updateScrollIndicators);
+    // Debounced scroll handler for visual indicators
+    let scrollIndicatorTimeout;
+    const debouncedUpdateScrollIndicators = () => {
+      clearTimeout(scrollIndicatorTimeout);
+      scrollIndicatorTimeout = setTimeout(updateScrollIndicators, 16); // ~60fps
+    };
+    
+    panelsContainer.addEventListener('scroll', debouncedUpdateScrollIndicators, { passive: true });
     updateScrollIndicators(); // Initial call
   })();
 })();
