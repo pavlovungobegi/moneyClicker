@@ -136,223 +136,38 @@ const GAME_CONFIG = {
   // =============================================================================
   
   UPGRADE_CONFIG: {
-    u1: { 
-      cost: 10, 
-      name: "Finish elementary school", 
-      effect: "Adds +1 euro per click", 
-      type: "click", 
-      effects: { click_income: 1 } 
-    },
-    u3: { 
-      cost: 50, 
-      name: "Finish high school", 
-      effect: "Adds +6 euros per click", 
-      type: "click", 
-      effects: { click_income: 6 } 
-    },
-    u4: { 
-      cost: 250, 
-      name: "Finish college", 
-      effect: "Adds +30 euros per click", 
-      type: "click", 
-      effects: { click_income: 30 } 
-    },
-    u5: { 
-      cost: 1250, 
-      name: "Get a PhD", 
-      effect: "Adds +150 euros per click", 
-      type: "click", 
-      effects: { click_income: 150 } 
-    },
-    u6: { 
-      cost: 6250, 
-      name: "Become a professor", 
-      effect: "Adds +750 euros per click", 
-      type: "click", 
-      effects: { click_income: 750 } 
-    },
-    u7: { 
-      cost: 31250, 
-      name: "Win Nobel Prize", 
-      effect: "Adds +3750 euros per click", 
-      type: "click", 
-      effects: { click_income: 3750 } 
-    },
-    u8: { 
-      cost: 156250, 
-      name: "Start a company", 
-      effect: "Adds +18750 euros per click", 
-      type: "click", 
-      effects: { click_income: 18750 } 
-    },
-    u9: { 
-      cost: 781250, 
-      name: "Go public", 
-      effect: "Adds +93750 euros per click", 
-      type: "click", 
-      effects: { click_income: 93750 } 
-    },
-    u10: { 
-      cost: 3906250, 
-      name: "Become a billionaire", 
-      effect: "Adds +468750 euros per click", 
-      type: "click", 
-      effects: { click_income: 468750 } 
-    },
-    u11: { 
-      cost: 19531250, 
-      name: "Build a space company", 
-      effect: "Adds +2343750 euros per click", 
-      type: "click", 
-      effects: { click_income: 2343750 } 
-    },
-    u12: { 
-      cost: 97656250, 
-      name: "Colonize Mars", 
-      effect: "Adds +11718750 euros per click", 
-      type: "click", 
-      effects: { click_income: 11718750 } 
-    },
-    u13: { 
-      cost: 488281250, 
-      name: "Achieve immortality", 
-      effect: "Adds +58593750 euros per click", 
-      type: "click", 
-      effects: { click_income: 58593750 } 
-    },
-    u14: { 
-      cost: 2441406250, 
-      name: "Become a god", 
-      effect: "Adds +292968750 euros per click", 
-      type: "click", 
-      effects: { click_income: 292968750 } 
-    },
-    u15: { 
-      cost: 12207031250, 
-      name: "Create a universe", 
-      effect: "Adds +1464843750 euros per click", 
-      type: "click", 
-      effects: { click_income: 1464843750 } 
-    },
-    u16: { 
-      cost: 61035156250, 
-      name: "Transcend reality", 
-      effect: "Adds +7324218750 euros per click", 
-      type: "click", 
-      effects: { click_income: 7324218750 } 
-    },
-    u17: { 
-      cost: 305175781250, 
-      name: "Become the universe", 
-      effect: "Adds +36621093750 euros per click", 
-      type: "click", 
-      effects: { click_income: 36621093750 } 
-    },
-    u18: { 
-      cost: 1525878906250, 
-      name: "Achieve omnipotence", 
-      effect: "Adds +183105468750 euros per click", 
-      type: "click", 
-      effects: { click_income: 183105468750 } 
-    },
-    u19: { 
-      cost: 7629394531250, 
-      name: "Become everything", 
-      effect: "Adds +915527343750 euros per click", 
-      type: "click", 
-      effects: { click_income: 915527343750 } 
-    },
-    u20: { 
-      cost: 38146972656250, 
-      name: "Transcend existence", 
-      effect: "Adds +4577636718750 euros per click", 
-      type: "click", 
-      effects: { click_income: 4577636718750 } 
-    },
-    u21: { 
-      cost: 190734863281250, 
-      name: "Become nothing", 
-      effect: "Adds +22888183593750 euros per click", 
-      type: "click", 
-      effects: { click_income: 22888183593750 } 
-    },
-    u22: { 
-      cost: 953674316406250, 
-      name: "Achieve perfect balance", 
-      effect: "Adds +114440917968750 euros per click", 
-      type: "click", 
-      effects: { click_income: 114440917968750 } 
-    },
-    u23: { 
-      cost: 4768371582031250, 
-      name: "Become the void", 
-      effect: "Adds +572204589843750 euros per click", 
-      type: "click", 
-      effects: { click_income: 572204589843750 } 
-    },
-    u24: { 
-      cost: 23841857910156250, 
-      name: "Transcend the void", 
-      effect: "Adds +2861022949218750 euros per click", 
-      type: "click", 
-      effects: { click_income: 2861022949218750 } 
-    },
-    u25: { 
-      cost: 119209289550781250, 
-      name: "Become infinite", 
-      effect: "Adds +14305114746093750 euros per click", 
-      type: "click", 
-      effects: { click_income: 14305114746093750 } 
-    },
-    u26: { 
-      cost: 596046447753906250, 
-      name: "Transcend infinity", 
-      effect: "Adds +71525573730468750 euros per click", 
-      type: "click", 
-      effects: { click_income: 71525573730468750 } 
-    },
-    u27: { 
-      cost: 2980232238769531250, 
-      name: "Become eternal", 
-      effect: "Adds +357627868652343750 euros per click", 
-      type: "click", 
-      effects: { click_income: 357627868652343750 } 
-    },
-    u28: { 
-      cost: 14901161193847656250, 
-      name: "Transcend eternity", 
-      effect: "Adds +1788139343261718750 euros per click", 
-      type: "click", 
-      effects: { click_income: 1788139343261718750 } 
-    },
-    u29: { 
-      cost: 74505805969238281250, 
-      name: "Become absolute", 
-      effect: "Adds +8940696716308593750 euros per click", 
-      type: "click", 
-      effects: { click_income: 8940696716308593750 } 
-    },
-    u30: { 
-      cost: 372529029846191406250, 
-      name: "Transcend the absolute", 
-      effect: "Adds +44703483581542968750 euros per click", 
-      type: "click", 
-      effects: { click_income: 44703483581542968750 } 
-    },
-    u31: { 
-      cost: 1862645149230957031250, 
-      name: "Become the source", 
-      effect: "Adds +223517417907714843750 euros per click", 
-      type: "click", 
-      effects: { click_income: 223517417907714843750 } 
-    },
-    u32: { 
-      cost: 9313225746154785156250, 
-      name: "Transcend the source", 
-      effect: "Adds +1117587089538574218750 euros per click", 
-      type: "click", 
-      effects: { click_income: 1117587089538574218750 } 
-    }
+    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click", effects: { click_income: 1 } },
+    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click", effects: { click_income: 6 } },
+    u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
+    u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u10: { cost: 750000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend", requires: "u11" },
+    u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
+    u12: { cost: 1000000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
+    u13: { cost: 3000000, name: "Mega Dividends", effect: "Increase dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
+    u14: { cost: 15000000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
+    u17: { cost: 60000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.25 } },
+    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
+    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock", requires: "u11" },
+    u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
+    u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
+    u31: { cost: 150000000, name: "Strong Credit Score", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
+    u32: { cost: 5000000, name: "Automated Rent Investment", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
+    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount", effects: { building_discount: 0.15 } },
+    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount", effects: { building_discount: 0.20 } },
+    u35: { cost: 100000000, name: "Property Management", effect: "Increases rent income from properties by 10%", type: "rent_boost", effects: { rent_income: 0.10 } },
+    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount", effects: { building_discount: 0.10 } },
+    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost", effects: { rent_income: 0.20 } },
+    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost", effects: { rent_income: 0.05 } },
+    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount", effects: { building_discount: 0.25 } },
+    u40: { cost: 250000, name: "Zen Clicks", effect: "Adds +150 euros per click", type: "click", effects: { click_income: 150 } },
+    u41: { cost: 1500000, name: "Clicker Kicker", effect: "Adds +400 euros per click", type: "click", effects: { click_income: 400 } },
+    u42: { cost: 30000000, name: "Click Frenzy", effect: "Adds +15k euros per click", type: "click", effects: { click_income: 15000 } },
+    u43: { cost: 250000000, name: "Just Clicking", effect: "Adds +150k euros per click", type: "click", effects: { click_income: 150000 } },
+    u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } },
+    u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } },
+    u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } }
   },
   
   // =============================================================================
@@ -362,213 +177,88 @@ const GAME_CONFIG = {
   ACHIEVEMENT_CONFIG: {
     ach1: { 
       name: "First Steps", 
-      description: "Click 100 times", 
-      condition: "clicks >= 100",
-      reward: "Unlocks first property",
-      icon: "👶"
+      description: "Earn your first €1,000", 
+      icon: "💰" 
     },
     ach2: { 
-      name: "Getting Started", 
-      description: "Earn your first €1,000", 
-      condition: "totalEarned >= 1000",
-      reward: "Unlocks lemonade stand",
-      icon: "💰"
+      name: "Thousandaire", 
+      description: "Reach €10,000 total wealth", 
+      icon: "💎" 
     },
     ach3: { 
-      name: "Property Owner", 
-      description: "Buy your first property", 
-      condition: "propertiesOwned >= 1",
-      reward: "Unlocks hot dog stand",
-      icon: "🏠"
+      name: "Millionaire", 
+      description: "Reach €1,000,000 total wealth", 
+      icon: "🏆" 
     },
     ach4: { 
-      name: "Business Owner", 
-      description: "Own 10 properties", 
-      condition: "propertiesOwned >= 10",
-      reward: "Unlocks ice cream truck",
-      icon: "🏢"
+      name: "Billionaire", 
+      description: "Reach €1,000,000,000 total wealth", 
+      icon: "👑" 
     },
     ach5: { 
-      name: "Entrepreneur", 
-      description: "Earn €10,000 total", 
-      condition: "totalEarned >= 10000",
-      reward: "Unlocks restaurant",
-      icon: "💼"
+      name: "Trillionaire", 
+      description: "Reach €1,000,000,000,000 total wealth", 
+      icon: "🚀" 
     },
     ach6: { 
-      name: "Millionaire", 
-      description: "Earn €1,000,000 total", 
-      condition: "totalEarned >= 1000000",
-      reward: "Unlocks fast food chain",
-      icon: "💎"
-    },
-    ach7: { 
-      name: "Billionaire", 
-      description: "Earn €1,000,000,000 total", 
-      condition: "totalEarned >= 1000000000",
-      reward: "Unlocks luxury restaurant",
-      icon: "👑"
-    },
-    ach8: { 
-      name: "Trillionaire", 
-      description: "Earn €1,000,000,000,000 total", 
-      condition: "totalEarned >= 1000000000000",
-      reward: "Unlocks food empire",
-      icon: "🌟"
-    },
-    ach9: { 
       name: "Click Master", 
       description: "Click 1,000 times", 
-      condition: "clicks >= 1000",
-      reward: "Unlocks first upgrade",
-      icon: "👆"
+      icon: "🎯" 
+    },
+    ach7: { 
+      name: "Critical Hit", 
+      description: "Get 100 critical hits", 
+      icon: "⚡" 
+    },
+    ach8: { 
+      name: "Streak Master", 
+      description: "Reach maximum click streak (3.0x)", 
+      icon: "🔥" 
+    },
+    ach9: { 
+      name: "Educated", 
+      description: "Complete Higher Education", 
+      icon: "🎓" 
     },
     ach10: { 
-      name: "Click Legend", 
-      description: "Click 10,000 times", 
-      condition: "clicks >= 10000",
-      reward: "Unlocks second upgrade",
-      icon: "🤚"
+      name: "Investor", 
+      description: "Invest €100,000 in the investment account", 
+      icon: "💼" 
     },
     ach11: { 
-      name: "Click God", 
-      description: "Click 100,000 times", 
-      condition: "clicks >= 100000",
-      reward: "Unlocks third upgrade",
-      icon: "✋"
-    },
-    ach12: { 
-      name: "Property Mogul", 
-      description: "Own 100 properties", 
-      condition: "propertiesOwned >= 100",
-      reward: "Unlocks fourth upgrade",
-      icon: "🏘️"
+      name: "Dividend King", 
+      description: "Receive €1,000,000 in dividends", 
+      icon: "📈" 
     },
     ach13: { 
-      name: "Real Estate King", 
-      description: "Own 1,000 properties", 
-      condition: "propertiesOwned >= 1000",
-      reward: "Unlocks fifth upgrade",
-      icon: "🏰"
+      name: "First Investment", 
+      description: "Invest your first euro", 
+      icon: "💳" 
     },
     ach14: { 
-      name: "Investment Guru", 
-      description: "Invest €1,000,000", 
-      condition: "totalInvested >= 1000000",
-      reward: "Unlocks sixth upgrade",
-      icon: "📈"
+      name: "Property Pioneer", 
+      description: "Buy your first property", 
+      icon: "🏠" 
     },
     ach15: { 
-      name: "Market Master", 
-      description: "Invest €100,000,000", 
-      condition: "totalInvested >= 100000000",
-      reward: "Unlocks seventh upgrade",
-      icon: "📊"
+      name: "Rent Rookie", 
+      description: "Generate €1,000 per second in rent", 
+      icon: "💰" 
     },
     ach16: { 
-      name: "Financial Wizard", 
-      description: "Invest €10,000,000,000", 
-      condition: "totalInvested >= 10000000000",
-      reward: "Unlocks eighth upgrade",
-      icon: "🧙‍♂️"
+      name: "Rent Royalty", 
+      description: "Generate €100,000 per second in rent", 
+      icon: "👑" 
     },
     ach17: { 
-      name: "Upgrade Collector", 
-      description: "Buy 10 upgrades", 
-      condition: "upgradesOwned >= 10",
-      reward: "Unlocks ninth upgrade",
-      icon: "🔧"
+      name: "Rent Empire", 
+      description: "Generate €1,000,000 per second in rent", 
+      icon: "🏰" 
     },
     ach18: { 
-      name: "Upgrade Master", 
-      description: "Buy 20 upgrades", 
-      condition: "upgradesOwned >= 20",
-      reward: "Unlocks tenth upgrade",
-      icon: "⚙️"
-    },
-    ach19: { 
-      name: "Upgrade Legend", 
-      description: "Buy all upgrades", 
-      condition: "upgradesOwned >= 32",
-      reward: "Unlocks all remaining upgrades",
-      icon: "🏆"
-    },
-    ach20: { 
-      name: "Event Survivor", 
-      description: "Survive 10 events", 
-      condition: "eventsSurvived >= 10",
-      reward: "Unlocks event resistance",
-      icon: "⚡"
-    },
-    ach21: { 
-      name: "Event Master", 
-      description: "Survive 50 events", 
-      condition: "eventsSurvived >= 50",
-      reward: "Unlocks event immunity",
-      icon: "🛡️"
-    },
-    ach22: { 
-      name: "Event Legend", 
-      description: "Survive 100 events", 
-      condition: "eventsSurvived >= 100",
-      reward: "Unlocks event mastery",
-      icon: "👑"
-    },
-    ach23: { 
-      name: "Speed Demon", 
-      description: "Click 1,000 times in 1 minute", 
-      condition: "clicksPerMinute >= 1000",
-      reward: "Unlocks speed boost",
-      icon: "💨"
-    },
-    ach24: { 
-      name: "Speed God", 
-      description: "Click 10,000 times in 1 minute", 
-      condition: "clicksPerMinute >= 10000",
-      reward: "Unlocks speed mastery",
-      icon: "⚡"
-    },
-    ach25: { 
-      name: "Perfectionist", 
-      description: "Achieve 100% efficiency", 
-      condition: "efficiency >= 100",
-      reward: "Unlocks perfection mode",
-      icon: "✨"
-    },
-    ach26: { 
-      name: "Time Master", 
-      description: "Play for 24 hours", 
-      condition: "playTime >= 86400000",
-      reward: "Unlocks time mastery",
-      icon: "⏰"
-    },
-    ach27: { 
-      name: "Dedication", 
-      description: "Play for 7 days", 
-      condition: "playTime >= 604800000",
-      reward: "Unlocks dedication mode",
-      icon: "📅"
-    },
-    ach28: { 
-      name: "Legendary Player", 
-      description: "Play for 30 days", 
-      condition: "playTime >= 2592000000",
-      reward: "Unlocks legendary status",
-      icon: "🏆"
-    },
-    ach29: { 
-      name: "Ultimate Gamer", 
-      description: "Play for 365 days", 
-      condition: "playTime >= 31536000000",
-      reward: "Unlocks ultimate status",
-      icon: "🌟"
-    },
-    ach30: { 
-      name: "Transcendent Being", 
-      description: "Achieve all other achievements", 
-      condition: "achievementsUnlocked >= 29",
-      reward: "Unlocks transcendence",
-      icon: "👼"
+      name: "Rent Billionaire", 
+      description: "Generate €1,000,000,000 per second in rent", 
+      icon: "🌍" 
     }
   },
   
@@ -862,6 +552,39 @@ const GAME_CONFIG = {
     MANUAL_SAVE_KEY: 'moneyClickerSave',
     SETTINGS_KEY: 'moneyClickerSettings',
     BACKUP_KEY: 'moneyClickerBackup'
+  },
+
+  // =============================================================================
+  // TIER CONFIGURATION
+  // =============================================================================
+  TIER_CONFIG: {
+    // Default tier (0 buildings)
+    default: {
+      name: "Default",
+      color: "#6b7280",
+      bgColor: "rgba(107, 114, 128, 0.1)",
+      borderColor: "rgba(107, 114, 128, 0.3)",
+      buildingsRequired: 0
+    },
+    
+    // All tiers in standard progression (every 25 buildings)
+    standardTiers: [
+      { name: "Bronze", color: "#cd7f32", bgColor: "rgba(205, 127, 50, 0.4)", borderColor: "rgba(205, 127, 50, 0.6)", buildingsRequired: 25 },
+      { name: "Silver", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 50 },
+      { name: "Gold", color: "#ffd700", bgColor: "rgba(255, 215, 0, 0.4)", borderColor: "rgba(255, 215, 0, 0.7)", buildingsRequired: 75 },
+      { name: "Diamond", color: "#00bfff", bgColor: "rgba(0, 191, 255, 0.4)", borderColor: "rgba(0, 191, 255, 0.7)", buildingsRequired: 100 },
+      { name: "Platinum", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 125 },
+      { name: "Emerald", color: "#50c878", bgColor: "rgba(80, 200, 120, 0.4)", borderColor: "rgba(80, 200, 120, 0.6)", buildingsRequired: 150 },
+      { name: "Ruby", color: "#e0115f", bgColor: "rgba(224, 17, 95, 0.4)", borderColor: "rgba(224, 17, 95, 0.6)", buildingsRequired: 175 },
+      { name: "Sapphire", color: "#0f52ba", bgColor: "rgba(15, 82, 186, 0.4)", borderColor: "rgba(15, 82, 186, 0.6)", buildingsRequired: 200 },
+      { name: "Mythic", color: "#8b5cf6", bgColor: "rgba(139, 92, 246, 0.4)", borderColor: "rgba(139, 92, 246, 0.6)", buildingsRequired: 225 },
+      { name: "Legendary", color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.4)", borderColor: "rgba(245, 158, 11, 0.6)", buildingsRequired: 250 },
+      { name: "Transcendent", color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)", buildingsRequired: 275 },
+      { name: "Divine", color: "#ff6b6b", bgColor: "rgba(255, 107, 107, 0.4)", borderColor: "rgba(255, 255, 255, 0.8)", buildingsRequired: 300 }
+    ],
+    
+    // Configuration
+    buildingsPerTier: 25
   }
 };
 

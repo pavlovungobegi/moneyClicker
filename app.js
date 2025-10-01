@@ -2383,16 +2383,6 @@
     return Math.floor(parsed * 100) / 100; // normalize to 2 decimals
   }
 
-  function deposit() {
-    // This function is no longer used since we removed the amount input
-    // Keeping it for compatibility but it won't be called
-  }
-
-  function withdraw() {
-    // This function is no longer used since we removed the amount input
-    // Keeping it for compatibility but it won't be called
-  }
-
   function depositAll() {
     if (currentAccountBalance <= 0) return;
     
@@ -2759,46 +2749,15 @@
     }
   }
 
-  // Centralized tier configuration system
-  const TIER_CONFIG = {
-    // Default tier (0 buildings)
-    default: {
-      name: "Default",
-      color: "#6b7280",
-      bgColor: "rgba(107, 114, 128, 0.1)",
-      borderColor: "rgba(107, 114, 128, 0.3)",
-      buildingsRequired: 0
-    },
-    
-    // All tiers in standard progression (every 25 buildings)
-    standardTiers: [
-      { name: "Bronze", color: "#cd7f32", bgColor: "rgba(205, 127, 50, 0.4)", borderColor: "rgba(205, 127, 50, 0.6)", buildingsRequired: 25 },
-      { name: "Silver", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 50 },
-      { name: "Gold", color: "#ffd700", bgColor: "rgba(255, 215, 0, 0.4)", borderColor: "rgba(255, 215, 0, 0.7)", buildingsRequired: 75 },
-      { name: "Diamond", color: "#00bfff", bgColor: "rgba(0, 191, 255, 0.4)", borderColor: "rgba(0, 191, 255, 0.7)", buildingsRequired: 100 },
-      { name: "Platinum", color: "#c0c0c0", bgColor: "rgba(192, 192, 192, 0.4)", borderColor: "rgba(192, 192, 192, 0.6)", buildingsRequired: 125 },
-      { name: "Emerald", color: "#50c878", bgColor: "rgba(80, 200, 120, 0.4)", borderColor: "rgba(80, 200, 120, 0.6)", buildingsRequired: 150 },
-      { name: "Ruby", color: "#e0115f", bgColor: "rgba(224, 17, 95, 0.4)", borderColor: "rgba(224, 17, 95, 0.6)", buildingsRequired: 175 },
-      { name: "Sapphire", color: "#0f52ba", bgColor: "rgba(15, 82, 186, 0.4)", borderColor: "rgba(15, 82, 186, 0.6)", buildingsRequired: 200 },
-      { name: "Mythic", color: "#8b5cf6", bgColor: "rgba(139, 92, 246, 0.4)", borderColor: "rgba(139, 92, 246, 0.6)", buildingsRequired: 225 },
-      { name: "Legendary", color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.4)", borderColor: "rgba(245, 158, 11, 0.6)", buildingsRequired: 250 },
-      { name: "Transcendent", color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)", buildingsRequired: 275 },
-      { name: "Divine", color: "#ff6b6b", bgColor: "rgba(255, 107, 107, 0.4)", borderColor: "rgba(255, 255, 255, 0.8)", buildingsRequired: 300 }
-    ],
-    
-    // Configuration
-    buildingsPerTier: 25
-  };
-
   // Get tier information based on building count (not tier number)
   function getTierInfoByBuildings(buildingCount) {
     if (buildingCount === 0) {
-      return TIER_CONFIG.default;
+      return GAME_CONFIG.TIER_CONFIG.default;
     }
     
     // Check all tiers (now all in standardTiers array)
-    for (let i = TIER_CONFIG.standardTiers.length - 1; i >= 0; i--) {
-      const tier = TIER_CONFIG.standardTiers[i];
+    for (let i = GAME_CONFIG.TIER_CONFIG.standardTiers.length - 1; i >= 0; i--) {
+      const tier = GAME_CONFIG.TIER_CONFIG.standardTiers[i];
       if (buildingCount >= tier.buildingsRequired) {
         return {
           name: tier.name,
@@ -2811,17 +2770,17 @@
     }
     
     // Default tier for 0 buildings
-    return TIER_CONFIG.default;
+    return GAME_CONFIG.TIER_CONFIG.default;
   }
 
   // Get tier information for a given tier number (for backward compatibility)
   function getTierInfo(tierNumber) {
     if (tierNumber === 0) {
-      return TIER_CONFIG.default;
+      return GAME_CONFIG.TIER_CONFIG.default;
     }
     
     // Calculate buildings required for this tier
-    const buildingsRequired = tierNumber * TIER_CONFIG.buildingsPerTier;
+    const buildingsRequired = tierNumber * GAME_CONFIG.TIER_CONFIG.buildingsPerTier;
     
     // Use the building-based function
     return getTierInfoByBuildings(buildingsRequired);
@@ -2833,13 +2792,13 @@
     const tierInfo = getTierInfoByBuildings(ownedCount);
     
     // Find the tier number that corresponds to this tier info
-    if (tierInfo === TIER_CONFIG.default) {
+    if (tierInfo === GAME_CONFIG.TIER_CONFIG.default) {
       return 0;
     }
     
     // Check all tiers (now all in standardTiers array)
-    for (let i = 0; i < TIER_CONFIG.standardTiers.length; i++) {
-      if (TIER_CONFIG.standardTiers[i].buildingsRequired === tierInfo.buildingsRequired) {
+    for (let i = 0; i < GAME_CONFIG.TIER_CONFIG.standardTiers.length; i++) {
+      if (GAME_CONFIG.TIER_CONFIG.standardTiers[i].buildingsRequired === tierInfo.buildingsRequired) {
         return i + 1; // tier 1 = index 0, tier 2 = index 1, etc.
       }
     }
@@ -2856,10 +2815,10 @@
   // Get all tier configurations (useful for debugging or future features)
   function getAllTierConfigs() {
     return {
-      default: TIER_CONFIG.default,
-      standardTiers: TIER_CONFIG.standardTiers,
+      default: GAME_CONFIG.TIER_CONFIG.default,
+      standardTiers: GAME_CONFIG.TIER_CONFIG.standardTiers,
       config: {
-        buildingsPerTier: TIER_CONFIG.buildingsPerTier
+        buildingsPerTier: GAME_CONFIG.TIER_CONFIG.buildingsPerTier
       }
     };
   }
@@ -3002,7 +2961,7 @@
           animation: divineFlicker 0.1s ease-in-out infinite alternate;
         }
       `;
-    } else if (tierNumber >= (TIER_CONFIG.eliteTierStart / TIER_CONFIG.buildingsPerTier)) {
+    } else if (tierNumber >= (GAME_CONFIG.TIER_CONFIG.eliteTierStart / GAME_CONFIG.TIER_CONFIG.buildingsPerTier)) {
       // Elite tiers - enhanced effects
       css = `
         ${className} {
@@ -3196,8 +3155,8 @@
     
     // Calculate current tier and progress to next tier using procedural system
     const currentTier = calculateTier(ownedCount);
-    const nextTierThreshold = (currentTier + 1) * TIER_CONFIG.buildingsPerTier;
-    const progress = (ownedCount % TIER_CONFIG.buildingsPerTier) / TIER_CONFIG.buildingsPerTier;
+    const nextTierThreshold = (currentTier + 1) * GAME_CONFIG.TIER_CONFIG.buildingsPerTier;
+    const progress = (ownedCount % GAME_CONFIG.TIER_CONFIG.buildingsPerTier) / GAME_CONFIG.TIER_CONFIG.buildingsPerTier;
     
     // Get tier info for color
     const tierInfo = getTierInfo(currentTier);
@@ -5426,46 +5385,7 @@
   // To add a new upgrade: Add an entry with id, cost, name, effect, and type
   // To remove an upgrade: Delete the entry from this object
   // Types: "click", "interest", "dividend", "dividend_speed", "dividend_rate", "unlock", "prestige", "special"
-  //
-  // Example of adding a new upgrade:
-  // 1. Add to UPGRADE_CONFIG: u32: { cost: 1000, name: "New Upgrade", effect: "Does something", type: "click" }
-  // 2. Add HTML to index.html: <div class="upgrade" data-upgrade-id="u32">...</div>
-  // 3. Add logic in getPerClickIncome() or getCompoundMultiplierPerTick() if needed
-  // That's it! Everything else is automatic.
-  const UPGRADE_CONFIG = {
-    u1: { cost: 10, name: "Finish elementary school", effect: "Adds +1 euro per click", type: "click", effects: { click_income: 1 } },
-    u3: { cost: 50, name: "Finish high school", effect: "Adds +6 euros per click", type: "click", effects: { click_income: 6 } },
-    u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
-    u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u10: { cost: 750000, name: "Dividends", effect: "Generate 1% dividend every 10 seconds", type: "dividend", requires: "u11" },
-    u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
-    u12: { cost: 1000000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
-    u13: { cost: 3000000, name: "Mega Dividends", effect: "Increase dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
-    u14: { cost: 15000000, name: "Premium Dividends", effect: "Increases dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
-    u17: { cost: 60000000, name: "Elite Dividends", effect: "Increases dividend rate by 25%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.25 } },
-    u19: { cost: 10000000, name: "Prime Interest", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u26: { cost: 1000000000000, name: "Prestige Reset", effect: "Reset everything for permanent +25% interest and click multipliers", type: "prestige" },
-    u27: { cost: 3500000, name: "Automated Investments", effect: "Unlocks automatic investment of dividends into investment account", type: "unlock", requires: "u11" },
-    u29: { cost: 1000, name: "Critical Hits", effect: "15% chance for 5x click revenue", type: "special" },
-    u30: { cost: 3500, name: "Click Streak", effect: "Build click streaks for temporary multipliers (1x to 3x)", type: "special" },
-    u31: { cost: 150000000, name: "Strong Credit Score", effect: "Increases interest rate by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u32: { cost: 5000000, name: "Automated Rent Investment", effect: "Unlocks automatic investment of property income into investment account", type: "unlock" },
-    u33: { cost: 50000, name: "Real Estate Connections", effect: "Reduces building purchase costs by 15%", type: "building_discount", effects: { building_discount: 0.15 } },
-    u34: { cost: 750000, name: "Hire a contractor", effect: "Reduces building purchase costs by an additional 20%", type: "building_discount", effects: { building_discount: 0.20 } },
-    u35: { cost: 100000000, name: "Property Management", effect: "Increases rent income from properties by 10%", type: "rent_boost", effects: { rent_income: 0.10 } },
-    u36: { cost: 7500, name: "Market awareness", effect: "Reduces the prices of properties by 10%", type: "building_discount", effects: { building_discount: 0.10 } },
-    u37: { cost: 6000000, name: "Rental Monopoly", effect: "Increases the rent collected from properties by 20%", type: "rent_boost", effects: { rent_income: 0.20 } },
-    u38: { cost: 100000, name: "Cheesy Landlord", effect: "Increases the property rents by 5%", type: "rent_boost", effects: { rent_income: 0.05 } },
-    u39: { cost: 20000000, name: "Government Connections", effect: "Reduces the building purchase costs by 25%", type: "property_discount", effects: { building_discount: 0.25 } },
-    u40: { cost: 250000, name: "Zen Clicks", effect: "Adds +150 euros per click", type: "click", effects: { click_income: 150 } },
-    u41: { cost: 1500000, name: "Clicker Kicker", effect: "Adds +400 euros per click", type: "click", effects: { click_income: 400 } },
-    u42: { cost: 30000000, name: "Click Frenzy", effect: "Adds +15k euros per click", type: "click", effects: { click_income: 15000 } },
-    u43: { cost: 250000000, name: "Just Clicking", effect: "Adds +150k euros per click", type: "click", effects: { click_income: 150000 } },
-    u44: { cost: 1000000000, name: "OK! Clicker!", effect: "Adds +1m euros per click", type: "click", effects: { click_income: 1000000 } },
-    u45: { cost: 75000000, name: "It Clicks!", effect: "Adds +50k euros per click", type: "click", effects: { click_income: 50000 } },
-    u46: { cost: 50000000000, name: "It is just a click, bro!", effect: "Adds +25m euros per click", type: "click", effects: { click_income: 25000000 } }
-  };
+  const UPGRADE_CONFIG = GAME_CONFIG.UPGRADE_CONFIG;
 
   // Generate upgrade costs and owned objects from config
   const UPGRADE_COSTS = Object.fromEntries(
@@ -5552,93 +5472,7 @@
   }
 
   // Achievement configuration with display information
-  const ACHIEVEMENT_CONFIG = {
-    ach1: { 
-      name: "First Steps", 
-      description: "Earn your first €1,000", 
-      icon: "💰" 
-    },
-    ach2: { 
-      name: "Thousandaire", 
-      description: "Reach €10,000 total wealth", 
-      icon: "💎" 
-    },
-    ach3: { 
-      name: "Millionaire", 
-      description: "Reach €1,000,000 total wealth", 
-      icon: "🏆" 
-    },
-    ach4: { 
-      name: "Billionaire", 
-      description: "Reach €1,000,000,000 total wealth", 
-      icon: "👑" 
-    },
-    ach5: { 
-      name: "Trillionaire", 
-      description: "Reach €1,000,000,000,000 total wealth", 
-      icon: "🚀" 
-    },
-    ach6: { 
-      name: "Click Master", 
-      description: "Click 1,000 times", 
-      icon: "🎯" 
-    },
-    ach7: { 
-      name: "Critical Hit", 
-      description: "Get 100 critical hits", 
-      icon: "⚡" 
-    },
-    ach8: { 
-      name: "Streak Master", 
-      description: "Reach maximum click streak (3.0x)", 
-      icon: "🔥" 
-    },
-    ach9: { 
-      name: "Educated", 
-      description: "Complete Higher Education", 
-      icon: "🎓" 
-    },
-    ach10: { 
-      name: "Investor", 
-      description: "Invest €100,000 in the investment account", 
-      icon: "💼" 
-    },
-    ach11: { 
-      name: "Dividend King", 
-      description: "Receive €1,000,000 in dividends", 
-      icon: "📈" 
-    },
-    ach13: { 
-      name: "First Investment", 
-      description: "Invest your first euro", 
-      icon: "💳" 
-    },
-    ach14: { 
-      name: "Property Pioneer", 
-      description: "Buy your first property", 
-      icon: "🏠" 
-    },
-    ach15: { 
-      name: "Rent Rookie", 
-      description: "Generate €1,000 per second in rent", 
-      icon: "💰" 
-    },
-    ach16: { 
-      name: "Rent Royalty", 
-      description: "Generate €100,000 per second in rent", 
-      icon: "👑" 
-    },
-    ach17: { 
-      name: "Rent Empire", 
-      description: "Generate €1,000,000 per second in rent", 
-      icon: "🏰" 
-    },
-    ach18: { 
-      name: "Rent Billionaire", 
-      description: "Generate €1,000,000,000 per second in rent", 
-      icon: "🌍" 
-    }
-  };
+  const ACHIEVEMENT_CONFIG = GAME_CONFIG.ACHIEVEMENT_CONFIG;
 
   // Function to generate achievement HTML from configuration
   function generateAchievementHTML(achievementId, config) {
