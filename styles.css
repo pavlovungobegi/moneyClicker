@@ -284,9 +284,22 @@ input, textarea {
 
 /* Mobile Performance Mode Optimizations */
 .mobile-performance-mode * {
-  /* Reduce animations and transitions for better performance */
-  animation-duration: 0.3s !important;
-  transition-duration: 0.2s !important;
+  /* Reduce animations and transitions for better performance, but keep them visible */
+  animation-duration: 0.6s !important;
+  transition-duration: 0.3s !important;
+}
+
+/* Keep important animations at their original speeds */
+.mobile-performance-mode .fly-up,
+.mobile-performance-mode .money.updating,
+.mobile-performance-mode .spinner,
+.mobile-performance-mode .loading-text {
+  animation-duration: unset !important;
+}
+
+/* Ensure spinner animation works on mobile */
+.mobile-performance-mode .loading-spinner .spinner {
+  animation: spin 1s linear infinite !important;
 }
 
 .mobile-performance-mode .property-row::before,

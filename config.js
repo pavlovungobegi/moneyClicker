@@ -15,8 +15,8 @@ const GAME_CONFIG = {
     TARGET_FPS: 60,
     FRAME_INTERVAL: 1000 / 60, // ~16.67ms for 60fps
     PARTICLE_REDUCTION_MOBILE: 0.3, // Reduce particles by 70% on mobile
-    MOBILE_TARGET_FPS: 60, // Lower FPS for mobile to reduce CPU usage
-    MOBILE_FRAME_INTERVAL: 1000 / 60, // ~33.33ms for 30fps on mobile
+    MOBILE_TARGET_FPS: 60, // Keep 60 FPS for smooth animations
+    MOBILE_FRAME_INTERVAL: 1000 / 60, // ~16.67ms for 60fps on mobile
   },
   
   // Cache and memory management

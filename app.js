@@ -32,12 +32,10 @@ let prestigeInterestMultiplier = 1;
   
   // Enhanced caching with performance manager
   function getCachedPropertyIncome() {
-    console.log('getCachedPropertyIncome called');
     if (performanceManager && typeof performanceManager.getCache === 'function') {
       try {
         const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
         const cached = performanceManager.getCache(cacheKey);
-        console.log('Performance manager cache result:', cached);
         if (cached !== null && cached !== undefined && typeof cached === 'number') {
           return cached;
         }
@@ -47,7 +45,6 @@ let prestigeInterestMultiplier = 1;
     }
     
     // Fallback to old cache system
-    console.log('Checking old cache system, propertyIncomeCacheValid:', propertyIncomeCacheValid, 'cachedPropertyIncome:', cachedPropertyIncome);
     if (propertyIncomeCacheValid && typeof cachedPropertyIncome === 'number') {
       return cachedPropertyIncome;
     }
@@ -56,12 +53,10 @@ let prestigeInterestMultiplier = 1;
   }
   
   function setCachedPropertyIncome(income) {
-    console.log('setCachedPropertyIncome called with:', income);
     if (performanceManager && typeof performanceManager.cache === 'function') {
       try {
         const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
         performanceManager.cache(cacheKey, income, 5000); // 5 second cache
-        console.log('Successfully cached property income');
       } catch (error) {
         console.warn('Failed to cache property income:', error);
       }
@@ -2543,13 +2538,10 @@ let prestigeInterestMultiplier = 1;
   }
 
   function getTotalPropertyIncome() {
-    console.log('getTotalPropertyIncome called');
     // Use enhanced cached value if valid, but not during earthquakes (to ensure real-time updates)
     if (!earthquakeActive()) {
       const cached = getCachedPropertyIncome();
-      console.log('Cached value:', cached);
       if (cached !== null && cached !== undefined && typeof cached === 'number') {
-        console.log('Returning cached value:', cached);
         return cached;
       }
     }

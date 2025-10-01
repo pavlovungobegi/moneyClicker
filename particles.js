@@ -297,16 +297,19 @@
       }
     }
     
-    updateParticles() {
+    updateParticles(deltaTime = 1) {
+      // Calculate frame rate multiplier to maintain consistent physics
+      const frameRateMultiplier = deltaTime / (1000 / 60); // Normalize to 60 FPS
+      
       for (let i = this.particles.length - 1; i >= 0; i--) {
         const particle = this.particles[i];
         
-        // Update physics
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.vy += particle.gravity;
-        particle.rotation += particle.rotationSpeed;
-        particle.life -= particle.decay;
+        // Update physics with frame rate compensation
+        particle.x += particle.vx * frameRateMultiplier;
+        particle.y += particle.vy * frameRateMultiplier;
+        particle.vy += particle.gravity * frameRateMultiplier;
+        particle.rotation += particle.rotationSpeed * frameRateMultiplier;
+        particle.life -= particle.decay * frameRateMultiplier;
         
         // Bounce off ground
         if (particle.y > window.innerHeight - particle.size && particle.vy > 0) {
@@ -488,8 +491,9 @@
     animate(currentTime = 0) {
       // Throttle animation to target FPS
       if (currentTime - this.lastFrameTime >= this.frameInterval) {
-      this.updateParticles();
-      this.drawParticles();
+        const deltaTime = currentTime - this.lastFrameTime;
+        this.updateParticles(deltaTime);
+        this.drawParticles();
         this.lastFrameTime = currentTime;
       }
       
