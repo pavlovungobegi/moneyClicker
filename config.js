@@ -30,7 +30,7 @@ const GAME_CONFIG = {
     EVENTS_CHECK: 15000, // Event check interval
     GAME_SAVE: 15000, // Auto-save interval
     SUBMISSION_STATUS: 1000, // Leaderboard submission status check
-    UPGRADE_UPDATE: 10000, // Upgrade display update interval
+    UPGRADE_UPDATE: 5000, // Upgrade display update interval
     ACHIEVEMENT_CHECK: 4000, // Achievement check interval
   },
   
