@@ -917,7 +917,7 @@
     screenShake(3, 200); // Gentle shake
     
     // Sound effect
-    playMarketBoomSound();
+        AudioSystem.playMarketBoomSound();
     
     // Update interest rate and dividend rate display colors
     updateInterestRateColor();
@@ -948,7 +948,7 @@
     screenShake(8, 400); // Strong shake
     
     // Sound effect
-    playMarketCrashSound();
+        AudioSystem.playMarketCrashSound();
     
     // Create loss particles
     if (particleSystem) {
@@ -984,7 +984,7 @@
     screenShake(4, 300); // Medium shake
     
     // Sound effect
-    playFlashSaleSound();
+        AudioSystem.playFlashSaleSound();
     
     // Create sale particles
     if (particleSystem) {
@@ -1036,7 +1036,7 @@
     screenShake(12, 600); // Very strong shake
     
     // Sound effect (reuse crash sound for now)
-    playMarketCrashSound();
+        AudioSystem.playMarketCrashSound();
     
     // Create massive loss particles
     if (particleSystem) {
@@ -1084,7 +1084,7 @@
     screenShake(3, 200); // Gentle shake
     
     // Sound effect (reuse error sound for tax)
-    playErrorSound();
+    AudioSystem.playErrorSound();
     
     // Create tax particles
     if (particleSystem) {
@@ -1135,7 +1135,7 @@
     screenShake(8, 400); // Strong shake
     
     // Sound effect (reuse error sound for robbery)
-    playErrorSound();
+    AudioSystem.playErrorSound();
     
     // Create robbery particles (only if money was actually stolen)
     if (particleSystem && stolenAmount > 0) {
@@ -1207,7 +1207,7 @@
     screenShake(Math.min(15, magnitude * 2), 600); // Strong shake based on magnitude
     
     // Sound effect (reuse crash sound for now)
-    playMarketCrashSound();
+        AudioSystem.playMarketCrashSound();
     
     // Create destruction particles
     if (particleSystem && demolishCount > 0) {
@@ -1306,7 +1306,7 @@
     screenShake(10, 500); // Very strong shake
     
     // Sound effect (reuse error sound for divorce)
-    playErrorSound();
+    AudioSystem.playErrorSound();
     
     // Create divorce particles
     if (particleSystem) {
@@ -1337,8 +1337,8 @@
     screenShake(2, 200); // Light shake
     
     // Play sound effect
-    if (soundEnabled) {
-      playFastFingersSound();
+    if (AudioSystem.getAudioSettings().soundEnabled) {
+      AudioSystem.playFastFingersSound();
     }
     
     updateActiveEventDisplay();
@@ -1705,110 +1705,7 @@
     }, 5000);
   }
   
-  function playMarketBoomSound() {
-    if (!audioContext || !soundEffectsEnabled) return;
-    
-    try {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Rising tone for boom
-      oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.5);
-      
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (error) {
-      console.log('Audio not available');
-    }
-  }
-  
-  function playMarketCrashSound() {
-    if (!audioContext || !soundEffectsEnabled) return;
-    
-    try {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Falling tone for crash
-      oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.8);
-      
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.1);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.8);
-    } catch (error) {
-      console.log('Audio not available');
-    }
-  }
-  
-  function playFlashSaleSound() {
-    if (!audioContext || !soundEffectsEnabled) return;
-    
-    try {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Cash register sound for sale
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-      oscillator.frequency.setValueAtTime(400, audioContext.currentTime + 0.2);
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.3);
-      
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
-      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.2);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (error) {
-      console.log('Audio not available');
-    }
-  }
-  
-  function playFastFingersSound() {
-    if (!audioContext || !soundEffectsEnabled) return;
-    
-    try {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Fast, energetic sound with multiple frequency jumps
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.05);
-      oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.1);
-      oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.15);
-      
-      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-    } catch (error) {
-      console.log('Audio not available');
-    }
-  }
+  // Event sound functions are now handled by audio.js
 
   // Screen shake functionality
   function screenShake(intensity = 5, duration = 200) {
@@ -2313,9 +2210,9 @@
     
     // Play appropriate sound
     if (isCritical) {
-      playCriticalCoinSound();
+      AudioSystem.playCriticalCoinSound();
     } else {
-    playClickSound();
+    AudioSystem.playClickSound();
     }
     
     // Check achievements
@@ -2368,10 +2265,10 @@
     // Initialize audio on first click
     clickBtn.addEventListener("click", () => {
       // Resume audio context for iOS PWA compatibility
-      resumeAudioContext();
+      AudioSystem.resumeAudioContext();
       // Start background music on first user interaction (browser requirement)
       if (backgroundMusic) {
-        startBackgroundMusic();
+        AudioSystem.startBackgroundMusic();
       }
     }, { once: true });
   }
@@ -2414,7 +2311,7 @@
     
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
-    playDepositSound(); // Play deposit sound effect
+    AudioSystem.playDepositSound(); // Play deposit sound effect
     saveGameState();
   }
 
@@ -2443,7 +2340,7 @@
     
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
-    playWithdrawSound(); // Play withdraw sound effect
+    AudioSystem.playWithdrawSound(); // Play withdraw sound effect
     saveGameState();
   }
 
@@ -2472,7 +2369,7 @@
     
     renderBalances();
     if (amountInput) amountInput.value = ""; // clear input
-    playWithdrawSound(); // Play withdraw sound effect
+    AudioSystem.playWithdrawSound(); // Play withdraw sound effect
     saveGameState();
   }
 
@@ -2555,7 +2452,7 @@
       
       if (propertiesToBuy === 0) {
         console.log('Insufficient funds for any property purchase:', { propertyId, currentBalance: currentAccountBalance });
-      playErrorSound();
+      AudioSystem.playErrorSound();
       return false;
     }
     } else {
@@ -2570,7 +2467,7 @@
       
       if (propertiesToBuy === 0) {
         console.log('Insufficient funds for any property purchase:', { propertyId, currentBalance: currentAccountBalance, requested: requestedCount });
-        playErrorSound();
+        AudioSystem.playErrorSound();
         return false;
       }
     }
@@ -2605,7 +2502,7 @@
     }
     
     // Play buy sound
-    playBuySound();
+    AudioSystem.playBuySound();
     
     // Update displays
     renderBalances();
@@ -3190,8 +3087,8 @@
     if (!particleEffectsEnabled) {
       // Still show notification and play sound even if particles are disabled
       const config = PROPERTY_CONFIG[propertyId];
-      if (soundEnabled) {
-        playTierUpgradeSound();
+      if (AudioSystem.getAudioSettings().soundEnabled) {
+        AudioSystem.playTierUpgradeSound();
       }
       showTierUpgradeNotification(propertyId, newTier, config.name);
       return;
@@ -3233,8 +3130,8 @@
     }
     
     // Play celebration sound
-    if (soundEnabled) {
-      playTierUpgradeSound();
+    if (AudioSystem.getAudioSettings().soundEnabled) {
+      AudioSystem.playTierUpgradeSound();
     }
     
     // Show tier upgrade notification
@@ -3587,7 +3484,7 @@
     }
     
     // Play achievement sound
-    playAchievementSound();
+    AudioSystem.playAchievementSound();
     
     // Auto-hide after 3 seconds
     setTimeout(() => {
@@ -3722,8 +3619,8 @@
         buyMultiplier,
         
         // Audio settings
-        musicEnabled,
-        soundEffectsEnabled,
+        musicEnabled: AudioSystem.getAudioSettings().musicEnabled,
+        soundEffectsEnabled: AudioSystem.getAudioSettings().soundEffectsEnabled,
         
         // Game difficulty
         gameDifficulty,
@@ -3825,8 +3722,8 @@
         buyMultiplier = gameState.buyMultiplier || 1;
         
         // Restore audio settings
-        musicEnabled = gameState.musicEnabled !== undefined ? gameState.musicEnabled : true;
-        soundEffectsEnabled = gameState.soundEffectsEnabled !== undefined ? gameState.soundEffectsEnabled : true;
+        AudioSystem.setMusicEnabled(gameState.musicEnabled !== undefined ? gameState.musicEnabled : true);
+        AudioSystem.setSoundEffectsEnabled(gameState.soundEffectsEnabled !== undefined ? gameState.soundEffectsEnabled : true);
         
         // Restore game difficulty
         gameDifficulty = gameState.gameDifficulty || DIFFICULTY_MODES.NORMAL;
@@ -4003,8 +3900,8 @@
     });
     
     // Reset audio settings to defaults
-    musicEnabled = true;
-    soundEffectsEnabled = true;
+    AudioSystem.setMusicEnabled(true);
+    AudioSystem.setSoundEffectsEnabled(true);
     
     // Reset tour state
     tourState = {
@@ -5064,12 +4961,7 @@
   }
 
 
-  // Audio system
-  let audioContext = null;
-  let soundEnabled = true;
-  let backgroundMusic = null;
-  let musicEnabled = true;
-  let soundEffectsEnabled = true;
+  // Audio system - now handled by audio.js
   
   // Particle effects system
   let particleEffectsEnabled = true;
@@ -5080,306 +4972,7 @@
   // Username for leaderboard
   let username = '';
 
-  function initAudio() {
-    try {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      console.log('Audio context initialized, state:', audioContext.state);
-      
-      // iOS PWA specific: Resume audio context on first user interaction
-      if (audioContext.state === 'suspended') {
-        console.log('Audio context suspended, will resume on user interaction');
-      }
-    } catch (e) {
-      console.log('Audio not supported:', e);
-      soundEnabled = false;
-    }
-  }
-
-  // Resume audio context for iOS PWA compatibility
-  function resumeAudioContext() {
-    if (audioContext && audioContext.state === 'suspended') {
-      audioContext.resume().then(() => {
-        console.log('Audio context resumed for iOS PWA');
-      }).catch(e => {
-        console.log('Failed to resume audio context:', e);
-      });
-    }
-  }
-
-  function initBackgroundMusic() {
-    try {
-      backgroundMusic = new Audio('backround.mp3');
-      backgroundMusic.loop = true;
-      backgroundMusic.volume = 0.05; // Set volume to 5% so it doesn't overpower sound effects
-      backgroundMusic.preload = 'auto';
-      
-      // Handle audio loading errors
-      backgroundMusic.addEventListener('error', (e) => {
-        console.log('Background music failed to load:', e);
-      });
-      
-      // Start playing when ready
-      backgroundMusic.addEventListener('canplaythrough', () => {
-        backgroundMusic.play().catch(e => {
-          console.log('Background music play failed:', e);
-          // This is normal - browsers require user interaction before playing audio
-        });
-      });
-      
-    } catch (e) {
-      console.log('Background music initialization failed:', e);
-    }
-  }
-
-  function startBackgroundMusic() {
-    if (!backgroundMusic || !musicEnabled) return;
-    
-    try {
-      // Ensure audio context is resumed for iOS PWA
-      resumeAudioContext();
-      
-      backgroundMusic.currentTime = 0; // Start from beginning
-      backgroundMusic.play().catch(e => {
-        console.log('Background music play failed:', e);
-        // This is normal - browsers require user interaction before playing audio
-      });
-    } catch (e) {
-      console.log('Background music start failed:', e);
-    }
-  }
-
-  function toggleBackgroundMusic() {
-    if (!backgroundMusic) {
-      console.log('Background music not initialized yet');
-      return;
-    }
-    
-    if (musicEnabled) {
-      console.log('Starting background music');
-      startBackgroundMusic();
-    } else {
-      console.log('Pausing background music');
-      backgroundMusic.pause();
-    }
-  }
-
-  function playClickSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-    
-    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.04, audioContext.currentTime + 0.1);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
-  }
-
-  function playCriticalCoinSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    // Create a more metallic, coin-like sound
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Lower frequency for more metallic sound
-    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.15);
-    
-    // Higher gain for more prominent sound
-    gainNode.gain.setValueAtTime(0.6, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.15);
-  }
-
-  function playBuySound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
-    
-    gainNode.gain.setValueAtTime(0.6, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.04, audioContext.currentTime + 0.2);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.2);
-  }
-
-  function playErrorSound() {
-    console.log('playErrorSound called:', { soundEnabled, audioContext: !!audioContext, soundEffectsEnabled });
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) {
-      console.log('playErrorSound blocked by conditions');
-      return;
-    }
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.3);
-    
-    gainNode.gain.setValueAtTime(1.0, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.16, audioContext.currentTime + 0.3);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
-  }
-
-  function playDepositSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Ascending tone for deposit (money going in)
-    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.15);
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.03, audioContext.currentTime + 0.15);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.15);
-  }
-
-  function playWithdrawSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Descending tone for withdraw (money coming out)
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.15);
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.03, audioContext.currentTime + 0.15);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.15);
-  }
-
-  function playAchievementSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    // Create a realistic cash register "ka-ching" sound
-    const oscillator1 = audioContext.createOscillator();
-    const oscillator2 = audioContext.createOscillator();
-    const oscillator3 = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator1.connect(gainNode);
-    oscillator2.connect(gainNode);
-    oscillator3.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // "Ka" sound - metallic, percussive
-    oscillator1.frequency.setValueAtTime(200, audioContext.currentTime);
-    oscillator1.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.08);
-    
-    // "Ching" sound - bright, bell-like
-    oscillator2.frequency.setValueAtTime(1000, audioContext.currentTime + 0.08);
-    oscillator2.frequency.exponentialRampToValueAtTime(1500, audioContext.currentTime + 0.15);
-    
-    // Harmonic for metallic quality
-    oscillator3.frequency.setValueAtTime(2000, audioContext.currentTime + 0.08);
-    oscillator3.frequency.exponentialRampToValueAtTime(3000, audioContext.currentTime + 0.15);
-    
-    // Volume envelope for realistic cash register sound
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime + 0.02); // Quick "ka" attack
-    gainNode.gain.setValueAtTime(0.05, audioContext.currentTime + 0.08); // "ka" decay
-    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime + 0.1); // "ching" attack
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3); // "ching" decay
-    
-    oscillator1.start(audioContext.currentTime);
-    oscillator2.start(audioContext.currentTime + 0.08);
-    oscillator3.start(audioContext.currentTime + 0.08);
-    
-    oscillator1.stop(audioContext.currentTime + 0.08);
-    oscillator2.stop(audioContext.currentTime + 0.3);
-    oscillator3.stop(audioContext.currentTime + 0.3);
-  }
-
-  function playTierUpgradeSound() {
-    if (!soundEnabled || !audioContext || !soundEffectsEnabled) return;
-    
-    // Ensure audio context is resumed for iOS PWA
-    resumeAudioContext();
-    
-    try {
-      // Create a celebratory ascending chord sequence
-      const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 (C major chord)
-      
-      frequencies.forEach((freq, index) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.1);
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime + index * 0.1);
-        gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + index * 0.1 + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.1 + 0.8);
-        
-        oscillator.start(audioContext.currentTime + index * 0.1);
-        oscillator.stop(audioContext.currentTime + index * 0.1 + 0.8);
-      });
-    } catch (error) {
-      console.log('Tier upgrade sound error:', error);
-    }
-  }
+  // Audio functions are now handled by audio.js
 
   // Centralized upgrade configuration
   // To add a new upgrade: Add an entry with id, cost, name, effect, and type
@@ -5526,7 +5119,7 @@
     // Check if upgrade has requirements that aren't met
     const upgradeConfig = UPGRADE_CONFIG[key];
     if (upgradeConfig && upgradeConfig.requires && !owned[upgradeConfig.requires]) {
-      playErrorSound();
+      AudioSystem.playErrorSound();
       return;
     }
     
@@ -5538,7 +5131,7 @@
     }
     
     if (currentAccountBalance < cost) {
-      playErrorSound();
+      AudioSystem.playErrorSound();
       return;
     }
 
@@ -5669,7 +5262,7 @@
     renderAllProperties();
     
     // Play buy sound
-    playBuySound();
+    AudioSystem.playBuySound();
     
     // Check achievements
     checkAchievementsOptimized();
@@ -6292,13 +5885,13 @@
     const savedUsername = localStorage.getItem('username');
     
     if (savedMusicEnabled !== null) {
-      musicEnabled = savedMusicEnabled === 'true';
-      if (musicToggle) musicToggle.checked = musicEnabled;
+      AudioSystem.setMusicEnabled(savedMusicEnabled === 'true');
+      if (musicToggle) musicToggle.checked = AudioSystem.getAudioSettings().musicEnabled;
     }
     
     if (savedSoundEffectsEnabled !== null) {
-      soundEffectsEnabled = savedSoundEffectsEnabled === 'true';
-      if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
+      AudioSystem.setSoundEffectsEnabled(savedSoundEffectsEnabled === 'true');
+      if (soundEffectsToggle) soundEffectsToggle.checked = AudioSystem.getAudioSettings().soundEffectsEnabled;
     }
     
     if (savedParticleEffectsEnabled !== null) {
@@ -6318,18 +5911,18 @@
     }
     
     // Apply music setting on load
-    if (!musicEnabled && backgroundMusic) {
-      backgroundMusic.pause();
-    } else if (musicEnabled && backgroundMusic) {
+    if (!AudioSystem.getAudioSettings().musicEnabled) {
+      AudioSystem.pauseAllAudio();
+    } else {
       // If music should be enabled, try to start it
-      startBackgroundMusic();
+      AudioSystem.startBackgroundMusic();
     }
   }
 
   // Save audio settings to localStorage
   function saveAudioSettings() {
-    localStorage.setItem('musicEnabled', musicEnabled.toString());
-    localStorage.setItem('soundEffectsEnabled', soundEffectsEnabled.toString());
+    localStorage.setItem('musicEnabled', AudioSystem.getAudioSettings().musicEnabled.toString());
+    localStorage.setItem('soundEffectsEnabled', AudioSystem.getAudioSettings().soundEffectsEnabled.toString());
     localStorage.setItem('particleEffectsEnabled', particleEffectsEnabled.toString());
     localStorage.setItem('numberAnimationsEnabled', numberAnimationsEnabled.toString());
     localStorage.setItem('username', username);
@@ -6338,17 +5931,17 @@
   // Apply audio settings to UI and audio
   function applyAudioSettings() {
     // Update toggle UI
-    if (musicToggle) musicToggle.checked = musicEnabled;
-    if (soundEffectsToggle) soundEffectsToggle.checked = soundEffectsEnabled;
+    if (musicToggle) musicToggle.checked = AudioSystem.getAudioSettings().musicEnabled;
+    if (soundEffectsToggle) soundEffectsToggle.checked = AudioSystem.getAudioSettings().soundEffectsEnabled;
     if (particleEffectsToggle) particleEffectsToggle.checked = particleEffectsEnabled;
     if (numberAnimationsToggle) numberAnimationsToggle.checked = numberAnimationsEnabled;
     
     // Apply music setting
-    if (!musicEnabled && backgroundMusic) {
-      backgroundMusic.pause();
-    } else if (musicEnabled && backgroundMusic) {
+    if (!AudioSystem.getAudioSettings().musicEnabled) {
+      AudioSystem.pauseAllAudio();
+    } else {
       // Try to start music if it should be enabled
-      startBackgroundMusic();
+      AudioSystem.startBackgroundMusic();
     }
   }
 
@@ -6370,10 +5963,10 @@
   // Music toggle functionality
   if (musicToggle) {
     musicToggle.addEventListener('change', (e) => {
-      musicEnabled = e.target.checked;
-      console.log('Music toggle changed to:', musicEnabled);
+      AudioSystem.setMusicEnabled(e.target.checked);
+      console.log('Music toggle changed to:', AudioSystem.getAudioSettings().musicEnabled);
       saveAudioSettings();
-      toggleBackgroundMusic();
+      AudioSystem.toggleBackgroundMusic();
     });
   }
 
@@ -6386,7 +5979,7 @@
   // Sound effects toggle functionality
   if (soundEffectsToggle) {
     soundEffectsToggle.addEventListener('change', (e) => {
-      soundEffectsEnabled = e.target.checked;
+      AudioSystem.setSoundEffectsEnabled(e.target.checked);
       saveAudioSettings();
       
       // Handle cheat activation
@@ -6463,8 +6056,8 @@
     }
     
     // Play success sound
-    if (soundEnabled && soundEffectsEnabled) {
-      playSuccessSound();
+    if (AudioSystem.getAudioSettings().soundEnabled && AudioSystem.getAudioSettings().soundEffectsEnabled) {
+      AudioSystem.playSuccessSound();
     }
     
     // Update UI
@@ -6661,10 +6254,8 @@ function handleVisibilityChange() {
     if (numberAnimator) numberAnimator.stopAnimation();
   } else {
     // App came to foreground - resume music if it was enabled
-    if (backgroundMusic && musicEnabled && backgroundMusic.paused) {
-      backgroundMusic.play().catch((error) => {
-        console.log('Could not resume music:', error);
-      });
+    if (AudioSystem.getAudioSettings().musicEnabled) {
+      AudioSystem.startBackgroundMusic();
       // console.log('Music resumed - app came to foreground');
     }
     // Restart dividend animation if dividends are enabled
@@ -6907,10 +6498,10 @@ window.addEventListener('beforeunload', cleanup);
   });
   
   // Initialize audio on first user interaction
-  initAudio();
+    AudioSystem.initAudio();
   
   // Initialize background music immediately when page loads
-  initBackgroundMusic();
+  AudioSystem.initBackgroundMusic();
   
   // Initialize particle system
   particleSystem = new ParticleSystem();
@@ -6968,10 +6559,10 @@ window.addEventListener('beforeunload', cleanup);
   updateBuyMultiplierDisplay();
   
   // Try to start music after a short delay if it was enabled (fallback for autoplay restrictions)
-  if (gameStateLoaded && musicEnabled) {
+  if (gameStateLoaded && AudioSystem.getAudioSettings().musicEnabled) {
     setTimeout(() => {
-      if (backgroundMusic && musicEnabled) {
-        startBackgroundMusic();
+      if (AudioSystem.getAudioSettings().musicEnabled) {
+        AudioSystem.startBackgroundMusic();
       }
     }, 1000);
   }
