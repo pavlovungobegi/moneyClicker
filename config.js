@@ -353,10 +353,10 @@ const GAME_CONFIG = {
         extreme: 30000    // 30 seconds (extreme)
       },
       flashSale: {
-        easy: 180000,     // 4 minutes (easier)
-        normal: 180000,   // 3 minutes (original)
-        hard: 180000,     // 2 minutes (harder)
-        extreme: 180000    // 1.5 minutes (extreme)
+        easy: 60000,     // 4 minutes (easier)
+        normal: 60000,   // 3 minutes (original)
+        hard: 60000,     // 2 minutes (harder)
+        extreme: 60000    // 1.5 minutes (extreme)
       },
       greatDepression: {
         easy: 90000,      // 1.5 minutes (easier)
@@ -365,20 +365,20 @@ const GAME_CONFIG = {
         extreme: 30000    // 30 seconds (extreme)
       },
       fastFingers: {
-        easy: 60000,      // 1.5 minutes (easier)
-        normal: 60000,    // 1 minute (original)
-        hard: 60000,      // 45 seconds (harder)
-        extreme: 60000    // 30 seconds (extreme)
+        easy: 120000,      // 1.5 minutes (easier)
+        normal: 120000,    // 1 minute (original)
+        hard: 120000,      // 45 seconds (harder)
+        extreme: 120000    // 30 seconds (extreme)
       },
       taxCollection: {
         easy: 120000,      // 1.5 minutes (easier)
-        normal: 90000,    // 1 minute (original)
+        normal: 120000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
         extreme: 10000    // 30 seconds (extreme)
       },
       robbery: {
         easy: 120000,      // 1.5 minutes (easier)
-        normal: 90000,    // 1 minute (original)
+        normal: 120000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
         extreme: 10000    // 30 seconds (extreme)
       },
