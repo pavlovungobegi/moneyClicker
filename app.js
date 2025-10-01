@@ -520,10 +520,9 @@
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
+        this.lastFrameTime = 0; // Reset frame time to avoid frame skipping
         this.animate();
       }
-
-      this.animationId = requestAnimationFrame(() => this.animate());
     }
     
     stopAnimation() {
@@ -709,10 +708,9 @@
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
+        this.lastFrameTime = 0; // Reset frame time to avoid frame skipping
         this.animate();
       }
-
-      this.animationId = requestAnimationFrame(() => this.animate());
     }
     
     stopAnimation() {
@@ -721,6 +719,11 @@
         cancelAnimationFrame(this.animationId);
         this.animationId = null;
       }
+    }
+    
+    // Check if there are active animations
+    hasActiveAnimations() {
+      return this.animations.size > 0;
     }
     
     // Cleanup method to prevent memory leaks
@@ -6037,8 +6040,8 @@
     });
   }
 
-  // Game loop (1000 ms): compounding and leaderboard - reduced frequency for mobile performance
-  const TICK_MS = 1000;
+  // Game loop timing - now using config
+  const TICK_MS = GAME_CONFIG.TICK_MS;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (gameDifficulty) {
