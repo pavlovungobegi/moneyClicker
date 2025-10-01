@@ -51,12 +51,7 @@ const GAME_CONFIG = {
   // MONEY & ECONOMICS CONFIGURATION
   // =============================================================================
   
-  // Money cap system
-  MONEY_CAP: {
-    ENABLED: true,
-    BASE_CAP: 1000000000000, // 1 trillion
-    CAP_MULTIPLIER: 1.1, // 10% increase per cap reached
-  },
+  // Money cap system - REMOVED (no longer needed)
   
   // Buy multiplier system
   BUY_MULTIPLIERS: [1, 10, 25, 'MAX'],

@@ -1,6 +1,6 @@
 // Global variables for eventTrigger.js access
-let currentAccountBalance = 0;
-let investmentAccountBalance = 0;
+  let currentAccountBalance = 0;
+  let investmentAccountBalance = 0;
 let properties = {
   foodStand: 0,
   newsstand: 0,
@@ -15,6 +15,8 @@ let properties = {
 let owned = {};
 let particleSystem;
 let particleEffectsEnabled = true;
+let prestigeClickMultiplier = 1;
+let prestigeInterestMultiplier = 1;
 
 (() => {
 
@@ -820,8 +822,16 @@ let particleEffectsEnabled = true;
       if (cheatBuffer === code) {
         if (reward === "multipliers") {
           // Special case for casper cheat code - set multipliers to 10x
+          console.log('Before cheat code - multipliers:', {
+            click: prestigeClickMultiplier,
+            interest: prestigeInterestMultiplier
+          });
           prestigeClickMultiplier = 10;
           prestigeInterestMultiplier = 10;
+          console.log('Cheat code applied - multipliers set to 10:', {
+            prestigeClickMultiplier,
+            prestigeInterestMultiplier
+          });
           renderPrestigeMultipliers();
         } else if (reward === "unlock_all") {
           // Special case for upgrade cheat code - unlock all upgrades
@@ -868,7 +878,9 @@ let particleEffectsEnabled = true;
   const CACHE_SIZE_LIMIT = GAME_CONFIG.CACHE.NUMBER_FORMAT_CACHE_LIMIT;
   const SIGNIFICANT_CHANGE_THRESHOLD = GAME_CONFIG.CACHE.SIGNIFICANT_CHANGE_THRESHOLD;
 
-  // Format numbers with k/m/b/t suffixes for better readability
+  // Format numbers with hybrid abbreviation system (k,m,b,t,aa,bb,cc,dd...)
+  // Examples: 1,500 = 1.50k, 2,500,000 = 2.50m, 3,500,000,000 = 3.50b, 4,500,000,000,000 = 4.50t
+  //          5,500,000,000,000,000 = 5.50aa, 6,500,000,000,000,000,000 = 6.50bb, etc.
   window.formatNumberShort = function(num) {
     formatStats.totalCalls++;
     
@@ -893,18 +905,32 @@ let particleEffectsEnabled = true;
     const isNegative = num < 0;
     const absNum = Math.abs(num);
     
-    let formatted;
-    // Use faster comparisons and avoid repeated calculations
-    if (absNum >= 1e12) { // 1 trillion
-      formatted = (absNum / 1e12).toFixed(2) + 't';
-    } else if (absNum >= 1e9) { // 1 billion
-      formatted = (absNum / 1e9).toFixed(2) + 'b';
-    } else if (absNum >= 1e6) { // 1 million
-      formatted = (absNum / 1e6).toFixed(2) + 'm';
-    } else if (absNum >= 1e3) { // 1 thousand
-      formatted = (absNum / 1e3).toFixed(2) + 'k';
+    // Hybrid abbreviation system: k,m,b,t,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm,nn,oo,pp,qq,rr,ss,tt,uu,vv,ww,xx,yy,zz
+    const abbreviations = ['', 'k', 'm', 'b', 't', 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg', 'hh', 'ii', 'jj', 'kk', 'll', 'mm', 'nn', 'oo', 'pp', 'qq', 'rr', 'ss', 'tt', 'uu', 'vv', 'ww', 'xx', 'yy', 'zz'];
+    
+    let magnitude = 0;
+    let divisor = 1;
+    let abbreviation = '';
+    
+    // Find the appropriate magnitude level
+    for (let exp = 3; exp <= 90; exp += 3) {
+      const threshold = Math.pow(10, exp);
+      if (absNum >= threshold) {
+        magnitude = exp;
+        divisor = threshold;
+        abbreviation = abbreviations[exp / 3] || 'zz'; // Fallback to 'zz' for extremely large numbers
     } else {
+        break;
+      }
+    }
+    
+    let formatted;
+    if (magnitude === 0) {
+      // Numbers less than 1,000
       formatted = absNum.toFixed(2);
+    } else {
+      const scaled = absNum / divisor;
+      formatted = scaled.toFixed(2) + abbreviation;
     }
     
     const result = isNegative ? '-' + formatted : formatted;
@@ -1201,9 +1227,8 @@ let particleEffectsEnabled = true;
     // Round income to 2 decimal places
     income = Math.round(income * 100) / 100;
     
-    // Apply money cap
-    const cappedIncome = applyMoneyCap(income);
-    currentAccountBalance += cappedIncome;
+    // Add income directly (no money cap)
+    currentAccountBalance += income;
     
     // Create particle effects
     if (particleSystem && clickBtn) {
@@ -2266,7 +2291,7 @@ let particleEffectsEnabled = true;
     return `tier-${tierInfo.name.toLowerCase().replace(/\s+/g, '-')}`;
   }
 
-  function renderAllProperties() {
+  window.renderAllProperties = function() {
     Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
       renderPropertyUI(propertyId);
     });
@@ -2689,8 +2714,18 @@ let particleEffectsEnabled = true;
         streakMultiplier = gameState.streakMultiplier || 1;
         
         // Restore prestige multipliers
+        console.log('Loading game state - prestige multipliers:', {
+          saved_click: gameState.prestigeClickMultiplier,
+          saved_interest: gameState.prestigeInterestMultiplier,
+          before_click: prestigeClickMultiplier,
+          before_interest: prestigeInterestMultiplier
+        });
         prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
         prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
+        console.log('After loading - prestige multipliers:', {
+          click: prestigeClickMultiplier,
+          interest: prestigeInterestMultiplier
+        });
         
         // Restore auto-invest
         autoInvestEnabled = gameState.autoInvestEnabled || false;
@@ -2801,6 +2836,7 @@ let particleEffectsEnabled = true;
       achievementsBannerShown = {};
       
       // Reset prestige multipliers
+      console.log('Resetting prestige multipliers to 1');
       prestigeClickMultiplier = 1;
       prestigeInterestMultiplier = 1;
       
@@ -3579,9 +3615,7 @@ let particleEffectsEnabled = true;
     });
   }
 
-  // Prestige system
-  let prestigeClickMultiplier = 1;
-  let prestigeInterestMultiplier = 1;
+  // Prestige system - moved to global scope
 
   // Automatic investments
   let autoInvestEnabled = false;
@@ -3625,8 +3659,7 @@ let particleEffectsEnabled = true;
     ach18: { unlocked: false, condition: () => getTotalRentIncome() >= 1000000000 } // Rent Billionaire
   };
 
-  // Money cap system
-  const MAX_TOTAL_MONEY = 10000000000000000000; // 100 trillion euros
+  // Money cap system - REMOVED (no longer needed)
 
   function getTotalMoney() {
     return currentAccountBalance + investmentAccountBalance;
@@ -3645,17 +3678,7 @@ let particleEffectsEnabled = true;
     return totalRent;
   }
 
-  function applyMoneyCap(amountToAdd) {
-    const currentTotal = getTotalMoney();
-    const newTotal = currentTotal + amountToAdd;
-    
-    if (newTotal <= MAX_TOTAL_MONEY) {
-      return amountToAdd; // No cap needed
-    } else {
-      const cappedAmount = Math.max(0, MAX_TOTAL_MONEY - currentTotal);
-      return cappedAmount; // Only add what fits
-    }
-  }
+  // applyMoneyCap function - REMOVED (no longer needed)
 
 
   // Audio system - now handled by audio.js
@@ -4026,7 +4049,25 @@ let particleEffectsEnabled = true;
       rateBoost *= -0.2; // -120% during depression (negative rate = money shrinking)
     }
     
-    return 1 + (getBaseCompoundMultiplierPerTick() - 1) * rateBoost * prestigeInterestMultiplier;
+    const baseMultiplier = getBaseCompoundMultiplierPerTick();
+    const finalMultiplier = 1 + (baseMultiplier - 1) * rateBoost * prestigeInterestMultiplier;
+    
+    // Debug logging
+    /*
+    console.log('Interest calculation:', {
+      rateBoost,
+      baseMultiplier,
+      prestigeInterestMultiplier,
+      finalMultiplier,
+      gameDifficulty: getGameDifficulty(),
+      prestigeClickMultiplier, // Also check click multiplier for comparison
+      typeof_prestigeInterestMultiplier: typeof prestigeInterestMultiplier,
+      // Direct reference to check scope
+      direct_prestigeInterestMultiplier: window.prestigeInterestMultiplier || 'not on window'
+    });
+    */
+    
+    return finalMultiplier;
   }
 
   // Cache DOM elements for performance optimization
@@ -4156,14 +4197,8 @@ let particleEffectsEnabled = true;
       
       
       if (payout > 0) {
-        const cappedPayout = applyMoneyCap(payout);
-        
-        if (cappedPayout <= 0) {
-          return;
-        }
-        
         // Track total dividends received for achievement
-        totalDividendsReceived += cappedPayout;
+        totalDividendsReceived += payout;
         
         // Create flying money particles for dividend payout
         if (particleSystem && particleSystem.createMoneyParticles && particleEffectsEnabled) {
@@ -4174,16 +4209,16 @@ let particleEffectsEnabled = true;
             const centerY = rect.top + rect.height / 2;
             
             // Create money particles from the dividend progress bar
-            particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(cappedPayout / 2000000, 6));
+            particleSystem.createMoneyGainParticles(centerX, centerY, Math.min(payout / 2000000, 6));
           }
         }
         
         if (autoInvestEnabled) {
           // Auto-invest: add dividends to investment account
-          investmentAccountBalance += cappedPayout;
+          investmentAccountBalance += payout;
         } else {
           // Normal: add dividends to current account
-          currentAccountBalance += cappedPayout;
+          currentAccountBalance += payout;
         }
         
         // Force UI update after dividend payout
@@ -4382,21 +4417,18 @@ let particleEffectsEnabled = true;
     if (investmentAccountBalance > 0) {
       const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
       const growth = grown - investmentAccountBalance;
-      const cappedGrowth = applyMoneyCap(growth);
-      investmentAccountBalance = Math.round((investmentAccountBalance + cappedGrowth) * 100) / 100;
+      investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
     }
 
     // Property income
     const propertyIncome = getTotalPropertyIncome();
     if (propertyIncome > 0) {
-      const cappedPropertyIncome = applyMoneyCap(propertyIncome);
-      
       if (autoRentEnabled) {
         // Auto-rent: add property income to investment account
-        investmentAccountBalance = Math.round((investmentAccountBalance + cappedPropertyIncome) * 100) / 100;
+        investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
       } else {
         // Normal: add property income to current account
-      currentAccountBalance = Math.round((currentAccountBalance + cappedPropertyIncome) * 100) / 100;
+        currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
       }
     }
 
@@ -4727,8 +4759,17 @@ let particleEffectsEnabled = true;
   }
   
   function addCheatMoney() {
-    // Apply 10x multiplier to click income
+    // Apply 10x multiplier to both click and interest income
+    console.log('Before 10x multiplier button - multipliers:', {
+      click: prestigeClickMultiplier,
+      interest: prestigeInterestMultiplier
+    });
     prestigeClickMultiplier *= 10;
+    prestigeInterestMultiplier *= 10;
+    console.log('After 10x multiplier button - multipliers:', {
+      click: prestigeClickMultiplier,
+      interest: prestigeInterestMultiplier
+    });
     
     // Create celebration particles
     if (particleSystem) {
@@ -4752,7 +4793,7 @@ let particleEffectsEnabled = true;
     }
     
     // Update UI
-    updateUI();
+    window.renderBalances();
     
     // Hide the cheat button after use
     hideCheatButton();
@@ -5019,13 +5060,12 @@ window.addEventListener('beforeunload', cleanup);
       return;
     }
     
-    const cappedAmount = applyMoneyCap(amount);
-    currentAccountBalance += cappedAmount;
+    currentAccountBalance += amount;
     
     // Force immediate UI update
     renderBalances();
     
-    console.log(`💰 Added €${formatNumberShort(cappedAmount)} to current account!`);
+    console.log(`💰 Added €${formatNumberShort(amount)} to current account!`);
     console.log(`💳 New balance: €${formatNumberShort(currentAccountBalance)}`);
     
     // Save game state
@@ -5039,16 +5079,15 @@ window.addEventListener('beforeunload', cleanup);
     }
     
     const oldBalance = currentAccountBalance;
-    // Cap the amount to the maximum allowed money cap
-    const cappedAmount = Math.min(amount, MAX_TOTAL_MONEY);
-    currentAccountBalance = cappedAmount;
+    // Set balance directly (no money cap)
+    currentAccountBalance = amount;
     
     // Force immediate UI update
     renderBalances();
     
-    console.log(`💳 Balance set to €${formatNumberShort(cappedAmount)}!`);
-    if (oldBalance !== cappedAmount) {
-      const difference = cappedAmount - oldBalance;
+    console.log(`💳 Balance set to €${formatNumberShort(amount)}!`);
+    if (oldBalance !== amount) {
+      const difference = amount - oldBalance;
       if (difference > 0) {
         console.log(`📈 Increased by €${formatNumberShort(difference)}`);
       } else {
