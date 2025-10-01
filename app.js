@@ -1839,18 +1839,18 @@ let prestigeInterestMultiplier = 1;
       css = `
         ${className} {
           background: linear-gradient(45deg, 
-            rgba(255, 107, 107, 0.2) 0%, 
-            rgba(78, 205, 196, 0.2) 25%, 
-            rgba(69, 183, 209, 0.2) 50%, 
-            rgba(150, 206, 180, 0.2) 75%, 
-            rgba(254, 202, 87, 0.2) 100%);
-          background-size: 400% 400%;
-          animation: divineShift 3s ease-in-out infinite;
-          border: 2px solid rgba(255, 255, 255, 0.7);
+            rgba(0, 191, 255, 0.15) 0%, 
+            rgba(30, 144, 255, 0.15) 25%, 
+            rgba(65, 105, 225, 0.15) 50%, 
+            rgba(0, 100, 200, 0.15) 75%, 
+            rgba(0, 191, 255, 0.15) 100%);
+          background-size: 200% 200%;
+          animation: divineShift 4s ease-in-out infinite;
+          border: 1px solid rgba(0, 191, 255, 0.4);
           box-shadow: 
-            0 0 15px rgba(255, 255, 255, 0.5),
-            0 0 25px rgba(255, 107, 107, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            0 0 8px rgba(0, 191, 255, 0.3),
+            0 0 15px rgba(0, 191, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
           position: relative;
           overflow: hidden;
         }
@@ -1858,19 +1858,18 @@ let prestigeInterestMultiplier = 1;
         ${className}::before {
           content: '';
           position: absolute;
-          top: -2px;
-          left: -2px;
-          right: -2px;
-          bottom: -2px;
+          top: -1px;
+          left: -1px;
+          right: -1px;
+          bottom: -1px;
           background: linear-gradient(45deg, 
-            rgba(255, 107, 107, 0.4), 
-            rgba(78, 205, 196, 0.4), 
-            rgba(69, 183, 209, 0.4), 
-            rgba(150, 206, 180, 0.4), 
-            rgba(254, 202, 87, 0.4), 
-            rgba(255, 107, 107, 0.4));
-          background-size: 400% 400%;
-          animation: divineShift 3s ease-in-out infinite;
+            rgba(0, 191, 255, 0.3), 
+            rgba(30, 144, 255, 0.3), 
+            rgba(65, 105, 225, 0.3), 
+            rgba(0, 100, 200, 0.3), 
+            rgba(0, 191, 255, 0.3));
+          background-size: 200% 200%;
+          animation: divineShift 5s ease-in-out infinite;
           z-index: -1;
           border-radius: 8px;
         }
@@ -1883,27 +1882,27 @@ let prestigeInterestMultiplier = 1;
           width: 100%;
           height: 100%;
           background: 
-            radial-gradient(circle at 20% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-          animation: divineGlow 2s ease-in-out infinite alternate;
+            radial-gradient(circle at 20% 20%, rgba(0, 191, 255, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(30, 144, 255, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+          animation: divineGlow 3s ease-in-out infinite alternate;
           pointer-events: none;
           border-radius: 6px;
         }
         
         ${className}:hover {
-          animation-duration: 1.5s;
+          animation-duration: 2s;
           box-shadow: 
-            0 0 20px rgba(255, 255, 255, 0.7),
-            0 0 35px rgba(255, 107, 107, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            0 0 12px rgba(0, 191, 255, 0.5),
+            0 0 20px rgba(0, 191, 255, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
         
-        /* Flaming animation for Divine tier - keep original text styling */
+        /* Subtle text glow for Divine tier */
         ${className} .property-name,
         ${className} .property-count,
         ${className} .property-income {
-          animation: divineFlicker 0.1s ease-in-out infinite alternate;
+          animation: divineFlicker 2s ease-in-out infinite alternate;
         }
       `;
     } else if (tierNumber >= (GAME_CONFIG.TIER_CONFIG.eliteTierStart / GAME_CONFIG.TIER_CONFIG.buildingsPerTier)) {
@@ -2037,34 +2036,34 @@ let prestigeInterestMultiplier = 1;
       
       @keyframes divineShift {
         0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
+        50% { background-position: 50% 50%; }
         100% { background-position: 0% 50%; }
       }
       
       @keyframes divineGlow {
         0% { 
-          opacity: 0.6;
+          opacity: 0.3;
           transform: scale(1);
         }
         100% { 
-          opacity: 1;
-          transform: scale(1.05);
+          opacity: 0.6;
+          transform: scale(1.02);
         }
       }
       
       @keyframes divineFlicker {
         0% { 
           text-shadow: 
-            0 0 5px rgba(255, 255, 255, 0.8),
-            0 0 10px rgba(255, 107, 107, 0.6),
-            0 0 15px rgba(78, 205, 196, 0.4);
+            0 0 3px rgba(0, 191, 255, 0.4),
+            0 0 6px rgba(0, 191, 255, 0.3),
+            0 0 9px rgba(30, 144, 255, 0.2);
         }
         100% { 
           text-shadow: 
-            0 0 8px rgba(255, 255, 255, 1),
-            0 0 15px rgba(255, 107, 107, 0.8),
-            0 0 25px rgba(78, 205, 196, 0.6),
-            0 0 35px rgba(69, 183, 209, 0.4);
+            0 0 5px rgba(0, 191, 255, 0.6),
+            0 0 8px rgba(0, 191, 255, 0.4),
+            0 0 12px rgba(30, 144, 255, 0.3),
+            0 0 15px rgba(65, 105, 225, 0.2);
         }
       }
       
