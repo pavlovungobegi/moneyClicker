@@ -274,43 +274,43 @@ const GAME_CONFIG = {
     probabilities: {
       marketBoom: {
         easy: 0.08,     // 7.5% chance (easier)
-        normal: 0.055,  // 5.5% chance (original)
+        normal: 0.065,  // 5.5% chance (original)
         hard: 0.04,     // 4% chance (harder)
         extreme: 0.005   // 2% chance (extreme)
       },
       marketCrash: {
         easy: 0.02,     // 2% chance (easier)
-        normal: 0.04,   // 4% chance (original)
+        normal: 0.03,   // 4% chance (original)
         hard: 0.06,     // 6% chance (harder)
         extreme: 0.08   // 8% chance (extreme)
       },
       flashSale: {
         easy: 0.05,     // 5% chance (easier)
-        normal: 0.03,   // 3% chance (original)
+        normal: 0.035,   // 3% chance (original)
         hard: 0.02,     // 2% chance (harder)
         extreme: 0.005   // 1% chance (extreme)
       },
       greatDepression: {
         easy: 0.005,    // 0.5% chance (easier)
-        normal: 0.01,   // 1% chance (original)
+        normal: 0.005,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.045   // 2% chance (extreme)
       },
       fastFingers: {
         easy: 0.04,     // 4% chance (easier)
-        normal: 0.02,   // 2% chance (original)
+        normal: 0.025,   // 2% chance (original)
         hard: 0.01,     // 1% chance (harder)
         extreme: 0.005  // 0.5% chance (extreme)
       },
       taxCollection: {
         easy: 0.01,     // 1% chance (easier)
-        normal: 0.02,   // 2% chance (original)
+        normal: 0.015,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
         extreme: 0.095   // 4% chance (extreme)
       },
       robbery: {
         easy: 0.01,     // 1% chance (easier)
-        normal: 0.02,   // 2% chance (original)
+        normal: 0.015,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
         extreme: 0.095   // 4% chance (extreme)
       },
