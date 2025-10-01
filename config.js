@@ -169,7 +169,8 @@ const GAME_CONFIG = {
     u50: { cost: 3000000, name: "Popular Magazines", effect: "Doubles the income of Newsstand", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "newsstand" },
     u51: { cost: 750000, name: "Clicking is Love!", effect: "Adds +250 euros per click", type: "click", effects: { click_income: 250 } },
     u52: { cost: 1000000, name: "Extended Streak", effect: "Increases maximum streak multiplier to 5x", type: "streak_boost", effects: { max_streak: 5 }, requires: "u30" },
-    u53: { cost: 10000, name: "Swift Clicks!", effect: "Adds +50 euros per click", type: "click", effects: { click_income: 50 } }
+    u53: { cost: 10000, name: "Swift Clicks!", effect: "Adds +40 euros per click", type: "click", effects: { click_income: 40 } },
+    u54: { cost: 25000, name: "Click is ticking!", effect: "Adds +75 euros per click", type: "click", effects: { click_income: 75 } }
   },
   
   // =============================================================================
