@@ -41,6 +41,129 @@ let prestigeInterestMultiplier = 1;
   // Debug log for mobile detection
   console.log('Mobile device detected:', isMobile, 'Performance mode:', mobilePerformanceMode, 'User Agent:', navigator.userAgent);
 
+  // Interval health monitoring
+  let lastMainGameTick = Date.now();
+  let lastEventCheck = Date.now();
+  let lastSave = Date.now();
+  
+  function checkIntervalHealth() {
+    const now = Date.now();
+    const mainGameStuck = (now - lastMainGameTick) > (TICK_MS * 3); // 3x expected interval
+    const eventsStuck = (now - lastEventCheck) > (getIntervalConfig('EVENTS_CHECK') * 3);
+    const saveStuck = (now - lastSave) > (getIntervalConfig('GAME_SAVE') * 3);
+    
+    if (mainGameStuck || eventsStuck || saveStuck) {
+      console.warn('Interval health check failed:', {
+        mainGameStuck,
+        eventsStuck,
+        saveStuck,
+        timeSinceMainGame: now - lastMainGameTick,
+        timeSinceEvents: now - lastEventCheck,
+        timeSinceSave: now - lastSave
+      });
+    }
+  }
+  
+  // Check interval health every 30 seconds
+  setInterval(checkIntervalHealth, 30000);
+  
+  // Global function to restart intervals if they fail (for debugging)
+  window.restartGameIntervals = function() {
+    console.log('Restarting game intervals...');
+    
+    // Clear existing intervals
+    if (typeof mainGameInterval !== 'undefined') clearInterval(mainGameInterval);
+    if (typeof eventsInterval !== 'undefined') clearInterval(eventsInterval);
+    if (typeof saveInterval !== 'undefined') clearInterval(saveInterval);
+    
+    // Restart main game loop
+    const newMainGameInterval = setInterval(() => {
+      try {
+        lastMainGameTick = Date.now();
+        
+        // Investment compounding: multiply per tick, boosted by upgrades
+        if (investmentAccountBalance > 0) {
+          const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
+          const growth = grown - investmentAccountBalance;
+          investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
+        }
+
+        // Property income
+        const propertyIncome = getTotalPropertyIncome();
+        if (propertyIncome > 0) {
+          if (autoRentEnabled) {
+            investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+          } else {
+            currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+          }
+        }
+
+        // Dividends
+        tickDividends(TICK_MS);
+        renderBalances();
+        
+        // Only render active tab content for performance
+        switch(activeTab) {
+          case 'earn':
+            renderDividendUI(TICK_MS);
+            renderInvestmentUnlocked();
+            renderPrestigeMultipliers();
+            renderAutoInvestSection();
+            renderAutoRentSection();
+            renderClickStreak();
+            renderRentIncome();
+            break;
+          case 'upgrades':
+            renderUpgradesOwned();
+            break;
+          case 'portfolio':
+            renderAllProperties();
+            break;
+        }
+        
+        updateActiveEventDisplay();
+        checkExpiredEvents();
+        checkStreakTimeout();
+        updateUpgradeIndicator();
+        updatePortfolioIndicator();
+        updateProgressBars();
+        checkAchievementsOptimized();
+      } catch (error) {
+        console.error('Error in restarted main game loop:', error);
+      }
+    }, TICK_MS);
+    
+    // Restart events interval
+    const newEventsInterval = setInterval(() => {
+      try {
+        lastEventCheck = Date.now();
+        checkEvents();
+      } catch (error) {
+        console.error('Error in restarted events check:', error);
+      }
+    }, getIntervalConfig('EVENTS_CHECK'));
+    
+    // Restart save interval
+    const newSaveInterval = setInterval(() => {
+      try {
+        lastSave = Date.now();
+        saveGameState();
+      } catch (error) {
+        console.error('Error in restarted save interval:', error);
+      }
+    }, getIntervalConfig('GAME_SAVE'));
+    
+    // Update global references
+    window.mainGameInterval = newMainGameInterval;
+    window.eventsInterval = newEventsInterval;
+    window.saveInterval = newSaveInterval;
+    
+    console.log('Game intervals restarted successfully');
+  };
+  
+  // Expose health check function for debugging
+  window.checkIntervalHealth = checkIntervalHealth;
+
   // Apply mobile performance mode CSS class
   if (mobilePerformanceMode) {
     document.body.classList.add('mobile-performance-mode');
@@ -4461,75 +4584,85 @@ let prestigeInterestMultiplier = 1;
   }
 
 
-  const investmentInterval = setInterval(() => {
-    // Investment compounding: multiply per tick, boosted by upgrades
-    if (investmentAccountBalance > 0) {
-      const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
-      const growth = grown - investmentAccountBalance;
-      investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
-    }
-
-    // Property income
-    const propertyIncome = getTotalPropertyIncome();
-    if (propertyIncome > 0) {
-      if (autoRentEnabled) {
-        // Auto-rent: add property income to investment account
-        investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-      } else {
-        // Normal: add property income to current account
-        currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+  // Main game loop - handles all game mechanics
+  const mainGameInterval = setInterval(() => {
+    try {
+      lastMainGameTick = Date.now(); // Update health tracking
+      
+      // Investment compounding: multiply per tick, boosted by upgrades
+      if (investmentAccountBalance > 0) {
+        const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
+        const growth = grown - investmentAccountBalance;
+        investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
       }
-    }
 
-    // Dividends
-    
-    tickDividends(TICK_MS);
+      // Property income
+      const propertyIncome = getTotalPropertyIncome();
+      if (propertyIncome > 0) {
+        if (autoRentEnabled) {
+          // Auto-rent: add property income to investment account
+          investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
+        } else {
+          // Normal: add property income to current account
+          currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
+        }
+      }
 
-    // Always render balances (needed for header)
-    renderBalances();
-    
-    // Only render active tab content for performance
-    switch(activeTab) {
-      case 'earn':
-    renderDividendUI(TICK_MS);
-    renderInvestmentUnlocked();
-    renderPrestigeMultipliers();
-    renderAutoInvestSection();
-        renderAutoRentSection();
-    renderClickStreak();
-    renderRentIncome(); // Update rent income display
-        break;
-      case 'upgrades':
-        renderUpgradesOwned();
-        break;
-      case 'portfolio':
-        renderAllProperties();
-        break;
-      case 'achievements':
-        // Achievements are rendered on demand, no continuous updates needed
-        break;
-      case 'stats':
-        // Stats are rendered on demand, no continuous updates needed
-        break;
+      // Dividends
+      tickDividends(TICK_MS);
+
+      // Always render balances (needed for header)
+      renderBalances();
+      
+      // Only render active tab content for performance
+      switch(activeTab) {
+        case 'earn':
+          renderDividendUI(TICK_MS);
+          renderInvestmentUnlocked();
+          renderPrestigeMultipliers();
+          renderAutoInvestSection();
+          renderAutoRentSection();
+          renderClickStreak();
+          renderRentIncome(); // Update rent income display
+          break;
+        case 'upgrades':
+          renderUpgradesOwned();
+          break;
+        case 'portfolio':
+          renderAllProperties();
+          break;
+        case 'achievements':
+          // Achievements are rendered on demand, no continuous updates needed
+          break;
+        case 'stats':
+          // Stats are rendered on demand, no continuous updates needed
+          break;
+      }
+      
+      // Always update these (needed for indicators and events)
+      updateActiveEventDisplay();
+      checkExpiredEvents(); // Check for expired events immediately
+      checkStreakTimeout();
+      updateUpgradeIndicator();
+      updatePortfolioIndicator();
+      updateProgressBars();
+      checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
+    } catch (error) {
+      console.error('Error in main game loop:', error);
+      // Don't let errors stop the game loop
     }
-    
-    // Always update these (needed for indicators and events)
-    updateActiveEventDisplay();
-    checkExpiredEvents(); // Check for expired events immediately
-    checkStreakTimeout();
-    updateUpgradeIndicator();
-    updatePortfolioIndicator();
-    updateProgressBars();
-    checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
-    
-    
   }, TICK_MS);
 
   // Net worth data collection removed for performance
   
   // Events check every 15 seconds - reduced frequency for better performance
   const eventsInterval = setInterval(() => {
-    checkEvents();
+    try {
+      lastEventCheck = Date.now(); // Update health tracking
+      checkEvents();
+    } catch (error) {
+      console.error('Error in events check:', error);
+    }
   }, getIntervalConfig('EVENTS_CHECK'));
 
   // Loading screen functionality
@@ -5105,7 +5238,7 @@ if (achievementBannerClose) {
 function cleanup() {
   // Clear all intervals
   if (typeof cacheCleanupInterval !== 'undefined') clearInterval(cacheCleanupInterval);
-  if (typeof investmentInterval !== 'undefined') clearInterval(investmentInterval);
+  if (typeof mainGameInterval !== 'undefined') clearInterval(mainGameInterval);
   if (typeof eventsInterval !== 'undefined') clearInterval(eventsInterval);
   if (typeof saveInterval !== 'undefined') clearInterval(saveInterval);
   if (typeof submissionStatusInterval !== 'undefined') clearInterval(submissionStatusInterval);
@@ -5309,7 +5442,12 @@ window.addEventListener('beforeunload', cleanup);
   
   // Periodic saving every 15 seconds
   const saveInterval = setInterval(() => {
-    saveGameState();
+    try {
+      lastSave = Date.now(); // Update health tracking
+      saveGameState();
+    } catch (error) {
+      console.error('Error in save interval:', error);
+    }
   }, getIntervalConfig('GAME_SAVE'));
 
   // renderInterestPerSecond function moved earlier in file
