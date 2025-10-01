@@ -433,7 +433,9 @@
     if (particleSystem) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
+      if (particleEffectsEnabled) {
       particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount);
+      }
     }
     
     // Update interest rate and dividend rate display colors
@@ -469,7 +471,9 @@
     if (particleSystem) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
+      if (particleEffectsEnabled) {
       particleSystem.createFlashSaleParticles(centerX, centerY, 20);
+      }
     }
     
     // Update upgrade prices to show discount
@@ -521,7 +525,9 @@
     if (particleSystem) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
+      if (particleEffectsEnabled) {
       particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount * 2); // Double particles for dramatic effect
+      }
     }
     
     // Update interest rate and dividend rate display colors
@@ -569,7 +575,9 @@
     if (particleSystem) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
+      if (particleEffectsEnabled) {
       particleSystem.createMoneyLossParticles(centerX, centerY, taxAmount);
+      }
     }
     
     // Update displays
@@ -620,7 +628,9 @@
     if (particleSystem && stolenAmount > 0) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
+      if (particleEffectsEnabled) {
       particleSystem.createMoneyLossParticles(centerX, centerY, stolenAmount);
+      }
     }
     
     // Update displays
@@ -693,9 +703,11 @@
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
       // Create destruction effect with multiple particle types
-      particleSystem.createMoneyLossParticles(centerX, centerY, demolishCount * 1000); // Money loss particles for destruction
-      particleSystem.createSparkleParticles(centerX, centerY, Math.min(demolishCount * 2, 10)); // Sparkles for destruction effect
-      particleSystem.createUpgradeParticles(centerX, centerY, Math.min(demolishCount, 5)); // Upgrade particles for building destruction
+      if (particleEffectsEnabled) {
+        particleSystem.createMoneyLossParticles(centerX, centerY, demolishCount * 1000); // Money loss particles for destruction
+        particleSystem.createSparkleParticles(centerX, centerY, Math.min(demolishCount * 2, 10)); // Sparkles for destruction effect
+        particleSystem.createUpgradeParticles(centerX, centerY, Math.min(demolishCount, 5)); // Upgrade particles for building destruction
+      }
     }
     
     // Invalidate property income cache to ensure earthquake effects are applied
@@ -791,7 +803,9 @@
     if (particleSystem) {
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
+      if (particleEffectsEnabled) {
       particleSystem.createMoneyLossParticles(centerX, centerY, lossAmount);
+      }
     }
     
     // Update displays
@@ -1661,10 +1675,12 @@
         */
         
         // Create coin particles
+      if (particleEffectsEnabled) {
         particleSystem.createCoinParticles(centerX, centerY, baseCoinCount);
         
         // Create sparkle particles
         particleSystem.createSparkleParticles(centerX, centerY, baseSparkleCount);
+      }
       }
     }
     
@@ -1779,10 +1795,12 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create money particles flowing to investment
+        if (particleEffectsEnabled) {
         particleSystem.createMoneyGainParticles(centerX, centerY, depositAmount);
         
         // Create upgrade particles for investment
         particleSystem.createUpgradeParticles(centerX, centerY, 3);
+        }
       }
     }
     
@@ -1808,10 +1826,12 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create money particles flowing to current account
+        if (particleEffectsEnabled) {
         particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
         
         // Create sparkle particles for withdrawal
         particleSystem.createSparkleParticles(centerX, centerY, 2);
+        }
       }
     }
     
@@ -1837,10 +1857,12 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create money particles flowing to current account
+        if (particleEffectsEnabled) {
         particleSystem.createMoneyGainParticles(centerX, centerY, withdrawAmount);
         
         // Create sparkle particles for withdrawal
         particleSystem.createSparkleParticles(centerX, centerY, 1);
+        }
       }
     }
     
@@ -1971,10 +1993,12 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create upgrade particles (more particles for multiple purchases)
+        if (particleEffectsEnabled) {
         particleSystem.createUpgradeParticles(centerX, centerY, Math.min(6, purchases * 1));
         
         // Create money gain particles
         particleSystem.createMoneyGainParticles(centerX, centerY, totalCost);
+        }
       }
     }
     
@@ -2178,23 +2202,6 @@
     }
     
     return 0; // Default fallback
-  }
-
-  // Get tier information by building count (useful for future modifications)
-  // This function is now the main implementation above, this is just an alias
-  // function getTierInfoByBuildings(buildingCount) {
-  //   return getTierInfoByBuildings(buildingCount); // This would cause infinite recursion
-  // }
-
-  // Get all tier configurations (useful for debugging or future features)
-  function getAllTierConfigs() {
-    return {
-      default: GAME_CONFIG.TIER_CONFIG.default,
-      standardTiers: GAME_CONFIG.TIER_CONFIG.standardTiers,
-      config: {
-        buildingsPerTier: GAME_CONFIG.TIER_CONFIG.buildingsPerTier
-      }
-    };
   }
 
   // Apply tier-based styling to property rows
@@ -2911,6 +2918,7 @@
       const upgradeAchievements = ['ach9', 'ach10', 'ach13']; // Upgrade-related achievements
       const propertyAchievements = ['ach14', 'ach15', 'ach16', 'ach17', 'ach18']; // Property-related achievements
       
+      if (particleEffectsEnabled) {
       if (milestoneAchievements.includes(achievementId)) {
         // Money milestone achievements - golden particles + fireworks
         particleSystem.createGoldenParticles(centerX, centerY, 13);
@@ -2949,6 +2957,25 @@
         particleSystem.createSparkleParticles(centerX, centerY, 4);
         particleSystem.createUpgradeParticles(centerX, centerY, 3);
         screenFlash('#2ECC71', 300); // Green flash
+        }
+      } else {
+        // Screen effects only when particles are disabled
+        if (milestoneAchievements.includes(achievementId)) {
+          screenFlash('#FFD700', 400);
+          screenShake(6, 250);
+        } else if (clickAchievements.includes(achievementId)) {
+          screenFlash('#FFD700', 300);
+        } else if (rareAchievements.includes(achievementId)) {
+          screenFlash('#9B59B6', 500);
+          screenShake(10, 400);
+        } else if (upgradeAchievements.includes(achievementId)) {
+          screenFlash('#3498DB', 350);
+        } else if (propertyAchievements.includes(achievementId)) {
+          screenFlash('#32CD32', 500);
+          screenShake(4, 300);
+        } else {
+          screenFlash('#2ECC71', 300);
+        }
       }
     }
     
@@ -3001,53 +3028,8 @@
 
 
   
-  // Tour system (disabled - keeping for future use)
-  let tourState = {
-    active: false,
-    currentStep: 0,
-    completed: true, // Set to true to prevent any tour triggering
-    portfolioTourShown: true // Set to true to prevent portfolio tour
-  };
+  // Tour system removed
 
-  // Tour persistence functions
-  function saveTourState() {
-    try {
-      localStorage.setItem('moneyClicker_tourState', JSON.stringify(tourState));
-    } catch (error) {
-      console.warn('Could not save tour state:', error);
-    }
-  }
-
-  function loadTourState() {
-    try {
-      const saved = localStorage.getItem('moneyClicker_tourState');
-      if (saved) {
-        const parsedState = JSON.parse(saved);
-        // Merge with default state to handle new properties
-        tourState = {
-          ...tourState,
-          ...parsedState
-        };
-      }
-    } catch (error) {
-      console.warn('Could not load tour state:', error);
-    }
-  }
-
-  // Function to reset tutorial (useful for testing or user request)
-  function resetTutorial() {
-    tourState = {
-    active: false,
-    currentStep: 0,
-    completed: false,
-    portfolioTourShown: false
-  };
-    saveTourState();
-    console.log('Tutorial has been reset. Refresh the page to see it again.');
-  }
-
-  // Make resetTutorial available globally for debugging
-  window.resetTutorial = resetTutorial;
 
   // Game state persistence functions
   function saveGameState() {
@@ -3275,7 +3257,6 @@
   function resetGameState() {
     try {
       localStorage.removeItem('moneyClicker_gameState');
-      localStorage.removeItem('moneyClicker_tourState');
       
       // Reset achievement banner tracking
       achievementsBannerShown = {};
@@ -3372,13 +3353,6 @@
     AudioSystem.setMusicEnabled(true);
     AudioSystem.setSoundEffectsEnabled(true);
     
-    // Reset tour state
-    tourState = {
-      active: false,
-      currentStep: 0,
-      completed: false,
-      portfolioTourShown: false
-    };
     
     // Refresh the page to start fresh
     window.location.reload();
@@ -3393,291 +3367,6 @@
   }
   
   
-  const tourSteps = [
-    {
-      target: 'clickBtn',
-      title: 'Welcome to Interest Inc!',
-      message: 'Click this button to start earning money! Each click gives you €1.',
-      position: 'bottom'
-    },
-    {
-      target: 'buyU1Btn',
-      title: 'Time to Upgrade!',
-      message: 'You have enough money! Buy your first upgrade to earn more per click.',
-      position: 'right'
-    },
-    {
-      target: 'leaderboardPanel',
-      title: 'Your Portfolio',
-      message: 'Check out your Portfolio! View and manage all your properties and investments.',
-      position: 'right'
-    }
-  ];
-  
-
-  function startTour() {
-    if (tourState.completed) return;
-    
-    tourState.active = true;
-    tourState.currentStep = 0;
-    showTourStep();
-  }
-  
-  function showTourStep() {
-    if (!tourState.active || tourState.currentStep >= tourSteps.length) {
-      endTour();
-      return;
-    }
-    
-    const step = tourSteps[tourState.currentStep];
-    const targetElement = document.getElementById(step.target);
-    
-    if (!targetElement) {
-      endTour();
-      return;
-    }
-    
-    // Mobile-specific scrolling for upgrade tour
-    if (window.innerWidth <= 768 && tourState.currentStep === 1) {
-      // Scroll to upgrades panel on mobile
-      const panelsContainer = document.querySelector('.panels');
-      if (panelsContainer) {
-        // Calculate scroll position to show upgrades panel (second panel)
-        const panelWidth = window.innerWidth - 32; // Account for padding
-        panelsContainer.scrollLeft = panelWidth;
-        
-        // Wait for scroll to complete before showing tooltip
-        setTimeout(() => {
-          showTourTooltip(step, targetElement);
-        }, 10);
-        return;
-      }
-    }
-    
-    showTourTooltip(step, targetElement);
-  }
-  
-  function showTourTooltip(step, targetElement) {
-    // Show overlay
-    const overlay = document.getElementById('tourOverlay');
-    const tooltip = document.getElementById('tourTooltip');
-    const title = document.getElementById('tourTitle');
-    const message = document.getElementById('tourMessage');
-    
-    overlay.classList.remove('hidden');
-    title.textContent = step.title;
-    message.textContent = step.message;
-    
-    // Position tooltip near target element
-    positionTooltip(targetElement, tooltip, step.position);
-    
-    // Highlight target element
-    targetElement.classList.add('tour-highlight');
-  }
-  
-  function positionTooltip(targetElement, tooltip, position) {
-    const targetRect = targetElement.getBoundingClientRect();
-    const tooltipRect = tooltip.getBoundingClientRect();
-    const arrow = tooltip.querySelector('.tour-arrow');
-    const isMobile = window.innerWidth <= 768;
-    
-    // Remove existing arrow classes
-    arrow.className = 'tour-arrow';
-    
-    let top, left;
-    
-    // Mobile-specific positioning
-    if (isMobile) {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      
-      // Check if this is the portfolio tour (step 2)
-      const isPortfolioTour = tourState.currentStep === 2;
-      
-      if (isPortfolioTour) {
-        // For portfolio tour, position near bottom but with more space
-        top = viewportHeight - tooltipRect.height - 80; // More space from bottom
-        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
-        
-        // Ensure it doesn't go off screen horizontally
-        if (left + tooltipRect.width > viewportWidth - 20) {
-          left = viewportWidth - tooltipRect.width - 20;
-        }
-        
-        // Ensure it doesn't go too high
-        if (top < 20) {
-          top = 20;
-        }
-      } else {
-        // For other tours, center the modal
-        top = Math.max(20, (viewportHeight - tooltipRect.height) / 2);
-        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
-        
-        // Ensure tooltip doesn't go off screen
-        if (left + tooltipRect.width > viewportWidth - 20) {
-          left = viewportWidth - tooltipRect.width - 20;
-        }
-        if (top + tooltipRect.height > viewportHeight - 20) {
-          top = viewportHeight - tooltipRect.height - 20;
-        }
-      }
-      
-      // Hide arrow on mobile for cleaner look
-      arrow.style.display = 'none';
-    } else {
-      // Desktop positioning logic
-    switch (position) {
-      case 'bottom':
-        top = targetRect.bottom + 20;
-        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-        arrow.classList.add('top');
-        break;
-      case 'right':
-        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-        left = targetRect.right + 30;
-        arrow.classList.add('left');
-        break;
-      case 'left':
-        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-        left = targetRect.left - tooltipRect.width - 20;
-        arrow.classList.add('right');
-        break;
-      case 'top':
-        top = targetRect.top - tooltipRect.height - 20;
-        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-        arrow.classList.add('bottom');
-        break;
-    }
-      
-      // Show arrow on desktop
-      arrow.style.display = 'block';
-    
-    // Ensure tooltip stays within viewport
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    if (left < 20) left = 20;
-    if (left + tooltipRect.width > viewportWidth - 20) {
-      left = viewportWidth - tooltipRect.width - 20;
-    }
-    if (top < 20) top = 20;
-    if (top + tooltipRect.height > viewportHeight - 20) {
-      top = viewportHeight - tooltipRect.height - 20;
-      }
-    }
-    
-    // Use requestAnimationFrame to ensure proper rendering
-    requestAnimationFrame(() => {
-    tooltip.style.position = 'fixed';
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-    });
-  }
-  
-  
-  function endTour() {
-    tourState.active = false;
-    tourState.completed = true;
-    
-    // Save tour state
-    saveTourState();
-    
-    // Hide overlay
-    const overlay = document.getElementById('tourOverlay');
-    overlay.classList.add('hidden');
-    
-    // Remove all highlights
-    document.querySelectorAll('.tour-highlight').forEach(el => {
-      el.classList.remove('tour-highlight');
-    });
-  }
-  
-  function checkTourTriggers() {
-    // Tour triggering disabled - keeping logic for future use
-    return;
-    
-    if (tourState.completed) return;
-    
-    // Start tour if user hasn't clicked yet and has no money
-    if (currentAccountBalance === 0 && !tourState.active) {
-      startTour();
-      return;
-    }
-    
-    // Show upgrade tour if user has enough money for first upgrade
-    if (currentAccountBalance >= UPGRADE_COSTS.u1 && !owned.u1 && tourState.currentStep === 0) {
-      tourState.currentStep = 1;
-      showTourStep();
-    }
-    
-    // End tour if user bought the first upgrade
-    if (tourState.active && tourState.currentStep === 1 && owned.u1) {
-      endTour();
-    }
-  }
-  
-  // Separate function for portfolio tour
-  function checkPortfolioTour() {
-    // Portfolio tour triggering disabled - keeping logic for future use
-    return;
-    
-    // Check if user just upgraded to secondary school
-    if (owned.u2 && !tourState.portfolioTourShown) {
-      tourState.portfolioTourShown = true;
-      saveTourState(); // Save that portfolio tour was shown
-      showPortfolioTour();
-    }
-  }
-  
-  function showPortfolioTour() {
-    const step = tourSteps[2]; // Portfolio step
-    const targetElement = document.getElementById(step.target);
-    
-    if (!targetElement) return;
-    
-    // Set the current step for positioning logic
-    tourState.currentStep = 2;
-    
-    // Mobile-specific scrolling for portfolio tour
-    if (window.innerWidth <= 768) {
-      // Scroll to portfolio panel on mobile (third panel)
-      const panelsContainer = document.querySelector('.panels');
-      if (panelsContainer) {
-        // Calculate scroll position to show portfolio panel (third panel)
-        const panelWidth = window.innerWidth - 32; // Account for padding
-        panelsContainer.scrollLeft = panelWidth * 2; // Third panel (index 2)
-        
-        // Wait for scroll to complete before showing tooltip
-        setTimeout(() => {
-          showPortfolioTooltip(step, targetElement);
-        }, 10);
-        return;
-      }
-    }
-    
-    showPortfolioTooltip(step, targetElement);
-  }
-  
-  function showPortfolioTooltip(step, targetElement) {
-    // Show overlay
-    const overlay = document.getElementById('tourOverlay');
-    const tooltip = document.getElementById('tourTooltip');
-    const title = document.getElementById('tourTitle');
-    const message = document.getElementById('tourMessage');
-    
-    overlay.classList.remove('hidden');
-    title.textContent = step.title;
-    message.textContent = step.message;
-    
-    // Use the same positioning logic as other tours
-    // This will now use the mobile-specific bottom positioning for portfolio tour
-    positionTooltip(targetElement, tooltip, step.position);
-    
-    // Highlight target element
-    targetElement.classList.add('tour-highlight');
-  }
-
-  // Statistics rendering removed for performance
 
   // Leaderboard functions - Firebase Realtime Database
   async function loadLeaderboard() {
@@ -4617,10 +4306,12 @@
           const centerY = window.innerHeight / 2;
           
           // Create massive particle celebration
+          if (particleEffectsEnabled) {
           particleSystem.createRareAchievementParticles(centerX, centerY, 50);
           particleSystem.createFireworkParticles(centerX, centerY, 25);
           particleSystem.createGoldenParticles(centerX, centerY, 20);
           particleSystem.createMilestoneParticles(centerX, centerY, 30);
+          }
           
           // Screen effects
           screenFlash('#FF6B35', 800); // Orange flash
@@ -4695,6 +4386,7 @@
         const centerY = rect.top + rect.height / 2;
         
         // Create upgrade particles
+        if (particleEffectsEnabled) {
         particleSystem.createUpgradeParticles(centerX, centerY, 3);
         
         // Create confetti for expensive upgrades
@@ -4704,6 +4396,7 @@
         
         // Create money gain particles
         particleSystem.createMoneyGainParticles(centerX, centerY, cost);
+        }
       }
     }
     
@@ -4749,13 +4442,6 @@
   // Auto-rent toggle event listener
   if (autoRentToggle) {
     autoRentToggle.addEventListener("change", handleAutoRentToggle);
-  }
-  
-  // Tour event listeners
-  const tourCloseBtn = document.getElementById('tourClose');
-  
-  if (tourCloseBtn) {
-    tourCloseBtn.addEventListener('click', endTour);
   }
 
   // Toggle completed (owned) upgrades visibility
@@ -4941,7 +4627,7 @@
         totalDividendsReceived += cappedPayout;
         
         // Create flying money particles for dividend payout
-        if (particleSystem && particleSystem.createMoneyParticles) {
+        if (particleSystem && particleSystem.createMoneyParticles && particleEffectsEnabled) {
           const dividendProgress = document.getElementById('dividendProgressBar');
           if (dividendProgress) {
             const rect = dividendProgress.getBoundingClientRect();
@@ -5217,11 +4903,6 @@
     checkAchievementsOptimized(); // Use optimized version (every 5 seconds)
     
     
-    // Check tour triggers
-    //checkTourTriggers();
-    
-    // Check portfolio tour (independent)
-    //checkPortfolioTour();
   }, TICK_MS);
 
   // Net worth data collection removed for performance
@@ -5516,8 +5197,10 @@
       const centerY = window.innerHeight / 2;
       
       // Create golden money particles
+      if (particleEffectsEnabled) {
       particleSystem.createGoldenParticles(centerX, centerY, 30);
       particleSystem.createMilestoneParticles(centerX, centerY, 20);
+      }
       
       // Screen effects
       screenFlash('#ffd700', 600); // Golden flash
@@ -5996,9 +5679,6 @@ window.addEventListener('beforeunload', cleanup);
   
   // Load saved audio settings
   loadAudioSettings();
-  
-  // Load saved tour state (disabled - keeping for future use)
-  // loadTourState();
   
   // Load saved game state
   const gameStateLoaded = loadGameState();
