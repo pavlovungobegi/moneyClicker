@@ -3087,7 +3087,7 @@ let prestigeTier = 0;
       let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
       
       // Apply prestige multiplier to dividend rate
-      rateMultiplier *= prestigeInterestMultiplier;
+      // rateMultiplier *= prestigeInterestMultiplier; // Commented out for balance - prestige should not affect rates
       
       // Market event effects on dividend rate
       let marketRateMultiplier = 1;
@@ -3366,9 +3366,9 @@ let prestigeTier = 0;
         totalDividendsReceived = gameState.totalDividendsReceived || 0;
         hasMadeFirstInvestment = gameState.hasMadeFirstInvestment || false;
         
-        // Restore click streak
-        streakCount = gameState.streakCount || 0;
-        streakMultiplier = gameState.streakMultiplier || 1;
+        // Click streak should reset on game load - not restored from save
+        streakCount = 0;
+        streakMultiplier = 1;
         
         // Restore prestige multipliers and tier
         console.log('Loading game state - prestige multipliers:', {
@@ -3776,7 +3776,7 @@ let prestigeTier = 0;
     }
 
     // Prevent unrealistic scores (cap at reasonable limit)
-    if (score > 999e27) { // 999zz (999 * 10^27)
+    if (score > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) { // 999zz (999 * 10^27)
       alert('Score too high - please play the game fairly');
       return;
     }
@@ -4885,7 +4885,7 @@ let prestigeTier = 0;
     }
     
     const baseMultiplier = getBaseCompoundMultiplierPerTick();
-    const finalMultiplier = 1 + (baseMultiplier - 1) * rateBoost * prestigeInterestMultiplier;
+    const finalMultiplier = 1 + (baseMultiplier - 1) * rateBoost; // Removed prestigeInterestMultiplier for balance
     
     // Debug logging
     /*
@@ -5127,7 +5127,7 @@ let prestigeTier = 0;
       let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
       
       // Apply prestige multiplier to dividend rate
-      rateMultiplier *= prestigeInterestMultiplier;
+      // rateMultiplier *= prestigeInterestMultiplier; // Commented out for balance - prestige should not affect rates
       
       // Market event effects on dividend rate
       if (marketBoomActive()) {
@@ -5630,6 +5630,7 @@ let prestigeTier = 0;
   const soundEffectsToggle = document.getElementById('soundEffectsToggle');
   const particleEffectsToggle = document.getElementById('particleEffectsToggle');
   const numberAnimationsToggle = document.getElementById('numberAnimationsToggle');
+  const darkModeToggle = document.getElementById('darkModeToggle');
 
   // Auto Invest Help Modal functionality
   const autoInvestHelpBtn = document.getElementById('autoInvestHelpBtn');
@@ -5647,6 +5648,7 @@ let prestigeTier = 0;
     const savedSoundEffectsEnabled = localStorage.getItem('soundEffectsEnabled');
     const savedParticleEffectsEnabled = localStorage.getItem('particleEffectsEnabled');
     const savedNumberAnimationsEnabled = localStorage.getItem('numberAnimationsEnabled');
+    const savedDarkMode = localStorage.getItem('darkMode');
     
     if (savedMusicEnabled !== null) {
       AudioSystem.setMusicEnabled(savedMusicEnabled === 'true');
@@ -5668,6 +5670,16 @@ let prestigeTier = 0;
       if (numberAnimationsToggle) numberAnimationsToggle.checked = numberAnimationsEnabled;
     }
     
+    if (savedDarkMode !== null) {
+      const isDarkMode = savedDarkMode === 'true';
+      if (darkModeToggle) darkModeToggle.checked = isDarkMode;
+      if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    }
+    
     // Username is now handled by Google authentication
     
     // Apply music setting on load
@@ -5685,6 +5697,7 @@ let prestigeTier = 0;
     localStorage.setItem('soundEffectsEnabled', AudioSystem.getAudioSettings().soundEffectsEnabled.toString());
     localStorage.setItem('particleEffectsEnabled', particleEffectsEnabled.toString());
     localStorage.setItem('numberAnimationsEnabled', numberAnimationsEnabled.toString());
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode').toString());
     // Username is now handled by Google authentication
   }
 
@@ -5762,6 +5775,20 @@ let prestigeTier = 0;
       numberAnimationsEnabled = e.target.checked;
       saveAudioSettings();
       console.log('Number animations toggle changed to:', numberAnimationsEnabled);
+    });
+  }
+
+  // Dark mode toggle functionality
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('change', (e) => {
+      const isDarkMode = e.target.checked;
+      if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+      saveAudioSettings();
+      console.log('Dark mode toggle changed to:', isDarkMode);
     });
   }
 
@@ -7069,10 +7096,10 @@ function loadGameStateFromData(gameState) {
   totalDividendsReceived = gameState.totalDividendsReceived || 0;
   hasMadeFirstInvestment = gameState.hasMadeFirstInvestment || false;
   
-  // Restore click streak
-  streakCount = gameState.streakCount || 0;
-  streakMultiplier = gameState.streakMultiplier || 1;
-  lastClickTime = gameState.lastClickTime || 0;
+  // Click streak should reset on game load - not restored from save
+  streakCount = 0;
+  streakMultiplier = 1;
+  lastClickTime = 0;
   
   // Restore prestige multipliers
   prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;

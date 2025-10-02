@@ -1282,14 +1282,14 @@ main {
   
   .panels::before {
     left: 0;
-    background: linear-gradient(to right, rgba(255,255,255,0.8), transparent);
+    background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
     opacity: var(--left-fade-opacity, 1);
     transition: opacity 0.3s ease;
   }
   
   .panels::after {
     right: 0;
-    background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+    background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
     opacity: var(--right-fade-opacity, 1);
     transition: opacity 0.3s ease;
   }
@@ -4696,6 +4696,959 @@ input#amountInput:focus {
 .how-to-play-modal {
   max-width: 600px;
   max-height: 80vh;
+}
+
+/* ========================================
+   DARK MODE STYLES
+   Based on offline earnings popup colors
+   ======================================== */
+
+/* Dark mode color palette */
+:root {
+  --dark-bg-primary: #0f172a;      /* Dark slate background */
+  --dark-bg-secondary: #1e293b;    /* Slate-800 */
+  --dark-bg-tertiary: #334155;     /* Slate-700 */
+  --dark-bg-elevated: #475569;     /* Slate-600 */
+  
+  --dark-text-primary: #f1f5f9;    /* Slate-100 */
+  --dark-text-secondary: #e2e8f0;  /* Slate-200 */
+  --dark-text-tertiary: #cbd5e1;   /* Slate-300 */
+  --dark-text-muted: #94a3b8;      /* Slate-400 */
+  
+  --dark-accent-green: #10b981;    /* Emerald-500 */
+  --dark-accent-green-light: #34d399; /* Emerald-400 */
+  --dark-accent-green-dark: #059669;  /* Emerald-600 */
+  
+  --dark-border: #475569;          /* Slate-600 */
+  --dark-border-light: #64748b;    /* Slate-500 */
+  --dark-border-dark: #334155;     /* Slate-700 */
+  
+  --dark-shadow: rgba(0, 0, 0, 0.4);
+  --dark-shadow-light: rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode body and main layout */
+body.dark-mode {
+  background: linear-gradient(135deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 100%);
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .header,
+body.dark-mode header {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border-bottom: 2px solid var(--dark-accent-green) !important;
+  box-shadow: 0 2px 8px var(--dark-shadow) !important;
+}
+
+body.dark-mode .header-left h1 {
+  color: var(--dark-accent-green) !important;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3) !important;
+}
+
+body.dark-mode .header-current {
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .header-left {
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .header-accounts {
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .header-account {
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .header-account .account-label {
+  color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .header-account .account-value,
+body.dark-mode .header-account .account-amount {
+  color: var(--dark-accent-green) !important;
+}
+
+/* Dark mode money text styling */
+body.dark-mode .money {
+  color: var(--dark-accent-green) !important;
+}
+
+body.dark-mode .money .label {
+  color: var(--dark-text-secondary) !important;
+}
+
+/* Dark mode flying money animation */
+body.dark-mode .flying-money {
+  color: var(--dark-accent-green) !important;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.6) !important;
+}
+
+body.dark-mode .flying-money.critical {
+  color: var(--dark-accent-green-light) !important;
+  text-shadow: 0 0 12px rgba(52, 211, 153, 0.8) !important;
+}
+
+/* Additional money display elements */
+body.dark-mode .account-amount,
+body.dark-mode .money-display,
+body.dark-mode .currency-display {
+  color: var(--dark-accent-green) !important;
+}
+
+/* Dark mode panels */
+body.dark-mode .panel {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  box-shadow: 0 4px 12px var(--dark-shadow);
+  padding: 12px !important; /* Ensure consistent padding */
+}
+
+/* Dark mode earn content */
+body.dark-mode .earn-content {
+  padding: 8px !important; /* Reduce padding for better fit */
+  margin: 0 !important; /* Remove margins */
+}
+
+body.dark-mode .panel-header {
+  border-bottom: 1px solid var(--dark-border);
+}
+
+body.dark-mode .panel-header h2 {
+  color: var(--dark-text-primary);
+}
+
+/* Dark mode navigation */
+body.dark-mode .mobile-nav {
+  background: rgba(15, 23, 42, 0.95) !important; /* Dark background with transparency */
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .nav-btn {
+  background: linear-gradient(135deg, var(--dark-bg-tertiary) 0%, var(--dark-bg-elevated) 100%);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text-secondary);
+}
+
+body.dark-mode .nav-btn:hover {
+  background: linear-gradient(135deg, var(--dark-bg-elevated) 0%, var(--dark-bg-tertiary) 100%);
+  border-color: var(--dark-accent-green);
+  color: var(--dark-accent-green);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .nav-btn.active {
+  background: linear-gradient(135deg, var(--dark-accent-green) 0%, var(--dark-accent-green-dark) 100%);
+  border-color: var(--dark-accent-green-light);
+  color: white;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+body.dark-mode .nav-btn.active .nav-icon {
+  color: white !important;
+}
+
+body.dark-mode .nav-btn .nav-icon {
+  color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .nav-btn:hover .nav-icon {
+  color: var(--dark-accent-green) !important;
+}
+
+/* Dark mode buttons */
+body.dark-mode .buyBtn {
+  background: linear-gradient(135deg, var(--dark-accent-green) 0%, var(--dark-accent-green-dark) 100%);
+  border: 1px solid var(--dark-accent-green-light);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .buyBtn:hover {
+  background: linear-gradient(135deg, var(--dark-accent-green-dark) 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+body.dark-mode .clickBtn,
+body.dark-mode #clickBtn {
+  background: linear-gradient(135deg, var(--dark-accent-green) 0%, var(--dark-accent-green-dark) 100%) !important;
+  border: 2px solid var(--dark-accent-green-light) !important;
+  color: white !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.2) !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .clickBtn:hover,
+body.dark-mode #clickBtn:hover {
+  background: linear-gradient(135deg, var(--dark-accent-green-dark) 0%, #047857 100%) !important;
+  border-color: #34d399 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4), 0 0 0 1px rgba(52, 211, 153, 0.3) !important;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.4) !important;
+}
+
+body.dark-mode .clickBtn:active,
+body.dark-mode #clickBtn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Dark mode income displays */
+body.dark-mode .income-item {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  box-shadow: 0 2px 8px var(--dark-shadow-light);
+}
+
+body.dark-mode .income-label {
+  color: var(--dark-text-tertiary);
+}
+
+body.dark-mode .income-value {
+  color: var(--dark-accent-green);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .income-earnings {
+  color: var(--dark-text-secondary);
+}
+
+/* Dark mode upgrades */
+body.dark-mode .upgrade {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .upgrade:hover {
+  border-color: var(--dark-accent-green);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+body.dark-mode .upgrade.owned {
+  background: linear-gradient(135deg, var(--dark-bg-tertiary) 0%, var(--dark-bg-elevated) 100%);
+  border-color: var(--dark-accent-green);
+}
+
+body.dark-mode .upgrade-name {
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .upgrade-desc {
+  color: var(--dark-text-tertiary);
+}
+
+body.dark-mode .upgrade-price {
+  color: var(--dark-accent-green);
+  font-weight: bold;
+}
+
+/* Dark mode properties */
+body.dark-mode .building {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .building:hover {
+  border-color: var(--dark-accent-green);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+body.dark-mode .building-name {
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .building-desc {
+  color: var(--dark-text-tertiary);
+}
+
+body.dark-mode .building-cost {
+  color: var(--dark-accent-green);
+  font-weight: bold;
+}
+
+body.dark-mode .building-income {
+  color: var(--dark-text-secondary);
+}
+
+/* Dark mode settings */
+body.dark-mode .settings-panel {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  box-shadow: 0 4px 16px var(--dark-shadow);
+}
+
+body.dark-mode .settings-toggle {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 2px solid var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .settings-toggle:hover {
+  border-color: var(--dark-accent-green);
+  color: var(--dark-accent-green);
+}
+
+body.dark-mode .settings-menu {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  box-shadow: 0 8px 24px var(--dark-shadow);
+}
+
+body.dark-mode .settings-section h3 {
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .setting-item .toggle-text {
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .setting-label {
+  color: var(--dark-text-secondary);
+}
+
+/* Dark mode toggles */
+body.dark-mode .toggle-slider {
+  background: var(--dark-bg-elevated);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .toggle-slider::before {
+  background: var(--dark-text-tertiary);
+}
+
+body.dark-mode input[type="checkbox"]:checked + .toggle-slider {
+  background: var(--dark-accent-green);
+  border-color: var(--dark-accent-green-light);
+}
+
+body.dark-mode input[type="checkbox"]:checked + .toggle-slider::before {
+  background: white;
+}
+
+/* Dark mode modals */
+body.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+body.dark-mode .modal-content {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 2px solid var(--dark-accent-green);
+  box-shadow: 0 20px 40px var(--dark-shadow), 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+body.dark-mode .modal-header {
+  border-bottom: 1px solid var(--dark-border);
+}
+
+body.dark-mode .modal-header h3 {
+  color: var(--dark-accent-green);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .modal-close-btn {
+  background: var(--dark-bg-elevated);
+  color: var(--dark-text-tertiary);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .modal-close-btn:hover {
+  background: var(--dark-bg-tertiary);
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .modal-body p {
+  color: var(--dark-text-secondary);
+}
+
+body.dark-mode .modal-body strong {
+  color: var(--dark-text-primary);
+}
+
+/* Dark mode leaderboard */
+body.dark-mode .leaderboard-entry {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .leaderboard-entry:hover {
+  border-color: var(--dark-accent-green);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+body.dark-mode .leaderboard-name {
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .leaderboard-score {
+  color: var(--dark-accent-green);
+  font-weight: bold;
+}
+
+body.dark-mode .leaderboard-prestige {
+  background: linear-gradient(135deg, var(--dark-accent-green) 0%, var(--dark-accent-green-dark) 100%);
+  color: white;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+}
+
+/* Dark mode leaderboard container and submit section */
+body.dark-mode .leaderboard-container {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .leaderboard-title {
+  color: var(--dark-accent-green) !important;
+}
+
+body.dark-mode .leaderboard-content {
+  background: var(--dark-bg-primary) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .leaderboard-submit {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 1px solid var(--dark-border) !important;
+  border-radius: 8px;
+  padding: 12px !important;
+  margin-top: 8px !important;
+}
+
+body.dark-mode .leaderboard-note {
+  color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .submit-score-btn {
+  background: linear-gradient(135deg, var(--dark-accent-green) 0%, var(--dark-accent-green-dark) 100%) !important;
+  border: 1px solid var(--dark-accent-green-light) !important;
+  color: white !important;
+}
+
+body.dark-mode .submit-score-btn:hover {
+  background: linear-gradient(135deg, var(--dark-accent-green-dark) 0%, #047857 100%) !important;
+}
+
+/* Dark mode event logs */
+body.dark-mode .event-logs-container {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .event-logs-title {
+  color: var(--dark-accent-green) !important;
+}
+
+body.dark-mode .event-logs-content {
+  background: var(--dark-bg-primary) !important;
+  border: 1px solid var(--dark-border) !important;
+}
+
+body.dark-mode .event-log-item {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+/* Dark mode event log text elements */
+body.dark-mode .event-log-item .event-time,
+body.dark-mode .event-log-item .event-name,
+body.dark-mode .event-log-item .event-details-hint {
+  color: var(--dark-text-primary) !important;
+}
+
+/* Dark mode event type specific colors */
+body.dark-mode .event-log-item.market-boom {
+  border-left-color: var(--dark-accent-green) !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.market-crash {
+  border-left-color: #ef4444 !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.flash-sale {
+  border-left-color: #f97316 !important;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.great-depression {
+  border-left-color: #dc2626 !important;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.fast-fingers {
+  border-left-color: #eab308 !important;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.tax-collection {
+  border-left-color: #a3a3a3 !important;
+  background: linear-gradient(135deg, rgba(163, 163, 163, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.robbery {
+  border-left-color: #dc2626 !important;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.divorce {
+  border-left-color: #a855f7 !important;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+body.dark-mode .event-log-item.earthquake {
+  border-left-color: #a3a3a3 !important;
+  background: linear-gradient(135deg, rgba(163, 163, 163, 0.1) 0%, var(--dark-bg-tertiary) 100%) !important;
+}
+
+/* Dark mode property tier colors - with higher specificity */
+body.dark-mode .property-row.tier-1,
+body.dark-mode .property-row.tier-1::before {
+  /* Bronze tier - dark mode */
+  background: linear-gradient(135deg, 
+    rgba(205, 127, 50, 0.15) 0%, 
+    var(--dark-bg-secondary) 50%,
+    rgba(205, 127, 50, 0.1) 100%) !important;
+  border: 1px solid rgba(205, 127, 50, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.1) !important;
+}
+
+body.dark-mode .property-row.tier-2,
+body.dark-mode .property-row.tier-2::before {
+  /* Silver tier - dark mode */
+  background: linear-gradient(135deg, 
+    rgba(192, 192, 192, 0.15) 0%, 
+    var(--dark-bg-secondary) 50%,
+    rgba(192, 192, 192, 0.1) 100%) !important;
+  border: 1px solid rgba(192, 192, 192, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.1) !important;
+}
+
+body.dark-mode .property-row.tier-3,
+body.dark-mode .property-row.tier-3::before,
+body.dark-mode .property-row.tier-3::after {
+  /* Golden tier - dark mode */
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.15) 0%, 
+    var(--dark-bg-secondary) 50%,
+    rgba(255, 215, 0, 0.1) 100%) !important;
+  border: 1px solid rgba(255, 215, 0, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.1) !important;
+}
+
+body.dark-mode .property-row.tier-4,
+body.dark-mode .property-row.tier-4::before,
+body.dark-mode .property-row.tier-4::after {
+  /* Diamond tier - dark mode */
+  background: linear-gradient(135deg, 
+    rgba(0, 191, 255, 0.15) 0%, 
+    var(--dark-bg-secondary) 50%,
+    rgba(0, 191, 255, 0.1) 100%) !important;
+  border: 1px solid rgba(0, 191, 255, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0, 191, 255, 0.1) !important;
+}
+
+/* Override tier animations in dark mode */
+body.dark-mode .property-row.tier-3::before {
+  animation: none !important;
+  background: transparent !important;
+}
+
+body.dark-mode .property-row.tier-4::before,
+body.dark-mode .property-row.tier-4::after {
+  animation: none !important;
+  background: transparent !important;
+}
+
+/* Dark mode property text elements */
+body.dark-mode .property-name {
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .property-details {
+  color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .property-owned {
+  color: var(--dark-accent-green) !important;
+}
+
+body.dark-mode .property-total-income {
+  color: var(--dark-accent-green) !important;
+}
+
+body.dark-mode .property-cost {
+  color: var(--dark-text-secondary) !important;
+}
+
+/* Dark mode tier-0 properties (no tier unlocked yet) */
+body.dark-mode .property-row.tier-0,
+body.dark-mode .property-row {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .property-row.tier-0:hover,
+body.dark-mode .property-row:hover {
+  border-color: var(--dark-accent-green) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Dark mode progress bars */
+body.dark-mode .progress-bar {
+  background: var(--dark-bg-elevated);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .progress-fill {
+  background: linear-gradient(90deg, var(--dark-accent-green), var(--dark-accent-green-light));
+}
+
+body.dark-mode .progress-text {
+  color: var(--dark-text-tertiary);
+}
+
+/* Dark mode help buttons */
+body.dark-mode .help-btn {
+  background: var(--dark-bg-secondary);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text-tertiary);
+}
+
+body.dark-mode .help-btn:hover {
+  background: var(--dark-bg-tertiary);
+  border-color: var(--dark-accent-green);
+  color: var(--dark-accent-green);
+}
+
+/* Dark mode click streak */
+body.dark-mode .click-streak {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--dark-accent-green);
+}
+
+body.dark-mode .streak-label {
+  color: var(--dark-text-secondary);
+}
+
+body.dark-mode .streak-multiplier {
+  color: var(--dark-accent-green);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Dark mode auto-invest sections */
+body.dark-mode .auto-invest {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  margin: 2px 0 !important; /* Further reduce vertical margins */
+  padding: 4px !important; /* Further reduce padding */
+}
+
+/* Dark mode auto-invest controls */
+body.dark-mode .auto-invest-controls {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 4px !important; /* Further reduce padding */
+  margin: 1px 0 !important; /* Further reduce margins */
+}
+
+/* Dark mode auto-invest toggle labels */
+body.dark-mode .auto-invest .toggle-label {
+  color: var(--dark-text-primary) !important; /* Make text visible */
+  font-size: 14px !important; /* Slightly smaller text */
+  padding: 2px 0 !important; /* Reduce padding */
+}
+
+body.dark-mode .auto-invest .toggle-text {
+  color: var(--dark-text-primary) !important; /* Make text visible */
+  font-weight: 500 !important;
+}
+
+/* Dark mode scrollbars */
+body.dark-mode ::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+  background: var(--dark-bg-secondary);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: var(--dark-bg-elevated);
+  border-radius: 4px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--dark-accent-green);
+}
+
+/* Dark mode form elements */
+body.dark-mode .difficulty-select {
+  background: var(--dark-bg-secondary);
+  border: 2px solid var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .difficulty-select:focus {
+  border-color: var(--dark-accent-green);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+body.dark-mode .difficulty-select:hover {
+  border-color: var(--dark-border-light);
+}
+
+/* Dark mode authentication buttons */
+body.dark-mode .google-login-btn {
+  background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%);
+  border: 1px solid #4285f4;
+  color: white;
+}
+
+body.dark-mode .google-login-btn:hover {
+  background: linear-gradient(135deg, #3367d6 0%, #2c5aa0 100%);
+}
+
+body.dark-mode .logout-btn {
+  background: linear-gradient(135deg, var(--dark-bg-elevated) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text-secondary);
+}
+
+body.dark-mode .logout-btn:hover {
+  background: linear-gradient(135deg, var(--dark-bg-tertiary) 0%, var(--dark-bg-secondary) 100%);
+  border-color: var(--dark-accent-green);
+  color: var(--dark-accent-green);
+}
+
+/* Dark mode hard reset button */
+body.dark-mode .hard-reset-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 1px solid #ef4444;
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+body.dark-mode .hard-reset-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Dark mode how to play button */
+body.dark-mode .how-to-play-btn {
+  background: linear-gradient(135deg, var(--dark-bg-elevated) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+body.dark-mode .how-to-play-btn:hover {
+  background: linear-gradient(135deg, var(--dark-bg-tertiary) 0%, var(--dark-bg-secondary) 100%);
+  border-color: var(--dark-accent-green);
+  color: var(--dark-accent-green);
+}
+
+/* Dark mode investment controls - with higher specificity */
+body.dark-mode .invest button,
+body.dark-mode .earn-content .controls button {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 2px solid var(--dark-border) !important;
+  color: var(--dark-text-primary) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 3px 6px var(--dark-shadow-light) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  padding: 10px 8px !important; /* Make buttons more compact */
+  font-size: 13px !important; /* Slightly smaller text */
+}
+
+body.dark-mode .invest button:hover,
+body.dark-mode .earn-content .controls button:hover {
+  background: linear-gradient(135deg, var(--dark-bg-tertiary) 0%, var(--dark-bg-elevated) 100%) !important;
+  border-color: var(--dark-accent-green) !important;
+  color: var(--dark-accent-green) !important;
+  box-shadow: 0 4px 12px var(--dark-shadow), 0 0 8px rgba(16, 185, 129, 0.2) !important;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+body.dark-mode .invest button:active,
+body.dark-mode .earn-content .controls button:active {
+  transform: translateY(1px) !important;
+  box-shadow: 0 1px 3px var(--dark-shadow-light) !important;
+}
+
+/* Dark mode earnings metrics container */
+body.dark-mode .earnings-metrics-container {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--dark-border);
+  border-radius: 8px;
+  padding: 4px !important; /* Reduce padding significantly */
+  margin: 0 -2px !important; /* Reduce horizontal margins */
+}
+
+/* Dark mode income items - adjust spacing */
+body.dark-mode .income-item {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%);
+  border: 1px solid var(--dark-border);
+  box-shadow: 0 2px 8px var(--dark-shadow-light);
+  margin: 0 2px; /* Reduce margins between items */
+  padding: 8px 6px; /* Adjust padding for better fit */
+}
+
+/* Dark mode dividend progress bar */
+body.dark-mode .dividend-progress-bar {
+  background: var(--dark-bg-elevated);
+  border: 1px solid var(--dark-border);
+}
+
+body.dark-mode .dividend-progress-fill {
+  background: linear-gradient(90deg, var(--dark-accent-green), var(--dark-accent-green-light));
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Dark mode toggle labels */
+body.dark-mode .toggle-label {
+  color: var(--dark-text-primary);
+}
+
+/* Dark mode auto-invest controls */
+body.dark-mode .auto-invest-controls {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* Dark mode toggle group */
+body.dark-mode .toggle-group {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+/* Enhanced green accents for key elements */
+body.dark-mode .panel-header h2 {
+  color: var(--dark-accent-green);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Green panel titles for specific panels */
+body.dark-mode #earnTitle,
+body.dark-mode #achievementsTitle,
+body.dark-mode #statsTitle {
+  color: var(--dark-accent-green) !important;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Dark mode achievements */
+body.dark-mode .achievement {
+  background: linear-gradient(135deg, var(--dark-bg-secondary) 0%, var(--dark-bg-tertiary) 100%) !important;
+  border: 1px solid var(--dark-border) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .achievement.unlocked {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
+  border-color: var(--dark-accent-green) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2) !important;
+}
+
+body.dark-mode .achievement-name {
+  color: var(--dark-text-primary) !important;
+}
+
+body.dark-mode .achievement.unlocked .achievement-name {
+  color: var(--dark-accent-green) !important;
+}
+
+body.dark-mode .achievement-desc {
+  color: var(--dark-text-secondary) !important;
+}
+
+body.dark-mode .achievement.unlocked .achievement-desc {
+  color: var(--dark-accent-green-light) !important;
+}
+
+body.dark-mode .achievement-status {
+  color: var(--dark-text-muted) !important;
+}
+
+body.dark-mode .achievement.unlocked .achievement-status {
+  color: var(--dark-accent-green) !important;
+}
+
+/* Dark mode navigation active state enhancement */
+body.dark-mode .nav-btn.active {
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode button focus states */
+body.dark-mode button:focus {
+  outline: 2px solid var(--dark-accent-green);
+  outline-offset: 2px;
+}
+
+/* Dark mode input focus states */
+body.dark-mode input:focus {
+  outline: 2px solid var(--dark-accent-green);
+  outline-offset: 2px;
+}
+
+/* Dark mode select focus states */
+body.dark-mode select:focus {
+  outline: 2px solid var(--dark-accent-green);
+  outline-offset: 2px;
+}
+
+/* Dark mode panel fade effects */
+body.dark-mode .panels::before {
+  background: linear-gradient(to right, rgba(0,0,0,0.3), transparent) !important;
+}
+
+body.dark-mode .panels::after {
+  background: linear-gradient(to left, rgba(0,0,0,0.3), transparent) !important;
+}
+
+/* Dark mode mobile responsive adjustments */
+@media (max-width: 768px) {
+  body.dark-mode .earn-content {
+    padding: 6px !important; /* Further reduce padding on mobile */
+  }
+  
+  body.dark-mode .earnings-metrics-container {
+    margin: 0 -2px !important; /* Reduce margins on mobile */
+    padding: 4px !important; /* Keep reduced padding */
+  }
+  
+  body.dark-mode .income-item {
+    margin: 0 1px !important; /* Reduce margins on mobile */
+    padding: 6px 4px !important;
+  }
+  
+  body.dark-mode .auto-invest {
+    margin: 1px 0 !important; /* Even more compact on mobile */
+    padding: 3px !important;
+  }
+  
+  body.dark-mode .auto-invest-controls {
+    padding: 3px !important; /* Even more compact on mobile */
+    margin: 0 !important;
+  }
+  
+  body.dark-mode .auto-invest .toggle-label {
+    font-size: 13px !important; /* Smaller text on mobile */
+    padding: 1px 0 !important;
+  }
+  
+  body.dark-mode .earn-content .controls button {
+    padding: 8px 6px !important; /* More compact buttons on mobile */
+    font-size: 12px !important;
+  }
+}
   overflow-y: auto;
 }
 
