@@ -2475,8 +2475,23 @@ let prestigeInterestMultiplier = 1;
     requestAnimationFrame(animate);
   }
   
+  // Track active tier notifications to prevent duplicates
+  const activeTierNotifications = new Map();
+  
   // Show tier upgrade notification
   function showTierUpgradeNotification(propertyId, tier, propertyName) {
+    // Remove any existing notification for this property
+    if (activeTierNotifications.has(propertyId)) {
+      const existingNotification = activeTierNotifications.get(propertyId);
+      existingNotification.classList.remove('show');
+      setTimeout(() => {
+        if (existingNotification.parentNode) {
+          existingNotification.remove();
+        }
+      }, 300);
+      activeTierNotifications.delete(propertyId);
+    }
+    
     const notification = document.createElement('div');
     const tierClass = getTierClass(tier);
     const propertyIcon = PROPERTY_CONFIG[propertyId].icon;
@@ -2504,13 +2519,21 @@ let prestigeInterestMultiplier = 1;
     
     document.body.appendChild(notification);
     
+    // Store reference to this notification
+    activeTierNotifications.set(propertyId, notification);
+    
     // Animate in
     setTimeout(() => notification.classList.add('show'), 100);
     
     // Remove after 5 seconds
     setTimeout(() => {
       notification.classList.remove('show');
-      setTimeout(() => notification.remove(), 300);
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+        activeTierNotifications.delete(propertyId);
+      }, 300);
     }, 5000);
   }
   
