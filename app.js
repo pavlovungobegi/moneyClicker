@@ -3158,6 +3158,14 @@ let prestigeInterestMultiplier = 1;
   
   function showOfflineEarningsPopup(offlineData) {
     console.log('🔍 [OFFLINE DEBUG] showOfflineEarningsPopup called with:', offlineData);
+    
+    // Check if popup already exists to prevent multiple popups
+    const existingPopup = document.querySelector('.offline-earnings-popup');
+    if (existingPopup) {
+      console.log('🔍 [OFFLINE DEBUG] Offline earnings popup already exists, skipping...');
+      return;
+    }
+    
     const popup = document.createElement('div');
     popup.className = 'offline-earnings-popup';
     popup.innerHTML = `
@@ -3204,7 +3212,6 @@ let prestigeInterestMultiplier = 1;
     
     // Store reference for claiming
     window.currentOfflineEarnings = offlineData;
-    window.offlineEarningsClaimed = false; // Reset claimed flag for new popup
     
     // Add event listener as backup in case onclick doesn't work
     setTimeout(() => {
@@ -3236,13 +3243,7 @@ let prestigeInterestMultiplier = 1;
       return;
     }
     
-    // Prevent multiple claims
-    if (window.offlineEarningsClaimed) {
-      console.log('🔍 [OFFLINE DEBUG] Offline earnings already claimed');
-      return;
-    }
-    
-    window.offlineEarningsClaimed = true;
+    // Allow multiple claims - removed restriction to prevent game getting stuck
     const earnings = window.currentOfflineEarnings;
     
     console.log('🔍 [OFFLINE DEBUG] Claiming earnings - adding all to current account:');
@@ -3283,7 +3284,6 @@ let prestigeInterestMultiplier = 1;
       }, 300);
     }
     window.currentOfflineEarnings = null;
-    window.offlineEarningsClaimed = false; // Reset claimed flag
   }
 
   function loadGameState() {
@@ -3536,7 +3536,6 @@ let prestigeInterestMultiplier = 1;
   // Manual reset function for stuck popups
   window.resetOfflineEarningsPopup = function() {
     console.log('🔍 [OFFLINE DEBUG] Manually resetting offline earnings popup');
-    window.offlineEarningsClaimed = false;
     window.currentOfflineEarnings = null;
     const popup = document.querySelector('.offline-earnings-popup');
     if (popup) {
