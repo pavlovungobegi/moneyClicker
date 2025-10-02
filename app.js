@@ -2883,6 +2883,11 @@ let prestigeInterestMultiplier = 1;
   // Game state persistence functions
   function saveGameState() {
     try {
+      // Save to cloud if user is signed in
+      if (currentUser && isFirebaseReady) {
+        saveToCloud();
+      }
+      
       const gameState = {
         // Core balances
         currentAccountBalance,
@@ -6621,8 +6626,242 @@ function initHowToPlay() {
   }
 }
 
+// Firebase Authentication functionality
+let currentUser = null;
+let isFirebaseReady = false;
+
+function initFirebaseAuth() {
+  // Check if Firebase is available
+  if (!window.firebaseAuth) {
+    console.log('Firebase not available, using local storage only');
+    return;
+  }
+  
+  isFirebaseReady = true;
+  
+  // Listen for authentication state changes
+  window.firebaseOnAuthStateChanged(window.firebaseAuth, (user) => {
+    currentUser = user;
+    updateAuthUI();
+    
+    if (user) {
+      console.log('User signed in:', user.displayName);
+      // Load user's cloud save
+      loadCloudSave();
+    } else {
+      console.log('User signed out');
+      // Switch back to local save
+      loadGameState();
+    }
+  });
+  
+  // Set up login/logout button event listeners
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', signInWithGoogle);
+  }
+  
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', signOut);
+  }
+}
+
+async function signInWithGoogle() {
+  try {
+    const result = await window.firebaseSignIn(window.firebaseAuth, window.firebaseProvider);
+    console.log('Sign in successful:', result.user);
+  } catch (error) {
+    console.error('Sign in error:', error);
+    alert('Sign in failed: ' + error.message);
+  }
+}
+
+async function signOut() {
+  try {
+    await window.firebaseSignOut(window.firebaseAuth);
+    console.log('Sign out successful');
+  } catch (error) {
+    console.error('Sign out error:', error);
+  }
+}
+
+function updateAuthUI() {
+  const loginSection = document.getElementById('loginSection');
+  const userSection = document.getElementById('userSection');
+  const userName = document.getElementById('userName');
+  const userEmail = document.getElementById('userEmail');
+  const userAvatar = document.getElementById('userAvatar');
+  
+  if (!loginSection || !userSection) return;
+  
+  if (currentUser) {
+    // User is signed in
+    loginSection.classList.add('hidden');
+    userSection.classList.remove('hidden');
+    
+    if (userName) userName.textContent = currentUser.displayName || 'User';
+    if (userEmail) userEmail.textContent = currentUser.email || '';
+    if (userAvatar) userAvatar.src = currentUser.photoURL || '';
+  } else {
+    // User is signed out
+    loginSection.classList.remove('hidden');
+    userSection.classList.add('hidden');
+  }
+}
+
+async function saveToCloud() {
+  if (!currentUser || !isFirebaseReady) return;
+  
+  try {
+    const gameState = getCurrentGameState();
+    const userDocRef = window.firebaseDoc(window.firebaseDb, 'users', currentUser.uid);
+    
+    await window.firebaseSetDoc(userDocRef, {
+      gameState: gameState,
+      lastSaved: Date.now(),
+      username: currentUser.displayName || currentUser.email
+    }, { merge: true });
+    
+    console.log('Game saved to cloud');
+  } catch (error) {
+    console.error('Error saving to cloud:', error);
+  }
+}
+
+async function loadCloudSave() {
+  if (!currentUser || !isFirebaseReady) return;
+  
+  try {
+    const userDocRef = window.firebaseDoc(window.firebaseDb, 'users', currentUser.uid);
+    const userDoc = await window.firebaseGetDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      if (userData.gameState) {
+        console.log('Loading cloud save for user:', currentUser.displayName);
+        loadGameStateFromData(userData.gameState);
+      }
+    } else {
+      console.log('No cloud save found, using local save');
+      loadGameState();
+    }
+  } catch (error) {
+    console.error('Error loading cloud save:', error);
+    // Fallback to local save
+    loadGameState();
+  }
+}
+
+function getCurrentGameState() {
+  return {
+    // Core balances
+    currentAccountBalance,
+    investmentAccountBalance,
+    
+    // Upgrades owned
+    owned: { ...owned },
+    
+    // Properties owned
+    properties: { ...properties },
+    
+    // Statistics
+    totalDividendsReceived,
+    hasMadeFirstInvestment,
+    
+    // Click streak system
+    streakCount,
+    streakMultiplier,
+    lastClickTime,
+    
+    // Prestige multipliers
+    prestigeClickMultiplier,
+    prestigeInterestMultiplier,
+    
+    // Buy multiplier
+    buyMultiplier,
+    
+    // Audio settings
+    musicEnabled: AudioSystem.getAudioSettings().musicEnabled,
+    soundEffectsEnabled: AudioSystem.getAudioSettings().soundEffectsEnabled,
+    
+    // Auto invest settings
+    autoInvestEnabled,
+    autoRentEnabled,
+    
+    // Game difficulty
+    gameDifficulty: getGameDifficulty(),
+    
+    // Dark mode
+    darkMode: document.body.classList.contains('dark-mode'),
+    
+    // Last saved timestamp
+    lastSaved: Date.now()
+  };
+}
+
+function loadGameStateFromData(gameState) {
+  // Restore core balances
+  currentAccountBalance = gameState.currentAccountBalance || 0;
+  investmentAccountBalance = gameState.investmentAccountBalance || 0;
+  
+  // Restore upgrades
+  if (gameState.owned) {
+    Object.assign(owned, gameState.owned);
+  }
+  
+  // Restore properties
+  if (gameState.properties) {
+    Object.assign(properties, gameState.properties);
+  }
+  
+  // Restore statistics
+  totalDividendsReceived = gameState.totalDividendsReceived || 0;
+  hasMadeFirstInvestment = gameState.hasMadeFirstInvestment || false;
+  
+  // Restore click streak
+  streakCount = gameState.streakCount || 0;
+  streakMultiplier = gameState.streakMultiplier || 1;
+  lastClickTime = gameState.lastClickTime || 0;
+  
+  // Restore prestige multipliers
+  prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
+  prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
+  
+  // Restore buy multiplier
+  buyMultiplier = gameState.buyMultiplier || 1;
+  
+  // Restore audio settings
+  if (gameState.musicEnabled !== undefined) {
+    AudioSystem.setMusicEnabled(gameState.musicEnabled);
+  }
+  if (gameState.soundEffectsEnabled !== undefined) {
+    AudioSystem.setSoundEffectsEnabled(gameState.soundEffectsEnabled);
+  }
+  
+  // Restore auto invest settings
+  autoInvestEnabled = gameState.autoInvestEnabled || false;
+  autoRentEnabled = gameState.autoRentEnabled || false;
+  
+  // Restore game difficulty
+  if (gameState.gameDifficulty) {
+    setGameDifficulty(gameState.gameDifficulty);
+  }
+  
+  // Restore dark mode
+  if (gameState.darkMode) {
+    document.body.classList.add('dark-mode');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) darkModeToggle.checked = true;
+  }
+  
+  console.log('Game state loaded from cloud');
+}
+
 // Initialize PWA functionality when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  initFirebaseAuth();
   initHowToPlay();
   initPWAInstallPrompt();
   initPWASpecificFeatures();
