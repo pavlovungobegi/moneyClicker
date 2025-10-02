@@ -315,7 +315,7 @@ const GAME_CONFIG = {
       },
       flashSale: {
         easy: 0.05,     // 5% chance (easier)
-        normal: 0.035,   // 3% chance (original)
+        normal: 0.25,   // 3% chance (original)
         hard: 0.02,     // 2% chance (harder)
         extreme: 0.005   // 1% chance (extreme)
       },
@@ -383,7 +383,7 @@ const GAME_CONFIG = {
       },
       flashSale: {
         easy: 60000,     // 4 minutes (easier)
-        normal: 60000,   // 3 minutes (original)
+        normal: 30000,   // 3 minutes (original)
         hard: 60000,     // 2 minutes (harder)
         extreme: 60000    // 1.5 minutes (extreme)
       },

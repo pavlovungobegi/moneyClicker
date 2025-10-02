@@ -1418,6 +1418,11 @@ let prestigeInterestMultiplier = 1;
       const minChange = Math.max(investmentAccountBalance * 0.01, 0.01);
       numberAnimator.animateValue(headerInvestmentDisplay, headerInvestmentValue, investmentAccountBalance, 400, animationFormatters.currency, minChange);
     }
+    
+    // Force property updates when balance changes (fix for web version)
+    if (renderEngine) {
+      renderEngine.markDirty('allProperties');
+    }
   }
 
   function renderUpgradesOwned() {
@@ -3200,9 +3205,32 @@ let prestigeInterestMultiplier = 1;
     // Store reference for claiming
     window.currentOfflineEarnings = offlineData;
     window.offlineEarningsClaimed = false; // Reset claimed flag for new popup
+    
+    // Add event listener as backup in case onclick doesn't work
+    setTimeout(() => {
+      const claimButton = document.getElementById('offlineClaimButton');
+      if (claimButton) {
+        claimButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('🔍 [OFFLINE DEBUG] Button clicked via event listener');
+          
+          // Visual feedback
+          this.style.opacity = '0.7';
+          this.textContent = 'Claiming...';
+          
+          setTimeout(() => {
+            claimOfflineEarnings();
+          }, 100);
+        });
+      }
+    }, 200);
   }
   
   function claimOfflineEarnings() {
+    console.log('🔍 [OFFLINE DEBUG] claimOfflineEarnings called');
+    console.log('🔍 [OFFLINE DEBUG] - currentOfflineEarnings:', window.currentOfflineEarnings);
+    console.log('🔍 [OFFLINE DEBUG] - offlineEarningsClaimed:', window.offlineEarningsClaimed);
+    
     if (!window.currentOfflineEarnings) {
       console.log('🔍 [OFFLINE DEBUG] No offline earnings to claim');
       return;
@@ -3498,9 +3526,25 @@ let prestigeInterestMultiplier = 1;
   window.loadGameState = loadGameState;
   window.resetGameState = resetGameState;
   
+  // Manual property update function for debugging
+  window.forceUpdateProperties = function() {
+    renderAllProperties();
+  };
+  
   // Make offline earnings functions globally available
   window.claimOfflineEarnings = claimOfflineEarnings;
   window.closeOfflineEarningsPopup = closeOfflineEarningsPopup;
+  
+  // Manual reset function for stuck popups
+  window.resetOfflineEarningsPopup = function() {
+    console.log('🔍 [OFFLINE DEBUG] Manually resetting offline earnings popup');
+    window.offlineEarningsClaimed = false;
+    window.currentOfflineEarnings = null;
+    const popup = document.querySelector('.offline-earnings-popup');
+    if (popup) {
+      popup.remove();
+    }
+  };
 
   // Hard Reset functionality
   function performHardReset() {
@@ -5034,7 +5078,14 @@ let prestigeInterestMultiplier = 1;
     Object.keys(UPGRADE_COSTS).forEach(upgradeId => {
       if (owned[upgradeId]) return; // Skip if already owned
       
-      const cost = UPGRADE_COSTS[upgradeId];
+      // Get the current price (including flash sale discounts)
+      let cost = UPGRADE_COSTS[upgradeId];
+      
+      // Apply Flash Sale discount (same logic as renderUpgradePrices)
+      if (flashSaleActive()) {
+        cost = cost * 0.75; // 25% off
+      }
+      
       const progress = Math.min((currentAccountBalance / cost) * 100, 100);
       
       const progressFill = document.getElementById(`${upgradeId}Progress`);
