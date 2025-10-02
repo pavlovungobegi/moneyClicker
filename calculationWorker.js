@@ -75,8 +75,8 @@ function calculatePropertyIncome(data) {
           }
         }
         
-        // Apply prestige multiplier to property income
-        income *= prestigeInterestMultiplier;
+        // Apply prestige multiplier to property income (twice for double effect)
+        income *= prestigeInterestMultiplier * prestigeInterestMultiplier;
         
         totalIncome += income;
       }

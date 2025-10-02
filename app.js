@@ -19,6 +19,9 @@ let prestigeClickMultiplier = 1;
 let prestigeInterestMultiplier = 1;
 let prestigeTier = 0;
 
+// Auto-submit functionality
+let autoSubmitInterval = null;
+
 (() => {
 
   // Active tab tracking for performance optimization
@@ -1762,8 +1765,8 @@ let prestigeTier = 0;
     const propertyRentMultiplier = getPropertySpecificRentMultiplier(propertyId);
     baseIncome *= propertyRentMultiplier;
     
-    // Apply prestige multiplier to property income
-    baseIncome *= prestigeInterestMultiplier;
+    // Apply prestige multiplier to property income (twice for double effect)
+    baseIncome *= prestigeInterestMultiplier * prestigeInterestMultiplier;
     
     // Debug logging
     /*
@@ -3869,6 +3872,119 @@ let prestigeTier = 0;
     }
   }
 
+  // Auto-submit functionality
+  async function autoSubmitScore() {
+    // Only auto-submit if user is authenticated
+    if (!currentUser) {
+      return;
+    }
+
+    // Calculate current score
+    const currentBalance = currentAccountBalance;
+    const investmentBalance = investmentAccountBalance;
+    const propertyValue = calculateTotalPropertyValue();
+    const score = currentBalance + investmentBalance + propertyValue;
+
+    // Only auto-submit if score is meaningful (at least €1,000)
+    if (score < 1000) {
+      return;
+    }
+
+    // Check cooldown (same as manual submission)
+    const lastSubmission = localStorage.getItem('lastScoreSubmission');
+    const now = Date.now();
+    const cooldownPeriod = 30 * 1000; // 30 seconds in milliseconds
+    
+    if (lastSubmission && (now - parseInt(lastSubmission)) < cooldownPeriod) {
+      return; // Still in cooldown, skip this auto-submit
+    }
+
+    // Use Google user's display name or email as username
+    const userDisplayName = currentUser.displayName || currentUser.email || 'Anonymous';
+    const sanitizedName = userDisplayName.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 20);
+    if (sanitizedName.length < 2) {
+      return; // Invalid username, skip
+    }
+
+    try {
+      // Check if this user already has a score in leaderboard
+      const existingResponse = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json`);
+      let existingEntryKey = null;
+      if (existingResponse.ok) {
+        const existingData = await existingResponse.json();
+        if (existingData) {
+          // Look for existing entry by UID
+          for (const [key, entry] of Object.entries(existingData)) {
+            if (entry.uid === currentUser.uid) {
+              existingEntryKey = key;
+              break;
+            }
+          }
+        }
+      }
+
+      // Create new score entry with validation
+      const newEntry = {
+        name: sanitizedName,
+        displayName: currentUser.displayName || null,
+        email: currentUser.email || null,
+        photoURL: currentUser.photoURL || null,
+        uid: currentUser.uid,
+        score: Math.round(score),
+        prestigeTier: prestigeTier || 0,
+        timestamp: now,
+        version: '1.0',
+        browserFingerprint: generateBrowserFingerprint()
+      };
+
+      // Use existing key if updating, or create new key if inserting
+      const playerKey = existingEntryKey || `${currentUser.uid}_${now}`;
+
+      // Submit to Firebase
+      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard/${playerKey}.json`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newEntry)
+      });
+
+      if (response.ok) {
+        // Update last submission timestamp
+        localStorage.setItem('lastScoreSubmission', now.toString());
+        
+        // Log successful auto-submit (but don't show alert to avoid spam)
+        console.log(`🔄 Auto-submitted score: €${formatCurrency(score)} (T${prestigeTier})`);
+        
+        // Update leaderboard display
+        await loadLeaderboard();
+      }
+      
+    } catch (error) {
+      console.warn('Auto-submit failed:', error);
+      // Don't show error alerts for auto-submit failures
+    }
+  }
+
+  function startAutoSubmit() {
+    // Clear any existing interval
+    if (autoSubmitInterval) {
+      clearInterval(autoSubmitInterval);
+    }
+    
+    // Start auto-submit every 30 seconds
+    autoSubmitInterval = setInterval(autoSubmitScore, 30000);
+    console.log('🔄 Auto-submit started (every 30 seconds)');
+  }
+
+  function stopAutoSubmit() {
+    if (autoSubmitInterval) {
+      clearInterval(autoSubmitInterval);
+      autoSubmitInterval = null;
+      console.log('🛑 Auto-submit stopped');
+    }
+  }
+
   // Generate a simple browser fingerprint for duplicate detection
   function generateBrowserFingerprint() {
     const canvas = document.createElement('canvas');
@@ -5543,6 +5659,16 @@ let prestigeTier = 0;
   // Invalidate property income cache to ensure fresh calculation
   propertyIncomeCacheValid = false;
 
+  // Start auto-submit functionality (only if user is already signed in)
+  if (currentUser) {
+    startAutoSubmit();
+  }
+
+  // Cleanup auto-submit when page is unloaded
+  window.addEventListener('beforeunload', () => {
+    stopAutoSubmit();
+  });
+
   // Generate upgrade HTML from configuration
   generateAllUpgradeHTML();
 
@@ -6896,10 +7022,14 @@ function initFirebaseAuth() {
       console.log('User signed in:', user.displayName);
       // Load user's cloud save
       loadCloudSave();
+      // Start auto-submit when user signs in
+      startAutoSubmit();
     } else {
       console.log('User signed out');
       // Switch back to local save
       loadGameState();
+      // Stop auto-submit when user signs out
+      stopAutoSubmit();
     }
   });
   

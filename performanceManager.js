@@ -296,8 +296,8 @@
           const propertyConfig = data.propertyConfigs[propertyId];
           if (propertyConfig) {
             let income = count * propertyConfig.incomePerSecond;
-            // Apply prestige multiplier to property income
-            income *= prestigeInterestMultiplier;
+            // Apply prestige multiplier to property income (twice for double effect)
+            income *= prestigeInterestMultiplier * prestigeInterestMultiplier;
             totalIncome += income;
           }
         }
