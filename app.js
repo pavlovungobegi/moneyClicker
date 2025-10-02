@@ -3607,7 +3607,8 @@ let prestigeInterestMultiplier = 1;
       
       // Use display name if available, otherwise fall back to name
       const displayName = entry.displayName || entry.name;
-      const avatar = entry.photoURL ? `<img src="${entry.photoURL}" alt="${displayName}" class="leaderboard-avatar">` : '';
+      const avatar = entry.photoURL ? 
+        `<img src="${entry.photoURL}" alt="${displayName}" class="leaderboard-avatar" onerror="this.style.display='none'" onload="this.style.display='block'">` : '';
       
       return `
         <div class="leaderboard-entry">
@@ -5380,6 +5381,30 @@ let prestigeInterestMultiplier = 1;
     }
   }
 
+
+  // Desktop detection and warning
+  function checkDesktopWarning() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     window.innerWidth <= 768 || 
+                     ('ontouchstart' in window);
+    
+    if (!isMobile) {
+      const desktopWarning = document.getElementById('desktopWarning');
+      const desktopContinueBtn = document.getElementById('desktopContinueBtn');
+      
+      if (desktopWarning && desktopContinueBtn) {
+        desktopWarning.classList.remove('hidden');
+        
+        desktopContinueBtn.addEventListener('click', () => {
+          desktopWarning.classList.add('hidden');
+        });
+      }
+    }
+  }
+
+  // Check if user is on desktop and show warning
+  checkDesktopWarning();
+
   // Show loading screen and initialize game after 2 seconds
   showLoadingScreen();
   setTimeout(() => {
@@ -6726,6 +6751,53 @@ async function signOut() {
   }
 }
 
+// Profile image cache to prevent too many requests
+const profileImageCache = new Map();
+const failedImages = new Set();
+const requestTimestamps = new Map();
+const RATE_LIMIT_MS = 5000; // 5 seconds between requests for same image
+
+function loadProfileImage(imgElement, photoURL, fallbackText = '') {
+  if (!photoURL || failedImages.has(photoURL)) {
+    imgElement.style.display = 'none';
+    return;
+  }
+  
+  // Check cache first
+  if (profileImageCache.has(photoURL)) {
+    imgElement.src = profileImageCache.get(photoURL);
+    imgElement.style.display = 'block';
+    return;
+  }
+  
+  // Rate limiting check
+  const now = Date.now();
+  const lastRequest = requestTimestamps.get(photoURL);
+  if (lastRequest && (now - lastRequest) < RATE_LIMIT_MS) {
+    console.log('Rate limiting profile image request:', photoURL);
+    imgElement.style.display = 'none';
+    return;
+  }
+  
+  // Record this request timestamp
+  requestTimestamps.set(photoURL, now);
+  
+  // Load with error handling
+  imgElement.onerror = function() {
+    console.log('Profile image failed to load:', photoURL);
+    failedImages.add(photoURL);
+    this.style.display = 'none';
+  };
+  
+  imgElement.onload = function() {
+    this.style.display = 'block';
+    // Cache the successful image
+    profileImageCache.set(photoURL, photoURL);
+  };
+  
+  imgElement.src = photoURL;
+}
+
 function updateAuthUI() {
   const loginSection = document.getElementById('loginSection');
   const userSection = document.getElementById('userSection');
@@ -6742,7 +6814,9 @@ function updateAuthUI() {
     
     if (userName) userName.textContent = currentUser.displayName || 'User';
     if (userEmail) userEmail.textContent = currentUser.email || '';
-    if (userAvatar) userAvatar.src = currentUser.photoURL || '';
+    if (userAvatar) {
+      loadProfileImage(userAvatar, currentUser.photoURL);
+    }
   } else {
     // User is signed out
     loginSection.classList.remove('hidden');
