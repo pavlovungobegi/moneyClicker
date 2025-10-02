@@ -330,7 +330,7 @@ const GAME_CONFIG = {
         easy: 0.005,    // 0.5% chance (easier)
         normal: 0.0025,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
-        extreme: 0.045   // 2% chance (extreme)
+        extreme: 0.05   // 2% chance (extreme)
       },
       fastFingers: {
         easy: 0.04,     // 4% chance (easier)
@@ -342,25 +342,25 @@ const GAME_CONFIG = {
         easy: 0.01,     // 1% chance (easier)
         normal: 0.01,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
-        extreme: 0.095   // 4% chance (extreme)
+        extreme: 0.08   // 4% chance (extreme)
       },
       robbery: {
         easy: 0.01,     // 1% chance (easier)
         normal: 0.01,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
-        extreme: 0.095   // 4% chance (extreme)
+        extreme: 0.08   // 4% chance (extreme)
       },
       divorce: {
         easy: 0.001,    // 0.5% chance (easier)
         normal: 0.0025,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
-        extreme: 0.045   // 2% chance (extreme)
+        extreme: 0.05   // 2% chance (extreme)
       },
       earthquake: {
         easy: 0.005,     // 1% chance (same for all difficulties)
         normal: 0.0025,   // 1% chance
         hard: 0.01,     // 1% chance
-        extreme: 0.015   // 1% chance
+        extreme: 0.04   // 1% chance
       }
     },
     
@@ -410,19 +410,19 @@ const GAME_CONFIG = {
         easy: 120000,      // 1.5 minutes (easier)
         normal: 120000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
-        extreme: 10000    // 30 seconds (extreme)
+        extreme: 30000    // 30 seconds (extreme)
       },
       robbery: {
         easy: 120000,      // 1.5 minutes (easier)
         normal: 120000,    // 1 minute (original)
         hard: 45000,      // 45 seconds (harder)
-        extreme: 10000    // 30 seconds (extreme)
+        extreme: 30000    // 30 seconds (extreme)
       },
       divorce: {
         easy: 900000,     // 2 minutes (easier)
         normal: 600000,    // 1.5 minutes (original)
         hard: 60000,      // 1 minute (harder)
-        extreme: 20000    // 45 seconds (extreme)
+        extreme: 30000    // 45 seconds (extreme)
       }
     },
     
