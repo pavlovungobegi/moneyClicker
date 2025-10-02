@@ -3507,11 +3507,9 @@ let prestigeInterestMultiplier = 1;
       GAME_CONFIG.EVENT_CONFIG.eventCooldowns.earthquake = 0;
       
       // Reset properties
-      properties = {
-        parkingGarage: 0,
-        apartment: 0,
-        officeBuilding: 0
-      };
+      Object.keys(properties).forEach(propertyKey => {
+        properties[propertyKey] = 0;
+      });
       
       // Net worth chart data reset removed for performance
       
@@ -3577,6 +3575,11 @@ let prestigeInterestMultiplier = 1;
     // Reset all upgrades
     Object.keys(owned).forEach(upgradeKey => {
       owned[upgradeKey] = false;
+    });
+    
+    // Reset all properties to initial state
+    Object.keys(properties).forEach(propertyKey => {
+      properties[propertyKey] = 0;
     });
     
     // Reset audio settings to defaults
@@ -3697,7 +3700,7 @@ let prestigeInterestMultiplier = 1;
     }
 
     // Prevent unrealistic scores (cap at reasonable limit)
-    if (score > 1e15) { // 1 quadrillion
+    if (score > 999e27) { // 999zz (999 * 10^27)
       alert('Score too high - please play the game fairly');
       return;
     }
