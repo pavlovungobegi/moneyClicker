@@ -3066,23 +3066,32 @@ let prestigeInterestMultiplier = 1;
     // Safety check for Infinity values
     const safeInvestmentIncome = isFinite(totalInvestmentIncome) ? totalInvestmentIncome : 0;
     const safeDividendIncome = isFinite(totalDividendIncome) ? totalDividendIncome : 0;
-    const totalIncome = totalPropertyIncome + safeInvestmentIncome + safeDividendIncome;
+    
+    // Apply 90% reduction to offline earnings (1 minute online = 10 minutes offline)
+    const OFFLINE_EARNINGS_REDUCTION = 0.1; // 10% of normal earnings
+    const reducedPropertyIncome = totalPropertyIncome * OFFLINE_EARNINGS_REDUCTION;
+    const reducedInvestmentIncome = safeInvestmentIncome * OFFLINE_EARNINGS_REDUCTION;
+    const reducedDividendIncome = safeDividendIncome * OFFLINE_EARNINGS_REDUCTION;
+    const totalIncome = reducedPropertyIncome + reducedInvestmentIncome + reducedDividendIncome;
     const wasCapped = timeOffline > maxOfflineMs;
     
     console.log('🔍 [OFFLINE DEBUG] FINAL CALCULATION:');
-    console.log('🔍 [OFFLINE DEBUG] - totalPropertyIncome:', totalPropertyIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalPropertyIncome (raw):', totalPropertyIncome);
     console.log('🔍 [OFFLINE DEBUG] - totalInvestmentIncome (raw):', totalInvestmentIncome);
-    console.log('🔍 [OFFLINE DEBUG] - totalInvestmentIncome (safe):', safeInvestmentIncome);
-    console.log('🔍 [OFFLINE DEBUG] - totalDividendIncome:', totalDividendIncome);
-    console.log('🔍 [OFFLINE DEBUG] - totalIncome:', totalIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalDividendIncome (raw):', totalDividendIncome);
+    console.log('🔍 [OFFLINE DEBUG] - OFFLINE_EARNINGS_REDUCTION:', OFFLINE_EARNINGS_REDUCTION);
+    console.log('🔍 [OFFLINE DEBUG] - reducedPropertyIncome:', reducedPropertyIncome);
+    console.log('🔍 [OFFLINE DEBUG] - reducedInvestmentIncome:', reducedInvestmentIncome);
+    console.log('🔍 [OFFLINE DEBUG] - reducedDividendIncome:', reducedDividendIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalIncome (reduced):', totalIncome);
     console.log('🔍 [OFFLINE DEBUG] - wasCapped:', wasCapped);
     
     return {
       timeOffline,
       secondsOffline: actualSecondsOffline, // Use actual time for display
-      propertyIncome: totalPropertyIncome,
-      investmentIncome: safeInvestmentIncome,
-      dividendIncome: safeDividendIncome,
+      propertyIncome: reducedPropertyIncome,
+      investmentIncome: reducedInvestmentIncome,
+      dividendIncome: reducedDividendIncome,
       totalIncome: totalIncome,
       wasCapped: wasCapped
     };
@@ -5274,6 +5283,9 @@ let prestigeInterestMultiplier = 1;
   }
 
   function initializeGame() {
+  // Clear any leftover backgrounded timestamp from previous session
+  localStorage.removeItem('moneyClicker_tabBackgroundedAt');
+  
   // Load saved game state first (after DOM elements are ready)
   const gameStateLoaded = loadGameState();
   
@@ -5773,6 +5785,11 @@ function handleVisibilityChange() {
     // Game logic continues running for idle game mechanics
     AudioSystem.pauseAllAudio();
     
+    // Save timestamp when going to background for offline earnings calculation
+    window.tabBackgroundedAt = Date.now();
+    localStorage.setItem('moneyClicker_tabBackgroundedAt', window.tabBackgroundedAt.toString());
+    console.log('🔍 [VISIBILITY DEBUG] Tab went to background at:', new Date(window.tabBackgroundedAt));
+    
     // Mobile performance optimization: pause heavy operations when backgrounded
     if (mobilePerformanceMode && GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
       // Pause particle animations to reduce CPU usage
@@ -5789,6 +5806,42 @@ function handleVisibilityChange() {
     // App came to foreground - resume audio if it was enabled
     if (AudioSystem.getAudioSettings().musicEnabled) {
       AudioSystem.startBackgroundMusic();
+    }
+    
+    // Check for offline earnings from tab backgrounding
+    let backgroundedTimestamp = window.tabBackgroundedAt;
+    if (!backgroundedTimestamp) {
+      // Check localStorage in case page was refreshed while backgrounded
+      const storedTimestamp = localStorage.getItem('moneyClicker_tabBackgroundedAt');
+      if (storedTimestamp) {
+        backgroundedTimestamp = parseInt(storedTimestamp);
+        window.tabBackgroundedAt = backgroundedTimestamp;
+      }
+    }
+    
+    if (backgroundedTimestamp) {
+      const timeBackgrounded = Date.now() - backgroundedTimestamp;
+      const minOfflineMs = GAME_CONFIG.OFFLINE_EARNINGS.MIN_OFFLINE_MINUTES * 60 * 1000;
+      
+      console.log('🔍 [VISIBILITY DEBUG] Tab came to foreground after:', timeBackgrounded, 'ms');
+      
+      if (timeBackgrounded >= minOfflineMs) {
+        console.log('🔍 [VISIBILITY DEBUG] Calculating offline earnings from tab backgrounding...');
+        
+        // Calculate offline earnings using the backgrounded timestamp
+        const offlineEarnings = calculateOfflineEarnings(backgroundedTimestamp);
+        
+        if (offlineEarnings && offlineEarnings.totalIncome > 0) {
+          console.log('🔍 [VISIBILITY DEBUG] Valid offline earnings found, showing popup in 1 second...');
+          setTimeout(() => {
+            showOfflineEarningsPopup(offlineEarnings);
+          }, 1000);
+        }
+      }
+      
+      // Clear the backgrounded timestamp from both memory and localStorage
+      window.tabBackgroundedAt = null;
+      localStorage.removeItem('moneyClicker_tabBackgroundedAt');
     }
     
     // Mobile performance optimization: resume animations when foregrounded
