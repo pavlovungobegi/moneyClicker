@@ -3185,7 +3185,7 @@ let prestigeInterestMultiplier = 1;
           </div>
         </div>
         <div class="offline-earnings-actions">
-          <button class="offline-earnings-claim" id="offlineClaimButton" onclick="claimOfflineEarnings()" style="display: none;">Claim Earnings</button>
+          <button class="offline-earnings-claim" id="offlineClaimButton" onclick="claimOfflineEarnings()">Claim Earnings</button>
         </div>
       </div>
     `;
@@ -3195,19 +3195,7 @@ let prestigeInterestMultiplier = 1;
     // Animate in
     setTimeout(() => popup.classList.add('show'), 100);
     
-    // Show claim button after 2 seconds
-    setTimeout(() => {
-      const claimButton = document.getElementById('offlineClaimButton');
-      if (claimButton) {
-        claimButton.style.display = 'block';
-        claimButton.style.opacity = '0';
-        claimButton.style.transition = 'opacity 0.3s ease-in-out';
-        // Fade in the button
-        setTimeout(() => {
-          claimButton.style.opacity = '1';
-        }, 50);
-      }
-    }, 2000);
+    // Claim button is now visible immediately
     
     // Store reference for claiming
     window.currentOfflineEarnings = offlineData;
@@ -3617,10 +3605,17 @@ let prestigeInterestMultiplier = 1;
       const rankClass = rank <= 3 ? 'top-3' : '';
       const formattedScore = formatNumberShort(entry.score);
       
+      // Use display name if available, otherwise fall back to name
+      const displayName = entry.displayName || entry.name;
+      const avatar = entry.photoURL ? `<img src="${entry.photoURL}" alt="${displayName}" class="leaderboard-avatar">` : '';
+      
       return `
         <div class="leaderboard-entry">
           <span class="leaderboard-rank ${rankClass}">#${rank}</span>
-          <span class="leaderboard-name">${entry.name}</span>
+          <div class="leaderboard-user">
+            ${avatar}
+            <span class="leaderboard-name">${displayName}</span>
+          </div>
           <span class="leaderboard-score">€${formattedScore}</span>
         </div>
       `;
@@ -3630,16 +3625,17 @@ let prestigeInterestMultiplier = 1;
   async function submitScore() {
     const submitBtn = document.getElementById('submitScoreBtn');
     
-    // Check if username is set
-    if (!username || username.trim().length === 0) {
-      alert('Please set your username in Settings first!');
+    // Check if user is authenticated with Google
+    if (!currentUser) {
+      alert('Please sign in with Google first to submit your score!');
       return;
     }
 
-    // Sanitize username (remove special characters, limit length)
-    const sanitizedName = username.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 20);
+    // Use Google user's display name or email as username
+    const userDisplayName = currentUser.displayName || currentUser.email || 'Anonymous';
+    const sanitizedName = userDisplayName.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 20);
     if (sanitizedName.length < 2) {
-      alert('Username must be at least 2 characters long. Please update it in Settings.');
+      alert('Unable to get valid username from Google account. Please try signing in again.');
       return;
     }
 
@@ -3701,14 +3697,18 @@ let prestigeInterestMultiplier = 1;
       // Create new score entry with validation
       const newEntry = {
         name: sanitizedName,
+        displayName: currentUser.displayName || null,
+        email: currentUser.email || null,
+        photoURL: currentUser.photoURL || null,
+        uid: currentUser.uid, // Unique user identifier
         score: Math.round(score), // Ensure integer score
         timestamp: now,
         version: '1.0', // For future validation
         browserFingerprint: generateBrowserFingerprint() // For duplicate detection
       };
 
-      // Generate a unique key for this player (use name + timestamp for uniqueness)
-      const playerKey = `${sanitizedName.replace(/\s+/g, '_')}_${now}`;
+      // Generate a unique key for this player (use UID + timestamp for uniqueness)
+      const playerKey = `${currentUser.uid}_${now}`;
 
       // Submit to Firebase
       const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard/${playerKey}.json`, {
@@ -3726,7 +3726,7 @@ let prestigeInterestMultiplier = 1;
 
       // Update submission tracking
       localStorage.setItem('lastScoreSubmission', now.toString());
-      localStorage.setItem('playerName', sanitizedName); // Remember the name they used
+      localStorage.setItem('playerUID', currentUser.uid); // Remember the user's UID
 
       // Reload leaderboard to get updated data
       await loadLeaderboard();
@@ -3781,11 +3781,11 @@ let prestigeInterestMultiplier = 1;
     const now = Date.now();
     const cooldownPeriod = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-    // Check if username is set
-    if (!username || username.trim().length === 0) {
-      submitBtn.textContent = 'Set Username First';
+    // Check if user is authenticated with Google
+    if (!currentUser) {
+      submitBtn.textContent = 'Sign In to Submit';
       submitBtn.disabled = true;
-      submitBtn.title = 'Please set your username in Settings before submitting';
+      submitBtn.title = 'Please sign in with Google to submit your score';
       return;
     }
 
@@ -4319,8 +4319,7 @@ let prestigeInterestMultiplier = 1;
   // Number animations system
   let numberAnimationsEnabled = true;
   
-  // Username for leaderboard
-  let username = '';
+  // Username is now handled by Google authentication (currentUser.displayName or email)
 
   // Audio functions are now handled by audio.js
 
@@ -5377,18 +5376,9 @@ let prestigeInterestMultiplier = 1;
     
     // Add leaderboard event listeners
     const submitBtn = document.getElementById('submitScoreBtn');
-    const usernameInput = document.getElementById('usernameInput');
     
     if (submitBtn) {
       submitBtn.addEventListener('click', submitScore);
-    }
-    
-    if (usernameInput) {
-      usernameInput.addEventListener('input', (e) => {
-        username = e.target.value.trim();
-        saveAudioSettings();
-        updateSubmissionStatus();
-      });
     }
   }
 
@@ -5423,7 +5413,6 @@ let prestigeInterestMultiplier = 1;
     const savedSoundEffectsEnabled = localStorage.getItem('soundEffectsEnabled');
     const savedParticleEffectsEnabled = localStorage.getItem('particleEffectsEnabled');
     const savedNumberAnimationsEnabled = localStorage.getItem('numberAnimationsEnabled');
-    const savedUsername = localStorage.getItem('username');
     
     if (savedMusicEnabled !== null) {
       AudioSystem.setMusicEnabled(savedMusicEnabled === 'true');
@@ -5445,11 +5434,7 @@ let prestigeInterestMultiplier = 1;
       if (numberAnimationsToggle) numberAnimationsToggle.checked = numberAnimationsEnabled;
     }
     
-    if (savedUsername !== null) {
-      username = savedUsername;
-      const usernameInput = document.getElementById('usernameInput');
-      if (usernameInput) usernameInput.value = username;
-    }
+    // Username is now handled by Google authentication
     
     // Apply music setting on load
     if (!AudioSystem.getAudioSettings().musicEnabled) {
@@ -5466,7 +5451,7 @@ let prestigeInterestMultiplier = 1;
     localStorage.setItem('soundEffectsEnabled', AudioSystem.getAudioSettings().soundEffectsEnabled.toString());
     localStorage.setItem('particleEffectsEnabled', particleEffectsEnabled.toString());
     localStorage.setItem('numberAnimationsEnabled', numberAnimationsEnabled.toString());
-    localStorage.setItem('username', username);
+    // Username is now handled by Google authentication
   }
 
   // Apply audio settings to UI and audio
@@ -6240,6 +6225,62 @@ window.addEventListener('beforeunload', cleanup);
     panelsContainer.addEventListener('scroll', debouncedUpdateScrollIndicators, { passive: true });
     updateScrollIndicators(); // Initial call
   })();
+
+  // Game state management functions
+  function getCurrentGameState() {
+    return {
+      // Core balances
+      currentAccountBalance,
+      investmentAccountBalance,
+      
+      // Upgrades owned
+      owned: { ...owned },
+      
+      // Properties owned
+      properties: { ...properties },
+      
+      // Statistics
+      totalDividendsReceived,
+      hasMadeFirstInvestment,
+      
+      // Click streak system
+      streakCount,
+      streakMultiplier,
+      lastClickTime,
+      
+      // Prestige multipliers
+      prestigeClickMultiplier,
+      prestigeInterestMultiplier,
+      
+      // Buy multiplier
+      buyMultiplier,
+      
+      // Audio settings
+      musicEnabled: AudioSystem.getAudioSettings().musicEnabled,
+      soundEffectsEnabled: AudioSystem.getAudioSettings().soundEffectsEnabled,
+      particleEffectsEnabled,
+      numberAnimationsEnabled,
+      
+      // Auto invest settings
+      autoInvestEnabled,
+      autoRentEnabled,
+      
+      // Game difficulty
+      gameDifficulty: getGameDifficulty(),
+      
+      // Dark mode
+      darkMode: document.body.classList.contains('dark-mode'),
+      
+      // Event logs
+      eventLogs: [...eventLogs],
+      
+      // Last saved timestamp
+      lastSaved: Date.now()
+    };
+  }
+
+  // Make getCurrentGameState globally accessible
+  window.getCurrentGameState = getCurrentGameState;
 })();
 
 // PWA Install Prompt Functionality
@@ -6712,7 +6753,10 @@ function updateAuthUI() {
 }
 
 async function saveToCloud() {
-  if (!currentUser || !isFirebaseReady) return;
+  if (!currentUser || !isFirebaseReady) {
+    console.log('Cannot save to cloud: user not authenticated or Firebase not ready');
+    return;
+  }
   
   try {
     const gameState = getCurrentGameState();
@@ -6724,14 +6768,26 @@ async function saveToCloud() {
       username: currentUser.displayName || currentUser.email
     }, { merge: true });
     
-    console.log('Game saved to cloud');
+    console.log('✅ Game saved to cloud successfully');
   } catch (error) {
-    console.error('Error saving to cloud:', error);
+    console.error('❌ Error saving to cloud:', error);
+    
+    // Check if it's a network/connectivity issue
+    if (error.code === 'unavailable' || error.message.includes('offline')) {
+      console.log('🔄 Network issue detected, will retry when connection is restored');
+    } else if (error.code === 'permission-denied') {
+      console.log('🔒 Permission denied - check Firestore security rules');
+    } else {
+      console.log('❓ Unknown error:', error.code, error.message);
+    }
   }
 }
 
 async function loadCloudSave() {
-  if (!currentUser || !isFirebaseReady) return;
+  if (!currentUser || !isFirebaseReady) {
+    console.log('Cannot load from cloud: user not authenticated or Firebase not ready');
+    return;
+  }
   
   try {
     const userDocRef = window.firebaseDoc(window.firebaseDb, 'users', currentUser.uid);
@@ -6740,66 +6796,30 @@ async function loadCloudSave() {
     if (userDoc.exists()) {
       const userData = userDoc.data();
       if (userData.gameState) {
-        console.log('Loading cloud save for user:', currentUser.displayName);
+        console.log('✅ Loading cloud save for user:', currentUser.displayName);
         loadGameStateFromData(userData.gameState);
       }
     } else {
-      console.log('No cloud save found, using local save');
+      console.log('📝 No cloud save found, using local save');
       loadGameState();
     }
   } catch (error) {
-    console.error('Error loading cloud save:', error);
+    console.error('❌ Error loading cloud save:', error);
+    
+    // Check error type and provide helpful messages
+    if (error.code === 'unavailable' || error.message.includes('offline')) {
+      console.log('🔄 Network issue detected, using local save');
+    } else if (error.code === 'permission-denied') {
+      console.log('🔒 Permission denied - check Firestore security rules');
+    } else {
+      console.log('❓ Unknown error:', error.code, error.message);
+    }
+    
     // Fallback to local save
     loadGameState();
   }
 }
 
-function getCurrentGameState() {
-  return {
-    // Core balances
-    currentAccountBalance,
-    investmentAccountBalance,
-    
-    // Upgrades owned
-    owned: { ...owned },
-    
-    // Properties owned
-    properties: { ...properties },
-    
-    // Statistics
-    totalDividendsReceived,
-    hasMadeFirstInvestment,
-    
-    // Click streak system
-    streakCount,
-    streakMultiplier,
-    lastClickTime,
-    
-    // Prestige multipliers
-    prestigeClickMultiplier,
-    prestigeInterestMultiplier,
-    
-    // Buy multiplier
-    buyMultiplier,
-    
-    // Audio settings
-    musicEnabled: AudioSystem.getAudioSettings().musicEnabled,
-    soundEffectsEnabled: AudioSystem.getAudioSettings().soundEffectsEnabled,
-    
-    // Auto invest settings
-    autoInvestEnabled,
-    autoRentEnabled,
-    
-    // Game difficulty
-    gameDifficulty: getGameDifficulty(),
-    
-    // Dark mode
-    darkMode: document.body.classList.contains('dark-mode'),
-    
-    // Last saved timestamp
-    lastSaved: Date.now()
-  };
-}
 
 function loadGameStateFromData(gameState) {
   // Restore core balances

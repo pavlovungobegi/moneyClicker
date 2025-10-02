@@ -2507,9 +2507,23 @@ button#withdrawHalfBtn:focus-visible {
   color: #f59e0b;
 }
 
-.leaderboard-name {
+.leaderboard-user {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 8px;
+}
+
+.leaderboard-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e2e8f0;
+}
+
+.leaderboard-name {
   color: #374151;
   font-weight: 500;
   font-size: 14px;
@@ -4743,6 +4757,15 @@ input#amountInput:focus {
 
 .dark-mode .user-email {
   color: var(--text-secondary);
+}
+
+/* Dark mode leaderboard */
+.dark-mode .leaderboard-avatar {
+  border-color: #374151;
+}
+
+.dark-mode .leaderboard-name {
+  color: #e2e8f0;
 }
 
 
