@@ -3171,8 +3171,7 @@ let prestigeInterestMultiplier = 1;
           </div>
         </div>
         <div class="offline-earnings-actions">
-          <button class="offline-earnings-claim" onclick="claimOfflineEarnings()">Claim Earnings</button>
-          <button class="offline-earnings-close" onclick="closeOfflineEarningsPopup()">Close</button>
+          <button class="offline-earnings-claim" id="offlineClaimButton" onclick="claimOfflineEarnings()" style="display: none;">Claim Earnings</button>
         </div>
       </div>
     `;
@@ -3181,6 +3180,20 @@ let prestigeInterestMultiplier = 1;
     
     // Animate in
     setTimeout(() => popup.classList.add('show'), 100);
+    
+    // Show claim button after 2 seconds
+    setTimeout(() => {
+      const claimButton = document.getElementById('offlineClaimButton');
+      if (claimButton) {
+        claimButton.style.display = 'block';
+        claimButton.style.opacity = '0';
+        claimButton.style.transition = 'opacity 0.3s ease-in-out';
+        // Fade in the button
+        setTimeout(() => {
+          claimButton.style.opacity = '1';
+        }, 50);
+      }
+    }, 2000);
     
     // Store reference for claiming
     window.currentOfflineEarnings = offlineData;
