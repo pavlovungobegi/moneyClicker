@@ -199,7 +199,14 @@ const GAME_CONFIG = {
     u51: { cost: 750000, name: "Clicking is Love!", effect: "Adds +250 euros per click", type: "click", effects: { click_income: 250 } },
     u52: { cost: 1000000, name: "Extended Streak", effect: "Increases maximum streak multiplier to 5x", type: "streak_boost", effects: { max_streak: 5 }, requires: "u30" },
     u53: { cost: 10000, name: "Swift Clicks!", effect: "Adds +40 euros per click", type: "click", effects: { click_income: 40 } },
-    u54: { cost: 25000, name: "Click is ticking!", effect: "Adds +75 euros per click", type: "click", effects: { click_income: 75 } }
+    u54: { cost: 25000, name: "Click is ticking!", effect: "Adds +75 euros per click", type: "click", effects: { click_income: 75 } },
+    u55: { cost: 10000000, name: "Automated Gates", effect: "Doubles the income of parking garages", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "parkingGarage" },
+    u56: { cost: 50000000, name: "Self-scan checkouts", effect: "Doubles the income of convenience stores", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "convenienceStore" },
+    u57: { cost: 250000000, name: "Renovations", effect: "Doubles the income of apartments", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "apartment" },
+    u58: { cost: 1000000000, name: "Sustainable Production", effect: "Doubles the income of manufacturing plants", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "manufacturingPlant" },
+    u59: { cost: 5000000000, name: "Open Office Spaces", effect: "Doubles the income of office buildings", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "officeBuilding" },
+    u60: { cost: 25000000000, name: "Faster Elevators", effect: "Doubles the income of skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "skyscraper" },
+    u61: { cost: 100000000000, name: "Cultural Hotspot", effect: "Doubles the income of opera houses", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "operaHouse" },
   },
   
   // =============================================================================
