@@ -3646,8 +3646,19 @@ let prestigeTier = 0;
       return;
     }
 
-    // Sort by score (highest first)
-    const sortedData = [...leaderboardData].sort((a, b) => b.score - a.score);
+    // Sort by prestige tier first (highest first), then by score (highest first)
+    const sortedData = [...leaderboardData].sort((a, b) => {
+      const tierA = a.prestigeTier || 0;
+      const tierB = b.prestigeTier || 0;
+      
+      // First compare by tier (higher tier wins)
+      if (tierA !== tierB) {
+        return tierB - tierA;
+      }
+      
+      // If tiers are equal, compare by score (higher score wins)
+      return b.score - a.score;
+    });
     
     // Show top 10
     const top10 = sortedData.slice(0, 10);
@@ -3715,10 +3726,10 @@ let prestigeTier = 0;
       return;
     }
 
-    // Simple 5-minute cooldown between submissions
+    // Simple 30-second cooldown between submissions
     const lastSubmission = localStorage.getItem('lastScoreSubmission');
     const now = Date.now();
-    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const cooldownPeriod = 30 * 1000; // 30 seconds in milliseconds
     
     if (lastSubmission && (now - parseInt(lastSubmission)) < cooldownPeriod) {
       const remainingTime = Math.ceil((cooldownPeriod - (now - parseInt(lastSubmission))) / 1000);
@@ -3836,7 +3847,7 @@ let prestigeTier = 0;
 
     const lastSubmission = localStorage.getItem('lastScoreSubmission');
     const now = Date.now();
-    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const cooldownPeriod = 30 * 1000; // 30 seconds in milliseconds
 
     // Check if user is authenticated with Google
     if (!currentUser) {
