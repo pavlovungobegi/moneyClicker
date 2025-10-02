@@ -1259,7 +1259,40 @@ let prestigeTier = 0;
     );
     Object.entries(map).forEach(([key, el]) => {
       if (!el) return;
-      let cost = UPGRADE_COSTS[key];
+      
+      // Special handling for prestige reset upgrade
+      if (key === 'u26') {
+        if (prestigeTier >= 26) {
+          el.textContent = 'MAX PRESTIGE';
+          el.style.color = '#ef4444';
+          el.style.fontWeight = 'bold';
+          return;
+        }
+        // Show next tier cost for prestige reset
+        const nextTierName = getPrestigeTierName(prestigeTier + 1);
+        let cost = getUpgradeCost(key);
+        
+        // Apply Flash Sale discount
+        if (flashSaleActive()) {
+          cost = cost * 0.75; // 25% off
+        }
+        
+        if (numberAnimator) {
+          // Parse current value from element text
+          const currentValue = parseDisplayedValue(el.textContent);
+          
+          // Animate to new cost
+          numberAnimator.animateValue(el, currentValue, cost, 300, animationFormatters.currency);
+        } else {
+          // Fallback to instant update
+          el.textContent = `€${formatNumberShort(cost)} (${nextTierName})`;
+        }
+        el.style.color = '';
+        el.style.fontWeight = '';
+        return;
+      }
+      
+      let cost = getUpgradeCost(key);
       
       // Apply Flash Sale discount
       if (flashSaleActive()) {
@@ -1728,6 +1761,9 @@ let prestigeTier = 0;
     // Apply property-specific rent income boosts
     const propertyRentMultiplier = getPropertySpecificRentMultiplier(propertyId);
     baseIncome *= propertyRentMultiplier;
+    
+    // Apply prestige multiplier to property income
+    baseIncome *= prestigeInterestMultiplier;
     
     // Debug logging
     /*
@@ -3048,7 +3084,10 @@ let prestigeTier = 0;
     if (owned.u10) {
       // Calculate dividend payout using the same logic as tickDividends
       const speedMultiplier = 1 - getUpgradeEffectTotal('dividend_speed');
-      const rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
+      let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
+      
+      // Apply prestige multiplier to dividend rate
+      rateMultiplier *= prestigeInterestMultiplier;
       
       // Market event effects on dividend rate
       let marketRateMultiplier = 1;
@@ -3331,15 +3370,18 @@ let prestigeTier = 0;
         streakCount = gameState.streakCount || 0;
         streakMultiplier = gameState.streakMultiplier || 1;
         
-        // Restore prestige multipliers
+        // Restore prestige multipliers and tier
         console.log('Loading game state - prestige multipliers:', {
           saved_click: gameState.prestigeClickMultiplier,
           saved_interest: gameState.prestigeInterestMultiplier,
+          saved_tier: gameState.prestigeTier,
           before_click: prestigeClickMultiplier,
-          before_interest: prestigeInterestMultiplier
+          before_interest: prestigeInterestMultiplier,
+          before_tier: prestigeTier
         });
         prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
         prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
+        prestigeTier = gameState.prestigeTier || 0;
         console.log('After loading - prestige multipliers:', {
           click: prestigeClickMultiplier,
           interest: prestigeInterestMultiplier
@@ -3591,6 +3633,8 @@ let prestigeTier = 0;
     AudioSystem.setMusicEnabled(true);
     AudioSystem.setSoundEffectsEnabled(true);
     
+    // Save the reset state before reloading
+    saveGameState();
     
     // Refresh the page to start fresh
     window.location.reload();
@@ -3609,8 +3653,8 @@ let prestigeTier = 0;
   // Leaderboard functions - Firebase Realtime Database
   async function loadLeaderboard() {
     try {
-      // Simple fetch without query parameters first
-      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json`);
+      // Add timestamp to prevent caching issues
+      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json?t=${Date.now()}`);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -3621,9 +3665,20 @@ let prestigeTier = 0;
       const data = await response.json();
       
       if (data && Object.keys(data).length > 0) {
-        // Convert Firebase object to array and sort by score (highest first)
+        // Convert Firebase object to array and sort by tier first, then score (highest first)
         leaderboardData = Object.values(data)
-          .sort((a, b) => b.score - a.score)
+          .sort((a, b) => {
+            const tierA = a.prestigeTier || 0;
+            const tierB = b.prestigeTier || 0;
+            
+            // First compare by tier (higher tier wins)
+            if (tierA !== tierB) {
+              return tierB - tierA;
+            }
+            
+            // If tiers are equal, compare by score (higher score wins)
+            return b.score - a.score;
+          })
           .slice(0, 50); // Take top 50
       } else {
         leaderboardData = [];
@@ -3675,7 +3730,7 @@ let prestigeTier = 0;
       
       // Add prestige tier display if available
       const prestigeDisplay = entry.prestigeTier && entry.prestigeTier > 0 ? 
-        `<span class="leaderboard-prestige">T${entry.prestigeTier}</span>` : '';
+        `<span class="leaderboard-prestige">${getPrestigeTierName(entry.prestigeTier)}</span>` : '';
       
       return `
         <div class="leaderboard-entry">
@@ -4402,6 +4457,55 @@ let prestigeTier = 0;
     Object.entries(UPGRADE_CONFIG).map(([id, config]) => [id, config.cost])
   );
 
+  // Function to get dynamic prestige reset cost based on current tier
+  function getPrestigeResetCost() {
+    // Max prestige tier is 30 (1zz), after that no more resets
+    if (prestigeTier >= 30) {
+      return Infinity; // No more prestige resets possible
+    }
+    
+    // Cost progression: 1t, 1aa, 1bb, 1cc, 1dd, 1ee, 1ff, 1gg, 1hh, 1ii, 1jj, 1kk, 1ll, 1mm, 1nn, 1oo, 1pp, 1qq, 1rr, 1ss, 1tt, 1uu, 1vv, 1ww, 1xx, 1yy, 1zz
+    const costProgression = [
+      1000000000000,    // 1t (1 trillion) - tier 0
+      1000000000000000, // 1aa (1 quadrillion) - tier 1
+      1000000000000000000, // 1bb - tier 2
+      1000000000000000000000, // 1cc - tier 3
+      1000000000000000000000000, // 1dd - tier 4
+      1000000000000000000000000000, // 1ee - tier 5
+      1000000000000000000000000000000, // 1ff - tier 6
+      1000000000000000000000000000000000, // 1gg - tier 7
+      1000000000000000000000000000000000000, // 1hh - tier 8
+      1000000000000000000000000000000000000000, // 1ii - tier 9
+      1000000000000000000000000000000000000000000, // 1jj - tier 10
+      1000000000000000000000000000000000000000000000, // 1kk - tier 11
+      1000000000000000000000000000000000000000000000000, // 1ll - tier 12
+      1000000000000000000000000000000000000000000000000000, // 1mm - tier 13
+      1000000000000000000000000000000000000000000000000000000, // 1nn - tier 14
+      1000000000000000000000000000000000000000000000000000000000, // 1oo - tier 15
+      1000000000000000000000000000000000000000000000000000000000000, // 1pp - tier 16
+      1000000000000000000000000000000000000000000000000000000000000000, // 1qq - tier 17
+      1000000000000000000000000000000000000000000000000000000000000000000, // 1rr - tier 18
+      1000000000000000000000000000000000000000000000000000000000000000000000, // 1ss - tier 19
+      1000000000000000000000000000000000000000000000000000000000000000000000000, // 1tt - tier 20
+      1000000000000000000000000000000000000000000000000000000000000000000000000000, // 1uu - tier 21
+      1000000000000000000000000000000000000000000000000000000000000000000000000000000, // 1vv - tier 22
+      1000000000000000000000000000000000000000000000000000000000000000000000000000000000, // 1ww - tier 23
+      1000000000000000000000000000000000000000000000000000000000000000000000000000000000000, // 1xx - tier 24
+      1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, // 1yy - tier 25
+      1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000, // 1zz - tier 26
+    ];
+    
+    return costProgression[prestigeTier] || Infinity;
+  }
+
+  // Function to get upgrade cost (with dynamic prestige reset cost)
+  function getUpgradeCost(upgradeId) {
+    if (upgradeId === 'u26') {
+      return getPrestigeResetCost();
+    }
+    return UPGRADE_COSTS[upgradeId];
+  }
+
   // Helper functions to calculate upgrade effects dynamically
   function getUpgradeEffectTotal(effectType) {
     let total = 0;
@@ -4561,7 +4665,7 @@ let prestigeTier = 0;
       return;
     }
     
-    let cost = UPGRADE_COSTS[key];
+    let cost = getUpgradeCost(key);
     
     // Apply Flash Sale discount
     if (flashSaleActive()) {
@@ -4575,13 +4679,20 @@ let prestigeTier = 0;
 
     // Special handling for prestige reset (u26)
     if (key === "u26") {
+      // Check if max prestige reached
+      if (prestigeTier >= 26) {
+        alert("You have reached the maximum prestige level (1zz). No more prestige resets are possible!");
+        AudioSystem.playErrorSound();
+        return;
+      }
+      
       if (confirm("Are you sure you want to reset everything? This will give you permanent +25% multipliers but reset all money and upgrades.")) {
         // Increment prestige tier
         prestigeTier++;
         
-        // Apply permanent multipliers
-        prestigeClickMultiplier *= 1.25;
-        prestigeInterestMultiplier *= 1.25;
+        // Apply permanent multipliers (linear growth: +0.25 each time)
+        prestigeClickMultiplier += 0.25;
+        prestigeInterestMultiplier += 0.25;
         
         // Create prestige reset particle effects
         if (particleSystem) {
@@ -4630,6 +4741,7 @@ let prestigeTier = 0;
         // Update UI
         renderBalances();
         renderUpgradesOwned();
+        renderUpgradePrices(); // Update upgrade prices (including prestige reset cost)
         renderPrestigeMultipliers();
         sortUpgradesByCost();
         renderInvestmentUnlocked();
@@ -4805,7 +4917,8 @@ let prestigeTier = 0;
     if (!indicator) return;
     
     // Check if any upgrade is affordable using only current account balance
-    const hasAffordableUpgrade = Object.entries(UPGRADE_COSTS).some(([upgradeId, cost]) => {
+    const hasAffordableUpgrade = Object.keys(UPGRADE_CONFIG).some((upgradeId) => {
+      const cost = getUpgradeCost(upgradeId);
       if (owned[upgradeId]) return false;
       
       // Check if upgrade has requirements that aren't met
@@ -4900,6 +5013,9 @@ let prestigeTier = 0;
     
     // Calculate rate multipliers (stack multiplicatively)
     let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
+    
+    // Apply prestige multiplier to dividend rate
+    rateMultiplier *= prestigeInterestMultiplier;
     
     // Market event effects on dividend rate
     if (marketBoomActive()) {
@@ -5010,6 +5126,9 @@ let prestigeTier = 0;
       
       let rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
       
+      // Apply prestige multiplier to dividend rate
+      rateMultiplier *= prestigeInterestMultiplier;
+      
       // Market event effects on dividend rate
       if (marketBoomActive()) {
         rateMultiplier *= 1.5; // +50% during boom
@@ -5088,12 +5207,21 @@ let prestigeTier = 0;
       // Use the higher of the two multipliers for display
       const displayMultiplier = Math.max(prestigeClickMultiplier, prestigeInterestMultiplier);
       if (prestigeTier > 0) {
-        prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x (Tier ${prestigeTier})`;
+        const tierName = getPrestigeTierName(prestigeTier);
+        prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x (${tierName})`;
       } else {
         prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x`;
       }
     }
   }
+
+  // Function to get prestige tier name based on tier number
+  function getPrestigeTierName(tier) {
+    return `T${tier}`;
+  }
+
+  // Make getPrestigeTierName globally accessible
+  window.getPrestigeTierName = getPrestigeTierName;
 
   function renderAutoInvestSection() {
     if (!autoInvestSection) return;
@@ -5107,11 +5235,11 @@ let prestigeTier = 0;
 
   function updateProgressBars() {
     // Update progress for all upgrades that have progress bars
-    Object.keys(UPGRADE_COSTS).forEach(upgradeId => {
+    Object.keys(UPGRADE_CONFIG).forEach(upgradeId => {
       if (owned[upgradeId]) return; // Skip if already owned
       
       // Get the current price (including flash sale discounts)
-      let cost = UPGRADE_COSTS[upgradeId];
+      let cost = getUpgradeCost(upgradeId);
       
       // Apply Flash Sale discount (same logic as renderUpgradePrices)
       if (flashSaleActive()) {

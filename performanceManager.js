@@ -289,12 +289,16 @@
     
     calculatePropertyIncomeSync(data) {
       // Simplified synchronous calculation
+      const { prestigeInterestMultiplier = 1 } = data;
       let totalIncome = 0;
       for (const [propertyId, count] of Object.entries(data.properties)) {
         if (count > 0) {
           const propertyConfig = data.propertyConfigs[propertyId];
           if (propertyConfig) {
-            totalIncome += count * propertyConfig.incomePerSecond;
+            let income = count * propertyConfig.incomePerSecond;
+            // Apply prestige multiplier to property income
+            income *= prestigeInterestMultiplier;
+            totalIncome += income;
           }
         }
       }

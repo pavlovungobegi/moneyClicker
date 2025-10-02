@@ -54,7 +54,7 @@ self.onmessage = function(e) {
 
 // Property income calculation
 function calculatePropertyIncome(data) {
-  const { properties, owned, upgrades } = data;
+  const { properties, owned, upgrades, prestigeInterestMultiplier = 1 } = data;
   let totalIncome = 0;
   
   for (const [propertyId, count] of Object.entries(properties)) {
@@ -74,6 +74,9 @@ function calculatePropertyIncome(data) {
             }
           }
         }
+        
+        // Apply prestige multiplier to property income
+        income *= prestigeInterestMultiplier;
         
         totalIncome += income;
       }
