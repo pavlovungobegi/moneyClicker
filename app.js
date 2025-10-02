@@ -3675,21 +3675,18 @@ let prestigeInterestMultiplier = 1;
     submitBtn.textContent = 'Submitting...';
 
     try {
-      // Check if this name already exists in leaderboard
+      // Check if this user already has a score in leaderboard
       const existingResponse = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json`);
+      let existingEntryKey = null;
       if (existingResponse.ok) {
         const existingData = await existingResponse.json();
         if (existingData) {
-          const existingEntries = Object.values(existingData);
-          const nameExists = existingEntries.some(entry => 
-            entry.name.toLowerCase() === sanitizedName.toLowerCase()
-          );
-          
-          if (nameExists) {
-            alert('This name is already taken on the leaderboard. Please choose a different name.');
-            submitBtn.textContent = 'Submit Score';
-            submitBtn.disabled = false;
-            return;
+          // Look for existing entry by UID
+          for (const [key, entry] of Object.entries(existingData)) {
+            if (entry.uid === currentUser.uid) {
+              existingEntryKey = key;
+              break;
+            }
           }
         }
       }
@@ -3707,10 +3704,10 @@ let prestigeInterestMultiplier = 1;
         browserFingerprint: generateBrowserFingerprint() // For duplicate detection
       };
 
-      // Generate a unique key for this player (use UID + timestamp for uniqueness)
-      const playerKey = `${currentUser.uid}_${now}`;
+      // Use existing key if updating, or create new key if inserting
+      const playerKey = existingEntryKey || `${currentUser.uid}_${now}`;
 
-      // Submit to Firebase
+      // Submit to Firebase (PUT will update existing or create new)
       const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard/${playerKey}.json`, {
         method: 'PUT',
         headers: {
@@ -3732,7 +3729,8 @@ let prestigeInterestMultiplier = 1;
       await loadLeaderboard();
       
       // Show success message
-      submitBtn.textContent = 'Submitted!';
+      const isUpdate = existingEntryKey !== null;
+      submitBtn.textContent = isUpdate ? 'Score Updated!' : 'Submitted!';
       setTimeout(() => {
         submitBtn.textContent = 'Submit Score';
         submitBtn.disabled = false;
