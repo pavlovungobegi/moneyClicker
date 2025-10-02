@@ -10,6 +10,12 @@ const GAME_CONFIG = {
   // Game loop timing
   TICK_MS: 1000, // Main game loop interval in milliseconds
   
+  // Offline earnings configuration
+  OFFLINE_EARNINGS: {
+    MAX_OFFLINE_HOURS: 24, // Maximum hours to calculate offline earnings (prevents abuse)
+    MIN_OFFLINE_MINUTES: 0.25, // Minimum minutes offline to show earnings popup (15 seconds)
+  },
+  
   // Animation performance
   ANIMATION: {
     TARGET_FPS: 60,

@@ -29,7 +29,7 @@ let prestigeInterestMultiplier = 1;
   // Property income caching for performance optimization
   let cachedPropertyIncome = 0;
   let propertyIncomeCacheValid = false;
-  
+
   // Enhanced caching with performance manager
   function getCachedPropertyIncome() {
     if (performanceManager && typeof performanceManager.getCache === 'function') {
@@ -98,10 +98,10 @@ let prestigeInterestMultiplier = 1;
         timeSinceMainGame: now - lastMainGameTick,
         timeSinceEvents: now - lastEventCheck,
         timeSinceSave: now - lastSave
-      });
+        });
+      }
     }
-  }
-  
+    
   // Check interval health every 30 seconds
   setInterval(checkIntervalHealth, 30000);
   
@@ -225,7 +225,7 @@ let prestigeInterestMultiplier = 1;
         if (config) {
           const income = getPropertyTotalIncome(propertyId);
           console.log(`Income for ${propertyId}: ${income}`);
-        } else {
+            } else {
           console.log(`No config found for ${propertyId}`);
         }
       }
@@ -2950,11 +2950,297 @@ let prestigeInterestMultiplier = 1;
         lastSaved: Date.now()
       };
       
+      console.log('🔍 [OFFLINE DEBUG] Saving game state with timestamp:', gameState.lastSaved, new Date(gameState.lastSaved));
       localStorage.setItem('moneyClicker_gameState', JSON.stringify(gameState));
       console.log('Game state saved successfully');
     } catch (error) {
       console.warn('Could not save game state:', error);
     }
+  }
+
+  // Offline earnings system
+  function calculateOfflineEarnings(lastSavedTime) {
+    console.log('🔍 [OFFLINE DEBUG] calculateOfflineEarnings called');
+    console.log('🔍 [OFFLINE DEBUG] lastSavedTime:', lastSavedTime, new Date(lastSavedTime));
+    
+    const now = Date.now();
+    const timeOffline = now - lastSavedTime;
+    console.log('🔍 [OFFLINE DEBUG] now:', now, new Date(now));
+    console.log('🔍 [OFFLINE DEBUG] timeOffline:', timeOffline, 'ms (', Math.floor(timeOffline / 1000), 'seconds )');
+    
+    // Don't calculate if less than minimum offline time
+    const minOfflineMs = GAME_CONFIG.OFFLINE_EARNINGS.MIN_OFFLINE_MINUTES * 60 * 1000;
+    console.log('🔍 [OFFLINE DEBUG] minOfflineMs:', minOfflineMs, 'ms (', GAME_CONFIG.OFFLINE_EARNINGS.MIN_OFFLINE_MINUTES, 'minutes )');
+    
+    if (timeOffline < minOfflineMs) {
+      console.log('🔍 [OFFLINE DEBUG] Time offline too short, returning null');
+      return null;
+    }
+    
+    // Cap offline earnings to prevent abuse
+    const maxOfflineMs = GAME_CONFIG.OFFLINE_EARNINGS.MAX_OFFLINE_HOURS * 60 * 60 * 1000;
+    const cappedTimeOffline = Math.min(timeOffline, maxOfflineMs);
+    console.log('🔍 [OFFLINE DEBUG] maxOfflineMs:', maxOfflineMs, 'ms (', GAME_CONFIG.OFFLINE_EARNINGS.MAX_OFFLINE_HOURS, 'hours )');
+    console.log('🔍 [OFFLINE DEBUG] cappedTimeOffline:', cappedTimeOffline, 'ms');
+    
+    // Calculate offline time in seconds (using capped time for calculations)
+    const secondsOffline = Math.floor(cappedTimeOffline / 1000);
+    const actualSecondsOffline = Math.floor(timeOffline / 1000);
+    console.log('🔍 [OFFLINE DEBUG] secondsOffline (capped):', secondsOffline);
+    console.log('🔍 [OFFLINE DEBUG] actualSecondsOffline:', actualSecondsOffline);
+    
+    // Calculate property income per second (force fresh calculation for offline earnings)
+    // Temporarily invalidate cache to ensure fresh calculation
+    const originalCacheValid = propertyIncomeCacheValid;
+    propertyIncomeCacheValid = false;
+    const propertyIncomePerSecond = getTotalPropertyIncome();
+    propertyIncomeCacheValid = originalCacheValid; // Restore original state
+    console.log('🔍 [OFFLINE DEBUG] propertyIncomePerSecond:', propertyIncomePerSecond);
+    
+    // Debug: Check if we have any properties
+    let totalProperties = 0;
+    Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
+      const count = properties[propertyId];
+      if (count > 0) {
+        totalProperties += count;
+        console.log(`🔍 [OFFLINE DEBUG] Property ${propertyId}: ${count} owned`);
+      }
+    });
+    console.log('🔍 [OFFLINE DEBUG] Total properties owned:', totalProperties);
+    
+    // Calculate total property income while offline
+    const totalPropertyIncome = propertyIncomePerSecond * secondsOffline;
+    console.log('🔍 [OFFLINE DEBUG] totalPropertyIncome:', totalPropertyIncome);
+    
+    // Calculate investment compound interest while offline
+    let totalInvestmentIncome = 0;
+    console.log('🔍 [OFFLINE DEBUG] investmentAccountBalance:', investmentAccountBalance);
+    if (investmentAccountBalance > 0) {
+      const interestRate = getInterestRate();
+      console.log('🔍 [OFFLINE DEBUG] interestRate (hourly):', interestRate);
+      const hoursOffline = secondsOffline / 3600;
+      const compoundMultiplier = Math.pow(1 + (interestRate / 100), hoursOffline); // Hourly compounding
+      const newBalance = investmentAccountBalance * compoundMultiplier;
+      totalInvestmentIncome = newBalance - investmentAccountBalance;
+      console.log('🔍 [OFFLINE DEBUG] hoursOffline:', hoursOffline);
+      console.log('🔍 [OFFLINE DEBUG] compoundMultiplier:', compoundMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] newBalance:', newBalance);
+      console.log('🔍 [OFFLINE DEBUG] totalInvestmentIncome:', totalInvestmentIncome);
+    }
+    
+    // Calculate dividend income while offline (if dividend upgrade u10 is owned)
+    let totalDividendIncome = 0;
+    console.log('🔍 [OFFLINE DEBUG] owned.u10 (dividend upgrade):', owned.u10);
+    if (owned.u10) {
+      // Calculate dividend payout using the same logic as tickDividends
+      const speedMultiplier = 1 - getUpgradeEffectTotal('dividend_speed');
+      const rateMultiplier = getUpgradeEffectMultiplier('dividend_rate');
+      
+      // Market event effects on dividend rate
+      let marketRateMultiplier = 1;
+      if (marketBoomActive()) {
+        marketRateMultiplier = 1.5; // +50% during boom
+      } else if (marketCrashActive()) {
+        marketRateMultiplier = 0.3; // -70% during crash
+      } else if (greatDepressionActive()) {
+        marketRateMultiplier = 0; // No dividends during depression
+      }
+      
+      const interval = Math.floor(BASE_DIVIDEND_INTERVAL_MS * speedMultiplier);
+      const rate = BASE_DIVIDEND_RATE * rateMultiplier * marketRateMultiplier;
+      
+      // Calculate how many dividend payouts would occur during offline time
+      const dividendPayouts = Math.floor((secondsOffline * 1000) / interval);
+      totalDividendIncome = dividendPayouts * (investmentAccountBalance * rate);
+      
+      console.log('🔍 [OFFLINE DEBUG] dividend calculation:');
+      console.log('🔍 [OFFLINE DEBUG] - speedMultiplier:', speedMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] - rateMultiplier:', rateMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] - marketRateMultiplier:', marketRateMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] - interval:', interval, 'ms');
+      console.log('🔍 [OFFLINE DEBUG] - rate:', rate);
+      console.log('🔍 [OFFLINE DEBUG] - dividendPayouts:', dividendPayouts);
+      console.log('🔍 [OFFLINE DEBUG] - totalDividendIncome:', totalDividendIncome);
+    }
+    
+    // Safety check for Infinity values
+    const safeInvestmentIncome = isFinite(totalInvestmentIncome) ? totalInvestmentIncome : 0;
+    const safeDividendIncome = isFinite(totalDividendIncome) ? totalDividendIncome : 0;
+    const totalIncome = totalPropertyIncome + safeInvestmentIncome + safeDividendIncome;
+    const wasCapped = timeOffline > maxOfflineMs;
+    
+    console.log('🔍 [OFFLINE DEBUG] FINAL CALCULATION:');
+    console.log('🔍 [OFFLINE DEBUG] - totalPropertyIncome:', totalPropertyIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalInvestmentIncome (raw):', totalInvestmentIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalInvestmentIncome (safe):', safeInvestmentIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalDividendIncome:', totalDividendIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalIncome:', totalIncome);
+    console.log('🔍 [OFFLINE DEBUG] - wasCapped:', wasCapped);
+    
+    return {
+      timeOffline,
+      secondsOffline: actualSecondsOffline, // Use actual time for display
+      propertyIncome: totalPropertyIncome,
+      investmentIncome: safeInvestmentIncome,
+      dividendIncome: safeDividendIncome,
+      totalIncome: totalIncome,
+      wasCapped: wasCapped
+    };
+  }
+  
+  function getInterestRate() {
+    // Convert per-tick multiplier to hourly percentage rate (more reasonable for offline calculations)
+    const perTickMultiplier = getCompoundMultiplierPerTick();
+    const perSecondMultiplier = Math.pow(perTickMultiplier, 1000 / TICK_MS);
+    const hourlyMultiplier = Math.pow(perSecondMultiplier, 3600); // 1 hour = 3600 seconds
+    const hourlyRate = (hourlyMultiplier - 1) * 100;
+    
+    console.log('🔍 [OFFLINE DEBUG] getInterestRate calculation:');
+    console.log('🔍 [OFFLINE DEBUG] - perTickMultiplier:', perTickMultiplier);
+    console.log('🔍 [OFFLINE DEBUG] - perSecondMultiplier:', perSecondMultiplier);
+    console.log('🔍 [OFFLINE DEBUG] - hourlyMultiplier:', hourlyMultiplier);
+    console.log('🔍 [OFFLINE DEBUG] - hourlyRate:', hourlyRate);
+    
+    return hourlyRate;
+  }
+  
+  function hasDividendUpgrades() {
+    // Check if any dividend-related upgrades are owned
+    return Object.keys(owned).some(key => 
+      key.startsWith('u') && UPGRADE_CONFIG[key] && 
+      (UPGRADE_CONFIG[key].type === 'dividend_boost' || 
+       UPGRADE_CONFIG[key].type === 'dividend_rate')
+    );
+  }
+  
+  function getDividendRate() {
+    let totalRate = 0;
+    Object.keys(owned).forEach(key => {
+      if (UPGRADE_CONFIG[key] && UPGRADE_CONFIG[key].type === 'dividend_rate') {
+        totalRate += UPGRADE_CONFIG[key].value || 0;
+      }
+    });
+    return totalRate;
+  }
+  
+  function formatOfflineTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${remainingSeconds}s`;
+    } else {
+      return `${remainingSeconds}s`;
+    }
+  }
+  
+  function showOfflineEarningsPopup(offlineData) {
+    console.log('🔍 [OFFLINE DEBUG] showOfflineEarningsPopup called with:', offlineData);
+    const popup = document.createElement('div');
+    popup.className = 'offline-earnings-popup';
+    popup.innerHTML = `
+      <div class="offline-earnings-content">
+        <div class="offline-earnings-header">
+          <h3>💰 Welcome Back!</h3>
+          <p>You were offline for <strong>${formatOfflineTime(offlineData.secondsOffline)}</strong></p>
+          ${offlineData.wasCapped ? '<p class="capped-notice">⚠️ Earnings capped at 24 hours maximum</p>' : ''}
+        </div>
+        <div class="offline-earnings-breakdown">
+          <div class="earnings-item">
+            <span class="earnings-label">🏠 Property Income:</span>
+            <span class="earnings-amount">€${formatNumberShort(offlineData.propertyIncome)}</span>
+          </div>
+          ${offlineData.investmentIncome > 0 ? `
+          <div class="earnings-item">
+            <span class="earnings-label">📈 Investment Growth:</span>
+            <span class="earnings-amount">€${formatNumberShort(offlineData.investmentIncome)}</span>
+          </div>
+          ` : ''}
+          ${offlineData.dividendIncome > 0 ? `
+          <div class="earnings-item">
+            <span class="earnings-label">💎 Dividends:</span>
+            <span class="earnings-amount">€${formatNumberShort(offlineData.dividendIncome)}</span>
+          </div>
+          ` : ''}
+          <div class="earnings-total">
+            <span class="earnings-label">💰 Total Earned:</span>
+            <span class="earnings-amount">€${formatNumberShort(offlineData.totalIncome)}</span>
+          </div>
+        </div>
+        <div class="offline-earnings-actions">
+          <button class="offline-earnings-claim" onclick="claimOfflineEarnings()">Claim Earnings</button>
+          <button class="offline-earnings-close" onclick="closeOfflineEarningsPopup()">Close</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Animate in
+    setTimeout(() => popup.classList.add('show'), 100);
+    
+    // Store reference for claiming
+    window.currentOfflineEarnings = offlineData;
+    window.offlineEarningsClaimed = false; // Reset claimed flag for new popup
+  }
+  
+  function claimOfflineEarnings() {
+    if (!window.currentOfflineEarnings) {
+      console.log('🔍 [OFFLINE DEBUG] No offline earnings to claim');
+      return;
+    }
+    
+    // Prevent multiple claims
+    if (window.offlineEarningsClaimed) {
+      console.log('🔍 [OFFLINE DEBUG] Offline earnings already claimed');
+      return;
+    }
+    
+    window.offlineEarningsClaimed = true;
+    const earnings = window.currentOfflineEarnings;
+    
+    console.log('🔍 [OFFLINE DEBUG] Claiming earnings - adding all to current account:');
+    console.log('🔍 [OFFLINE DEBUG] - propertyIncome:', earnings.propertyIncome);
+    console.log('🔍 [OFFLINE DEBUG] - investmentIncome:', earnings.investmentIncome);
+    console.log('🔍 [OFFLINE DEBUG] - dividendIncome:', earnings.dividendIncome);
+    console.log('🔍 [OFFLINE DEBUG] - totalIncome:', earnings.totalIncome);
+    
+    // Add all earnings to current account (simplified)
+    currentAccountBalance += earnings.totalIncome;
+    
+    // Update UI
+    renderBalances();
+    renderInvestmentUnlocked();
+    
+    // Play success sound
+    if (AudioSystem.getAudioSettings().soundEnabled) {
+      AudioSystem.playSuccessSound();
+    }
+    
+    // Close popup
+    closeOfflineEarningsPopup();
+    
+    // Save game state
+    saveGameState();
+    
+    console.log('Offline earnings claimed:', earnings);
+  }
+  
+  function closeOfflineEarningsPopup() {
+    const popup = document.querySelector('.offline-earnings-popup');
+    if (popup) {
+      popup.classList.remove('show');
+      setTimeout(() => {
+        if (popup.parentNode) {
+          popup.remove();
+        }
+      }, 300);
+    }
+    window.currentOfflineEarnings = null;
+    window.offlineEarningsClaimed = false; // Reset claimed flag
   }
 
   function loadGameState() {
@@ -3104,6 +3390,27 @@ let prestigeInterestMultiplier = 1;
         // Apply audio settings after loading game state
         applyAudioSettings();
         
+        // Check for offline earnings
+        console.log('🔍 [OFFLINE DEBUG] Checking for offline earnings...');
+        console.log('🔍 [OFFLINE DEBUG] gameState.lastSaved:', gameState.lastSaved);
+        if (gameState.lastSaved) {
+          console.log('🔍 [OFFLINE DEBUG] lastSaved exists, calling calculateOfflineEarnings...');
+          const offlineEarnings = calculateOfflineEarnings(gameState.lastSaved);
+          console.log('🔍 [OFFLINE DEBUG] calculateOfflineEarnings returned:', offlineEarnings);
+          if (offlineEarnings && offlineEarnings.totalIncome > 0) {
+            console.log('🔍 [OFFLINE DEBUG] Valid offline earnings found, showing popup in 1 second...');
+            // Show offline earnings popup after a short delay to ensure UI is ready
+            setTimeout(() => {
+              console.log('🔍 [OFFLINE DEBUG] Showing offline earnings popup now...');
+              showOfflineEarningsPopup(offlineEarnings);
+            }, 1000);
+          } else {
+            console.log('🔍 [OFFLINE DEBUG] No valid offline earnings (null or totalIncome <= 0)');
+          }
+        } else {
+          console.log('🔍 [OFFLINE DEBUG] No lastSaved timestamp found in game state');
+        }
+        
         return true;
       }
     } catch (error) {
@@ -3175,6 +3482,10 @@ let prestigeInterestMultiplier = 1;
   window.saveGameState = saveGameState;
   window.loadGameState = loadGameState;
   window.resetGameState = resetGameState;
+  
+  // Make offline earnings functions globally available
+  window.claimOfflineEarnings = claimOfflineEarnings;
+  window.closeOfflineEarningsPopup = closeOfflineEarningsPopup;
 
   // Hard Reset functionality
   function performHardReset() {
@@ -4761,20 +5072,20 @@ let prestigeInterestMultiplier = 1;
       try {
         lastMainGameTick = Date.now();
         
-        // Investment compounding: multiply per tick, boosted by upgrades
-        if (investmentAccountBalance > 0) {
-          const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
-          const growth = grown - investmentAccountBalance;
+    // Investment compounding: multiply per tick, boosted by upgrades
+    if (investmentAccountBalance > 0) {
+      const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
+      const growth = grown - investmentAccountBalance;
           investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
           renderEngine?.markDirty('balances');
-        }
+    }
 
         // Property income - always use sync calculation for now to ensure it works
-        const propertyIncome = getTotalPropertyIncome();
-        if (propertyIncome > 0) {
-          if (autoRentEnabled) {
+    const propertyIncome = getTotalPropertyIncome();
+    if (propertyIncome > 0) {
+      if (autoRentEnabled) {
             investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-          } else {
+      } else {
             currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
           }
           renderEngine?.markDirty('balances');
@@ -4790,7 +5101,7 @@ let prestigeInterestMultiplier = 1;
         }
 
         // Dividends
-        tickDividends(TICK_MS);
+    tickDividends(TICK_MS);
         renderEngine?.markDirty('dividendUI');
         
         // Mark UI elements as dirty based on active tab
@@ -4863,39 +5174,39 @@ let prestigeInterestMultiplier = 1;
 
         // Dividends
         tickDividends(TICK_MS);
-        renderBalances();
-        
-        // Only render active tab content for performance
-        switch(activeTab) {
-          case 'earn':
-            renderDividendUI(TICK_MS);
-            renderInvestmentUnlocked();
-            renderPrestigeMultipliers();
-            renderAutoInvestSection();
-            renderAutoRentSection();
-            renderClickStreak();
+    renderBalances();
+    
+    // Only render active tab content for performance
+    switch(activeTab) {
+      case 'earn':
+    renderDividendUI(TICK_MS);
+    renderInvestmentUnlocked();
+    renderPrestigeMultipliers();
+    renderAutoInvestSection();
+        renderAutoRentSection();
+    renderClickStreak();
             renderRentIncome();
-            break;
-          case 'upgrades':
-            renderUpgradesOwned();
-            break;
-          case 'portfolio':
-            renderAllProperties();
-            break;
-        }
-        
-        // Always update these (needed for indicators and events)
-        updateActiveEventDisplay();
+        break;
+      case 'upgrades':
+        renderUpgradesOwned();
+        break;
+      case 'portfolio':
+        renderAllProperties();
+        break;
+    }
+    
+    // Always update these (needed for indicators and events)
+    updateActiveEventDisplay();
         checkExpiredEvents();
-        checkStreakTimeout();
-        updateUpgradeIndicator();
-        updatePortfolioIndicator();
-        updateProgressBars();
+    checkStreakTimeout();
+    updateUpgradeIndicator();
+    updatePortfolioIndicator();
+    updateProgressBars();
         checkAchievementsOptimized();
       } catch (error) {
         console.error('Error in legacy game loop:', error);
       }
-    }, TICK_MS);
+  }, TICK_MS);
     
     // Store reference for cleanup
     window.mainGameInterval = mainGameInterval;
@@ -4909,7 +5220,7 @@ let prestigeInterestMultiplier = 1;
       gameEngine.scheduleRecurringEvent('eventsCheck', (deltaTime) => {
         try {
           lastEventCheck = Date.now();
-          checkEvents();
+    checkEvents();
         } catch (error) {
           console.error('Error in event-driven events check:', error);
         }
@@ -4950,7 +5261,28 @@ let prestigeInterestMultiplier = 1;
   }
 
   function initializeGame() {
-  // Initialize performance systems first
+  // Load saved game state first (after DOM elements are ready)
+  const gameStateLoaded = loadGameState();
+  
+  // Initialize achievementsBannerShown for already unlocked achievements (prevent notifications on load)
+  if (gameStateLoaded) {
+    for (const [achievementId, achievement] of Object.entries(achievements)) {
+      if (achievement.unlocked && !achievementsBannerShown[achievementId]) {
+        achievementsBannerShown[achievementId] = true;
+      }
+    }
+    
+    // Try to start music after a short delay if it was enabled (fallback for autoplay restrictions)
+    if (AudioSystem.getAudioSettings().musicEnabled) {
+      setTimeout(() => {
+        if (AudioSystem.getAudioSettings().musicEnabled) {
+          AudioSystem.startBackgroundMusic();
+        }
+      }, 1000);
+    }
+  }
+  
+  // Initialize performance systems
   initializePerformanceSystems();
   
   // Setup new event-driven systems after performance systems are initialized
@@ -5698,29 +6030,16 @@ window.addEventListener('beforeunload', cleanup);
   // Load saved audio settings
   loadAudioSettings();
   
-  // Load saved game state
-  const gameStateLoaded = loadGameState();
+  // Load saved game state - moved to initializeGame() to ensure DOM elements are ready
   
   // Initialize achievementsBannerShown for already unlocked achievements (prevent notifications on load)
-  if (gameStateLoaded) {
-    for (const [achievementId, achievement] of Object.entries(achievements)) {
-      if (achievement.unlocked && !achievementsBannerShown[achievementId]) {
-        achievementsBannerShown[achievementId] = true;
-      }
-    }
-  }
+  // Note: This will be handled in initializeGame() after game state is loaded
   
   // Update buy multiplier display after game state is loaded
   updateBuyMultiplierDisplay();
   
   // Try to start music after a short delay if it was enabled (fallback for autoplay restrictions)
-  if (gameStateLoaded && AudioSystem.getAudioSettings().musicEnabled) {
-    setTimeout(() => {
-      if (AudioSystem.getAudioSettings().musicEnabled) {
-        AudioSystem.startBackgroundMusic();
-      }
-    }, 1000);
-  }
+  // Note: This will be handled in initializeGame() after game state is loaded
   
   // Periodic saving - use new system if available
   function setupEventDrivenSaving() {
@@ -5728,7 +6047,7 @@ window.addEventListener('beforeunload', cleanup);
       gameEngine.scheduleRecurringEvent('gameSave', (deltaTime) => {
         try {
           lastSave = Date.now();
-          saveGameState();
+    saveGameState();
         } catch (error) {
           console.error('Error in event-driven save:', error);
         }
@@ -5778,7 +6097,7 @@ window.addEventListener('beforeunload', cleanup);
       rentContainer.style.color = '#dc2626';
       rentPerSecond.style.color = '#dc2626';
       rentRate.style.color = '#dc2626';
-    } else {
+      } else {
       // Reset to normal styling
       rentContainer.style.background = '';
       rentContainer.style.borderColor = '';
