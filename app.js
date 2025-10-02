@@ -3067,8 +3067,8 @@ let prestigeInterestMultiplier = 1;
     const safeInvestmentIncome = isFinite(totalInvestmentIncome) ? totalInvestmentIncome : 0;
     const safeDividendIncome = isFinite(totalDividendIncome) ? totalDividendIncome : 0;
     
-    // Apply 90% reduction to offline earnings (1 minute online = 10 minutes offline)
-    const OFFLINE_EARNINGS_REDUCTION = 0.1; // 10% of normal earnings
+    // Apply reduction to offline earnings (configurable in config.js)
+    const OFFLINE_EARNINGS_REDUCTION = GAME_CONFIG.OFFLINE_EARNINGS.REDUCTION_FACTOR;
     const reducedPropertyIncome = totalPropertyIncome * OFFLINE_EARNINGS_REDUCTION;
     const reducedInvestmentIncome = safeInvestmentIncome * OFFLINE_EARNINGS_REDUCTION;
     const reducedDividendIncome = safeDividendIncome * OFFLINE_EARNINGS_REDUCTION;
