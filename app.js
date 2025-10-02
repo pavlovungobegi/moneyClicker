@@ -17,6 +17,7 @@ let particleSystem;
 let particleEffectsEnabled = true;
 let prestigeClickMultiplier = 1;
 let prestigeInterestMultiplier = 1;
+let prestigeTier = 0;
 
 (() => {
 
@@ -2919,6 +2920,9 @@ let prestigeInterestMultiplier = 1;
         prestigeClickMultiplier,
         prestigeInterestMultiplier,
         
+        // Prestige tier
+        prestigeTier,
+        
         // Auto-invest settings
         autoInvestEnabled,
         
@@ -3470,10 +3474,11 @@ let prestigeInterestMultiplier = 1;
       // Reset achievement banner tracking
       achievementsBannerShown = {};
       
-      // Reset prestige multipliers
-      console.log('Resetting prestige multipliers to 1');
-      prestigeClickMultiplier = 1;
-      prestigeInterestMultiplier = 1;
+    // Reset prestige multipliers
+    console.log('Resetting prestige multipliers to 1');
+    prestigeClickMultiplier = 1;
+    prestigeInterestMultiplier = 1;
+    prestigeTier = 0;
       
       // Reset first investment tracking
       hasMadeFirstInvestment = false;
@@ -3570,6 +3575,7 @@ let prestigeInterestMultiplier = 1;
     streakMultiplier = 1;
     autoInvestEnabled = false;
     autoRentEnabled = false;
+    prestigeTier = 0;
     
     // Reset all upgrades
     Object.keys(owned).forEach(upgradeKey => {
@@ -3656,12 +3662,17 @@ let prestigeInterestMultiplier = 1;
       const avatar = entry.photoURL ? 
         `<img src="${entry.photoURL}" alt="${displayName}" class="leaderboard-avatar" onerror="this.style.display='none'" onload="this.style.display='block'">` : '';
       
+      // Add prestige tier display if available
+      const prestigeDisplay = entry.prestigeTier && entry.prestigeTier > 0 ? 
+        `<span class="leaderboard-prestige">T${entry.prestigeTier}</span>` : '';
+      
       return `
         <div class="leaderboard-entry">
           <span class="leaderboard-rank ${rankClass}">#${rank}</span>
           <div class="leaderboard-user">
             ${avatar}
             <span class="leaderboard-name">${displayName}</span>
+            ${prestigeDisplay}
           </div>
           <span class="leaderboard-score">€${formattedScore}</span>
         </div>
@@ -3746,6 +3757,7 @@ let prestigeInterestMultiplier = 1;
         photoURL: currentUser.photoURL || null,
         uid: currentUser.uid, // Unique user identifier
         score: Math.round(score), // Ensure integer score
+        prestigeTier: prestigeTier || 0, // Include prestige tier
         timestamp: now,
         version: '1.0', // For future validation
         browserFingerprint: generateBrowserFingerprint() // For duplicate detection
@@ -4553,6 +4565,9 @@ let prestigeInterestMultiplier = 1;
     // Special handling for prestige reset (u26)
     if (key === "u26") {
       if (confirm("Are you sure you want to reset everything? This will give you permanent +25% multipliers but reset all money and upgrades.")) {
+        // Increment prestige tier
+        prestigeTier++;
+        
         // Apply permanent multipliers
         prestigeClickMultiplier *= 1.25;
         prestigeInterestMultiplier *= 1.25;
@@ -5061,7 +5076,11 @@ let prestigeInterestMultiplier = 1;
     if (prestigeMultiplierEl) {
       // Use the higher of the two multipliers for display
       const displayMultiplier = Math.max(prestigeClickMultiplier, prestigeInterestMultiplier);
-      prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x`;
+      if (prestigeTier > 0) {
+        prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x (Tier ${prestigeTier})`;
+      } else {
+        prestigeMultiplierEl.textContent = `Multiplier: ${displayMultiplier.toFixed(2)}x`;
+      }
     }
   }
 
@@ -6328,6 +6347,9 @@ window.addEventListener('beforeunload', cleanup);
       prestigeClickMultiplier,
       prestigeInterestMultiplier,
       
+      // Prestige tier
+      prestigeTier,
+      
       // Buy multiplier
       buyMultiplier,
       
@@ -6973,6 +6995,9 @@ function loadGameStateFromData(gameState) {
   // Restore prestige multipliers
   prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
   prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
+  
+  // Restore prestige tier
+  prestigeTier = gameState.prestigeTier || 0;
   
   // Restore buy multiplier
   buyMultiplier = gameState.buyMultiplier || 1;
