@@ -308,8 +308,8 @@ const GAME_CONFIG = {
         extreme: 0.005   // 2% chance (extreme)
       },
       marketCrash: {
-        easy: 0.02,     // 2% chance (easier)
-        normal: 0.03,   // 4% chance (original)
+        easy: 0.01,     // 2% chance (easier)
+        normal: 0.02,   // 4% chance (original)
         hard: 0.06,     // 6% chance (harder)
         extreme: 0.08   // 8% chance (extreme)
       },
@@ -321,7 +321,7 @@ const GAME_CONFIG = {
       },
       greatDepression: {
         easy: 0.005,    // 0.5% chance (easier)
-        normal: 0.005,   // 1% chance (original)
+        normal: 0.0025,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.045   // 2% chance (extreme)
       },
@@ -333,25 +333,25 @@ const GAME_CONFIG = {
       },
       taxCollection: {
         easy: 0.01,     // 1% chance (easier)
-        normal: 0.015,   // 2% chance (original)
+        normal: 0.01,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
         extreme: 0.095   // 4% chance (extreme)
       },
       robbery: {
         easy: 0.01,     // 1% chance (easier)
-        normal: 0.015,   // 2% chance (original)
+        normal: 0.01,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
         extreme: 0.095   // 4% chance (extreme)
       },
       divorce: {
         easy: 0.001,    // 0.5% chance (easier)
-        normal: 0.005,   // 1% chance (original)
+        normal: 0.0025,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.045   // 2% chance (extreme)
       },
       earthquake: {
         easy: 0.005,     // 1% chance (same for all difficulties)
-        normal: 0.005,   // 1% chance
+        normal: 0.0025,   // 1% chance
         hard: 0.01,     // 1% chance
         extreme: 0.015   // 1% chance
       }

@@ -4678,11 +4678,11 @@ let prestigeInterestMultiplier = 1;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (getGameDifficulty()) {
-      case 'easy': return 1.004;    // 0.5% per second (easier)
-      case 'normal': return 1.0022;  // 0.4% per second (original)
-      case 'hard': return 1.0018;   // 0.35% per second (harder)
-      case 'extreme': return 1.0012; // 0.3% per second (extreme)
-      default: return 1.0022;        // fallback to normal
+      case 'easy': return 1.002;    // 0.5% per second (easier)
+      case 'normal': return 1.0018;  // 0.4% per second (original)
+      case 'hard': return 1.0014;   // 0.35% per second (harder)
+      case 'extreme': return 1.001; // 0.3% per second (extreme)
+      default: return 1.001;        // fallback to normal
     }
   }
   function getCompoundMultiplierPerTick() {
@@ -5288,6 +5288,11 @@ let prestigeInterestMultiplier = 1;
   
   // Load saved game state first (after DOM elements are ready)
   const gameStateLoaded = loadGameState();
+  
+  // Update buy multiplier display after game state is loaded
+  if (gameStateLoaded) {
+    updateBuyMultiplierDisplay();
+  }
   
   // Initialize achievementsBannerShown for already unlocked achievements (prevent notifications on load)
   if (gameStateLoaded) {
@@ -6102,7 +6107,7 @@ window.addEventListener('beforeunload', cleanup);
   // Note: This will be handled in initializeGame() after game state is loaded
   
   // Update buy multiplier display after game state is loaded
-  updateBuyMultiplierDisplay();
+  // Note: This will be handled in initializeGame() after game state is loaded
   
   // Try to start music after a short delay if it was enabled (fallback for autoplay restrictions)
   // Note: This will be handled in initializeGame() after game state is loaded
