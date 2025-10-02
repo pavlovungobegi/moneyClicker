@@ -6571,8 +6571,54 @@ function initPWASpecificFeatures() {
   }
 }
 
+// How to Play functionality
+function initHowToPlay() {
+  const howToPlayBtn = document.getElementById('howToPlayBtn');
+  const howToPlayModal = document.getElementById('howToPlayModal');
+  const howToPlayModalClose = document.getElementById('howToPlayModalClose');
+
+  if (howToPlayBtn && howToPlayModal) {
+    // Open modal
+    howToPlayBtn.addEventListener('click', () => {
+      howToPlayModal.classList.remove('hidden');
+      // Pause audio when modal opens
+      if (AudioSystem.getAudioSettings().musicEnabled) {
+        AudioSystem.pauseAllAudio();
+      }
+    });
+
+    // Close modal functions
+    const closeModal = () => {
+      howToPlayModal.classList.add('hidden');
+      // Resume audio when modal closes
+      if (AudioSystem.getAudioSettings().musicEnabled) {
+        AudioSystem.startBackgroundMusic();
+      }
+    };
+
+    if (howToPlayModalClose) {
+      howToPlayModalClose.addEventListener('click', closeModal);
+    }
+
+    // Close modal when clicking outside
+    howToPlayModal.addEventListener('click', (e) => {
+      if (e.target === howToPlayModal) {
+        closeModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !howToPlayModal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+  }
+}
+
 // Initialize PWA functionality when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  initHowToPlay();
   initPWAInstallPrompt();
   initPWASpecificFeatures();
 });

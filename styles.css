@@ -4532,4 +4532,118 @@ input#amountInput:focus {
   }
 }
 
+/* How to Play Button and Modal Styles */
+.how-to-play-btn {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  border: 1px solid #4a5568;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.how-to-play-btn:hover {
+  background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+  border-color: #718096;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.how-to-play-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Inline select styling for game difficulty */
+.setting-item:has(.inline-select) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-item:has(.inline-select) .setting-label {
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.inline-select {
+  flex: 1;
+  max-width: 120px;
+}
+
+.how-to-play-modal {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.tutorial-section {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  border-left: 3px solid #4299e1;
+  border: 1px solid rgba(66, 153, 225, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tutorial-section h4 {
+  margin: 0 0 4px 0;
+  color: #4299e1;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.tutorial-section p {
+  margin: 0;
+  color: #4a5568;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.tutorial-section ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  color: #4a5568;
+}
+
+.tutorial-section li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.tutorial-section strong {
+  color: #d69e2e;
+  font-weight: 700;
+}
+
+/* Mobile responsiveness for How to Play */
+@media (max-width: 768px) {
+  .how-to-play-modal {
+    max-width: 95vw;
+    max-height: 85vh;
+  }
+  
+  .tutorial-section {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .tutorial-section h4 {
+    font-size: 15px;
+  }
+  
+  .tutorial-section p,
+  .tutorial-section li {
+    font-size: 14px;
+  }
+}
+
 

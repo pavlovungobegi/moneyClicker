@@ -119,7 +119,10 @@
           <div class="setting-item">
             <label for="usernameInput" class="setting-label">Username:</label>
             <input type="text" id="usernameInput" class="username-input" placeholder="Enter your username" maxlength="20" />
-            <p class="setting-description">Used for leaderboard submissions</p>
+          </div>
+          
+          <div class="setting-item">
+            <button id="howToPlayBtn" class="how-to-play-btn">How to Play</button>
           </div>
           
           <!-- Hidden Cheat Button -->
@@ -128,7 +131,7 @@
           </div>
           <div class="setting-item">
             <label for="difficultySelect" class="setting-label">Game Difficulty:</label>
-            <select id="difficultySelect" class="difficulty-select">
+            <select id="difficultySelect" class="difficulty-select inline-select">
               <option value="easy">Easy</option>
               <option value="normal" selected>Normal</option>
               <option value="hard">Hard</option>
@@ -138,7 +141,6 @@
         </div>
         
         <div class="settings-section">
-          <h3>Game Stats</h3>
           <div class="setting-item">
             <div id="prestigeMultipliers" class="prestige hidden" aria-live="polite">
               <div id="prestigeMultiplier">Multiplier: 1.00x</div>
@@ -147,7 +149,6 @@
         </div>
         
         <div class="settings-section">
-          <h3>Game Data</h3>
           <div class="setting-item">
             <button id="hardResetBtn" class="hard-reset-btn">Hard Reset</button>
             <p class="reset-description">Reset all progress and start fresh</p>
@@ -157,7 +158,7 @@
         <div class="settings-section">
           <div class="version-info">
             <span class="version-label">Version:</span>
-            <span class="version-number">0.11.5</span>
+            <span class="version-number">0.12.1</span>
           </div>
         </div>
       </div>
@@ -658,6 +659,52 @@
                 <div class="modal-footer">
                   <button id="hardResetCancel" class="btn btn-secondary">Cancel</button>
                   <button id="hardResetConfirm" class="btn btn-danger">Reset Everything</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- How to Play Modal -->
+            <div id="howToPlayModal" class="modal-overlay hidden">
+              <div class="modal-content how-to-play-modal">
+                <div class="modal-header">
+                  <h3>🎮 How to Play</h3>
+                  <button id="howToPlayModalClose" class="modal-close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                  <div class="tutorial-section">
+                    <h4>💰 Click to Earn</h4>
+                    <p>Click the money button to earn euros. Each click gives you money!</p>
+                  </div>
+                  
+                  <div class="tutorial-section">
+                    <h4>🏠 Buy Properties</h4>
+                    <p>Use money to buy properties for passive income. More properties = more money per second!</p>
+                  </div>
+                  
+                  <div class="tutorial-section">
+                    <h4>📈 Invest & Grow</h4>
+                    <p>At €500k, unlock Investment Account. Money grows automatically with compound interest!</p>
+                  </div>
+                  
+                  <div class="tutorial-section">
+                    <h4>⬆️ Buy Upgrades</h4>
+                    <p>Purchase upgrades to boost income, click power, and unlock new features.</p>
+                  </div>
+                  
+                  <div class="tutorial-section">
+                    <h4>🎯 Pro Tips</h4>
+                    <ul>
+                      <li>Keep clicking for streak multiplier</li>
+                      <li>Buy properties early for passive income</li>
+                      <li>Invest money to grow faster</li>
+                      <li>Earn money even when offline!</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="tutorial-section">
+                    <h4>🎲 Events & Bonuses</h4>
+                    <p>Random events boost your income or give special bonuses. Keep an eye out!</p>
+                  </div>
                 </div>
               </div>
             </div>
