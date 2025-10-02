@@ -6240,63 +6240,6 @@ window.addEventListener('beforeunload', cleanup);
   console.log('Service Worker not supported');
 }
 
-  // Auto Invest Help Modal functionality
-  if (autoInvestHelpBtn && autoInvestModal) {
-    autoInvestHelpBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      autoInvestModal.classList.remove('hidden');
-    });
-  }
-
-  if (autoInvestModalClose && autoInvestModal) {
-    autoInvestModalClose.addEventListener('click', () => {
-      autoInvestModal.classList.add('hidden');
-    });
-  }
-
-  // Close modal when clicking outside
-  if (autoInvestModal) {
-    autoInvestModal.addEventListener('click', (e) => {
-      if (e.target === autoInvestModal) {
-        autoInvestModal.classList.add('hidden');
-      }
-    });
-  }
-
-  // Auto Rent Help Modal functionality
-  if (autoRentHelpBtn && autoRentModal) {
-    autoRentHelpBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      autoRentModal.classList.remove('hidden');
-    });
-  }
-
-  if (autoRentModalClose && autoRentModal) {
-    autoRentModalClose.addEventListener('click', () => {
-      autoRentModal.classList.add('hidden');
-    });
-  }
-
-  // Close modal when clicking outside
-  if (autoRentModal) {
-    autoRentModal.addEventListener('click', (e) => {
-      if (e.target === autoRentModal) {
-        autoRentModal.classList.add('hidden');
-      }
-    });
-  }
-
-  // Close modal with Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      if (autoInvestModal && !autoInvestModal.classList.contains('hidden')) {
-      autoInvestModal.classList.add('hidden');
-      }
-      if (autoRentModal && !autoRentModal.classList.contains('hidden')) {
-        autoRentModal.classList.add('hidden');
-      }
-    }
-  });
   
   // Initialize audio on first user interaction
     AudioSystem.initAudio();
@@ -7174,4 +7117,80 @@ document.addEventListener('DOMContentLoaded', () => {
   initHowToPlay();
   initPWAInstallPrompt();
   initPWASpecificFeatures();
+  
+  // Initialize help modal functionality after DOM is ready
+  initHelpModals();
 });
+
+// Initialize help modal functionality
+function initHelpModals() {
+  // Auto Invest Help Modal functionality
+  const autoInvestHelpBtn = document.getElementById('autoInvestHelpBtn');
+  const autoInvestModal = document.getElementById('autoInvestModal');
+  const autoInvestModalClose = document.getElementById('autoInvestModalClose');
+  
+  // Auto Rent Help Modal functionality
+  const autoRentHelpBtn = document.getElementById('autoRentHelpBtn');
+  const autoRentModal = document.getElementById('autoRentModal');
+  const autoRentModalClose = document.getElementById('autoRentModalClose');
+
+  // Auto Invest Help Modal functionality
+  if (autoInvestHelpBtn && autoInvestModal) {
+    autoInvestHelpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      autoInvestModal.classList.remove('hidden');
+    });
+  }
+
+  if (autoInvestModalClose && autoInvestModal) {
+    autoInvestModalClose.addEventListener('click', () => {
+      autoInvestModal.classList.add('hidden');
+    });
+  }
+
+  // Close modal when clicking outside
+  if (autoInvestModal) {
+    autoInvestModal.addEventListener('click', (e) => {
+      if (e.target === autoInvestModal) {
+        autoInvestModal.classList.add('hidden');
+      }
+    });
+  }
+
+  // Auto Rent Help Modal functionality
+  if (autoRentHelpBtn && autoRentModal) {
+    autoRentHelpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      autoRentModal.classList.remove('hidden');
+    });
+  }
+
+  if (autoRentModalClose && autoRentModal) {
+    autoRentModalClose.addEventListener('click', () => {
+      autoRentModal.classList.add('hidden');
+    });
+  }
+
+  // Close modal when clicking outside
+  if (autoRentModal) {
+    autoRentModal.addEventListener('click', (e) => {
+      if (e.target === autoRentModal) {
+        autoRentModal.classList.add('hidden');
+      }
+    });
+  }
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (autoInvestModal && !autoInvestModal.classList.contains('hidden')) {
+        autoInvestModal.classList.add('hidden');
+      }
+      if (autoRentModal && !autoRentModal.classList.contains('hidden')) {
+        autoRentModal.classList.add('hidden');
+      }
+    }
+  });
+}
