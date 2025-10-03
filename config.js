@@ -68,11 +68,11 @@ const GAME_CONFIG = {
   
   // Mobile performance mode
   MOBILE_PERFORMANCE: {
-    ENABLED: true, // Enable mobile performance optimizations
-    REDUCE_ANIMATIONS: true, // Reduce CSS animations on mobile
-    THROTTLE_FPS: true, // Throttle frame rate on mobile
-    PAUSE_BACKGROUND: true, // Pause heavy operations when tab is hidden
-    REDUCE_PARTICLES: true, // Significantly reduce particle effects
+    ENABLED: false, // Disable mobile performance optimizations for smooth particles
+    REDUCE_ANIMATIONS: false, // Keep full animations on mobile
+    THROTTLE_FPS: false, // Use full 60 FPS on mobile
+    PAUSE_BACKGROUND: true, // Keep background pausing for battery
+    REDUCE_PARTICLES: false, // Use full particle effects on mobile
     SIMPLIFY_UI: false, // Keep UI complexity but optimize performance
   },
   

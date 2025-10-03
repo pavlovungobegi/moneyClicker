@@ -12,14 +12,9 @@
       this.animationId = null;
       this.isAnimating = false;
       this.lastFrameTime = 0;
-      // Use mobile-optimized frame rates if on mobile
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                       ('ontouchstart' in window) || 
-                       (navigator.maxTouchPoints > 0);
-      const mobilePerformanceMode = isMobile && GAME_CONFIG.MOBILE_PERFORMANCE.ENABLED;
-      
-      this.targetFPS = mobilePerformanceMode ? GAME_CONFIG.ANIMATION.MOBILE_TARGET_FPS : GAME_CONFIG.ANIMATION.TARGET_FPS;
-      this.frameInterval = mobilePerformanceMode ? GAME_CONFIG.ANIMATION.MOBILE_FRAME_INTERVAL : GAME_CONFIG.ANIMATION.FRAME_INTERVAL;
+      // Use consistent 60 FPS on all devices for smooth particles
+      this.targetFPS = GAME_CONFIG.ANIMATION.TARGET_FPS;
+      this.frameInterval = GAME_CONFIG.ANIMATION.FRAME_INTERVAL;
       
       this.resizeCanvas();
       this.resizeHandler = () => this.resizeCanvas();
@@ -82,9 +77,8 @@
     createCoinParticles(x, y, count = 1) {
       if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
-      // Reduce particles on mobile
-      const actualCount = (typeof isMobile !== 'undefined' && isMobile) ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
-      for (let i = 0; i < actualCount; i++) {
+      // Use full particle count on all devices
+      for (let i = 0; i < count; i++) {
         this.createParticle('coin', x, y, {
           vx: (Math.random() - 0.5) * 6,
           vy: -Math.random() * 4 - 2,
@@ -113,9 +107,8 @@
     createSparkleParticles(x, y, count = 2) {
       if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
-      // Reduce particles on mobile
-      const actualCount = (typeof isMobile !== 'undefined' && isMobile) ? Math.max(1, Math.floor(count * GAME_CONFIG.ANIMATION.PARTICLE_REDUCTION_MOBILE)) : count;
-      for (let i = 0; i < actualCount; i++) {
+      // Use full particle count on all devices
+      for (let i = 0; i < count; i++) {
         this.createParticle('sparkle', x, y, {
           vx: (Math.random() - 0.5) * 8,
           vy: (Math.random() - 0.5) * 8,
@@ -166,8 +159,7 @@
     createMoneyGainParticles(x, y, amount) {
       if (typeof particleEffectsEnabled !== 'undefined' && !particleEffectsEnabled) return;
       
-      const baseCount = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
-      const count = (typeof isMobile !== 'undefined' && isMobile) ? Math.max(1, Math.floor(baseCount * 0.5)) : baseCount;
+      const count = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
           vx: (Math.random() - 0.5) * 6,
