@@ -3069,13 +3069,14 @@ let autoSubmitInterval = null;
     let totalInvestmentIncome = 0;
     console.log('🔍 [OFFLINE DEBUG] investmentAccountBalance:', investmentAccountBalance);
     if (investmentAccountBalance > 0) {
-      const interestRate = getInterestRate();
-      console.log('🔍 [OFFLINE DEBUG] interestRate (hourly):', interestRate);
-      const hoursOffline = secondsOffline / 3600;
-      const compoundMultiplier = Math.pow(1 + (interestRate / 100), hoursOffline); // Hourly compounding
+      // Calculate compound interest using the same per-tick logic as online
+      const perTickMultiplier = getCompoundMultiplierPerTick();
+      const ticksOffline = Math.floor(secondsOffline * 1000 / TICK_MS); // Number of ticks that would occur offline
+      const compoundMultiplier = Math.pow(perTickMultiplier, ticksOffline);
       const newBalance = investmentAccountBalance * compoundMultiplier;
       totalInvestmentIncome = newBalance - investmentAccountBalance;
-      console.log('🔍 [OFFLINE DEBUG] hoursOffline:', hoursOffline);
+      console.log('🔍 [OFFLINE DEBUG] perTickMultiplier:', perTickMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] ticksOffline:', ticksOffline);
       console.log('🔍 [OFFLINE DEBUG] compoundMultiplier:', compoundMultiplier);
       console.log('🔍 [OFFLINE DEBUG] newBalance:', newBalance);
       console.log('🔍 [OFFLINE DEBUG] totalInvestmentIncome:', totalInvestmentIncome);
@@ -3292,14 +3293,18 @@ let autoSubmitInterval = null;
     // Allow multiple claims - removed restriction to prevent game getting stuck
     const earnings = window.currentOfflineEarnings;
     
-    console.log('🔍 [OFFLINE DEBUG] Claiming earnings - adding all to current account:');
+    console.log('🔍 [OFFLINE DEBUG] Claiming earnings - distributing to appropriate accounts:');
     console.log('🔍 [OFFLINE DEBUG] - propertyIncome:', earnings.propertyIncome);
     console.log('🔍 [OFFLINE DEBUG] - investmentIncome:', earnings.investmentIncome);
     console.log('🔍 [OFFLINE DEBUG] - dividendIncome:', earnings.dividendIncome);
     console.log('🔍 [OFFLINE DEBUG] - totalIncome:', earnings.totalIncome);
     
-    // Add all earnings to current account (simplified)
-    currentAccountBalance += earnings.totalIncome;
+    // Distribute earnings to appropriate accounts
+    currentAccountBalance += earnings.propertyIncome; // Property income goes to current account
+    investmentAccountBalance += earnings.investmentIncome; // Investment interest goes to investment account
+    
+    // Dividend income also goes to current account (as it does online)
+    currentAccountBalance += earnings.dividendIncome;
     
     // Update UI
     renderBalances();

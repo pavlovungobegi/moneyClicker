@@ -12,9 +12,9 @@ const GAME_CONFIG = {
   
   // Offline earnings configuration
   OFFLINE_EARNINGS: {
-    MAX_OFFLINE_HOURS: 24, // Maximum hours to calculate offline earnings (prevents abuse)
+    MAX_OFFLINE_HOURS: 1, // Maximum hours to calculate offline earnings (prevents abuse)
     MIN_OFFLINE_MINUTES: 0.25, // Minimum minutes offline to show earnings popup (15 seconds)
-    REDUCTION_FACTOR: 1, // Offline earnings are 10% of online earnings (1 minute online = 10 minutes offline)
+    REDUCTION_FACTOR: 0.25, // Offline earnings are 10% of online earnings (1 minute online = 10 minutes offline)
   },
   
   // Animation performance
