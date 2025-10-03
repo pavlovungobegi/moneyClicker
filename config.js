@@ -165,7 +165,7 @@ const GAME_CONFIG = {
     u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
     u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
     u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u10: { cost: 750000, name: "Dividends", effect: "Generate 0,8% dividend every 10 seconds", type: "dividend", requires: "u11" },
+    u10: { cost: 750000, name: "Dividends", effect: "Generate 0,4% dividend every 10 seconds", type: "dividend", requires: "u11" },
     u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
     u12: { cost: 1000000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
     u13: { cost: 3000000, name: "Mega Dividends", effect: "Increase dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
@@ -207,6 +207,16 @@ const GAME_CONFIG = {
     u59: { cost: 5000000000, name: "Open Office Spaces", effect: "Doubles the income of office buildings", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "officeBuilding" },
     u60: { cost: 25000000000, name: "Faster Elevators", effect: "Doubles the income of skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "skyscraper" },
     u61: { cost: 100000000000, name: "Cultural Hotspot", effect: "Doubles the income of opera houses", type: "property_rent_boost", effects: { property_rent_income: 1.0 }, property: "operaHouse" },
+    // Late-game 4x income upgrades
+    u62: { cost: 1000000000000, name: "Gourmet Revolution", effect: "Quadruples the income of Food Stands", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "foodStand" },
+    u63: { cost: 3000000000000, name: "Digital Media Empire", effect: "Quadruples the income of Newsstands", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "newsstand" },
+    u64: { cost: 9000000000000, name: "Smart Parking Network", effect: "Quadruples the income of Parking Garages", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "parkingGarage" },
+    u65: { cost: 27000000000000, name: "24/7 Mega Mart", effect: "Quadruples the income of Convenience Stores", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "convenienceStore" },
+    u66: { cost: 81000000000000, name: "Luxury Residences", effect: "Quadruples the income of Apartments", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "apartment" },
+    u67: { cost: 243000000000000, name: "AI Manufacturing", effect: "Quadruples the income of Manufacturing Plants", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "manufacturingPlant" },
+    u68: { cost: 729000000000000, name: "Corporate Headquarters", effect: "Quadruples the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "officeBuilding" },
+    u69: { cost: 2187000000000000, name: "Vertical Metropolis", effect: "Quadruples the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "skyscraper" },
+    u70: { cost: 6561000000000000, name: "Grand Opera Dynasty", effect: "Quadruples the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "operaHouse" },
   },
   
   // =============================================================================
