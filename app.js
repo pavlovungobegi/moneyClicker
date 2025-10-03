@@ -93,128 +93,14 @@ let isCoinFlipping = false;
   // Debug log for mobile detection
   console.log('Mobile device detected:', isMobile, 'Performance mode:', mobilePerformanceMode, 'User Agent:', navigator.userAgent);
 
-  // Interval health monitoring
+  // Timestamps for debugging (event-driven system handles timing automatically)
   let lastMainGameTick = Date.now();
   let lastEventCheck = Date.now();
   let lastSave = Date.now();
   
-  function checkIntervalHealth() {
-    const now = Date.now();
-    const mainGameStuck = (now - lastMainGameTick) > (TICK_MS * 3); // 3x expected interval
-    const eventsStuck = (now - lastEventCheck) > (getIntervalConfig('EVENTS_CHECK') * 3);
-    const saveStuck = (now - lastSave) > (getIntervalConfig('GAME_SAVE') * 3);
-    
-    if (mainGameStuck || eventsStuck || saveStuck) {
-      console.warn('Interval health check failed:', {
-        mainGameStuck,
-        eventsStuck,
-        saveStuck,
-        timeSinceMainGame: now - lastMainGameTick,
-        timeSinceEvents: now - lastEventCheck,
-        timeSinceSave: now - lastSave
-        });
-      }
-    }
-    
-  // Check interval health every 30 seconds
-  setInterval(checkIntervalHealth, 30000);
-  
-  // Global function to restart intervals if they fail (for debugging)
-  window.restartGameIntervals = function() {
-    console.log('Restarting game intervals...');
-    
-    // Clear existing intervals
-    if (typeof mainGameInterval !== 'undefined') clearInterval(mainGameInterval);
-    if (typeof eventsInterval !== 'undefined') clearInterval(eventsInterval);
-    if (typeof saveInterval !== 'undefined') clearInterval(saveInterval);
-    
-    // Restart main game loop
-    const newMainGameInterval = setInterval(() => {
-      try {
-        lastMainGameTick = Date.now();
-        
-        // Investment compounding: multiply per tick, boosted by upgrades
-        if (investmentAccountBalance > 0) {
-          const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
-          const growth = grown - investmentAccountBalance;
-          investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
-        }
-
-        // Property income
-        const propertyIncome = getTotalPropertyIncome();
-        if (propertyIncome > 0) {
-          if (autoRentEnabled) {
-            investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-          } else {
-            currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
-          }
-        }
-
-        // Dividends
-        tickDividends(TICK_MS);
-        renderBalances();
-        
-        // Only render active tab content for performance
-        switch(activeTab) {
-          case 'earn':
-            renderDividendUI(TICK_MS);
-            renderInvestmentUnlocked();
-            renderPrestigeMultipliers();
-            renderAutoInvestSection();
-            renderAutoRentSection();
-            renderClickStreak();
-            renderRentIncome();
-            break;
-          case 'upgrades':
-            renderUpgradesOwned();
-            break;
-          case 'portfolio':
-            renderAllProperties();
-            break;
-        }
-        
-        updateActiveEventDisplay();
-        checkExpiredEvents();
-        checkStreakTimeout();
-        updateUpgradeIndicator();
-        updatePortfolioIndicator();
-        updateProgressBars();
-        checkAchievementsOptimized();
-      } catch (error) {
-        console.error('Error in restarted main game loop:', error);
-      }
-    }, TICK_MS);
-    
-    // Restart events interval
-    const newEventsInterval = setInterval(() => {
-      try {
-        lastEventCheck = Date.now();
-        checkEvents();
-      } catch (error) {
-        console.error('Error in restarted events check:', error);
-      }
-    }, getIntervalConfig('EVENTS_CHECK'));
-    
-    // Restart save interval
-    const newSaveInterval = setInterval(() => {
-      try {
-        lastSave = Date.now();
-        saveGameState();
-      } catch (error) {
-        console.error('Error in restarted save interval:', error);
-      }
-    }, getIntervalConfig('GAME_SAVE'));
-    
-    // Update global references
-    window.mainGameInterval = newMainGameInterval;
-    window.eventsInterval = newEventsInterval;
-    window.saveInterval = newSaveInterval;
-    
-    console.log('Game intervals restarted successfully');
-  };
-  
-  // Expose health check function for debugging
-  window.checkIntervalHealth = checkIntervalHealth;
+  // REMOVED: Legacy interval health monitoring and restart functions
+  // The event-driven system (GameEngine + RenderEngine) handles this automatically
+  // No need for manual interval monitoring or restarts
   
   // Debug function to check property income
   window.debugPropertyIncome = function() {
@@ -245,6 +131,48 @@ let isCoinFlipping = false;
       }
     });
     console.log('============================');
+  };
+  
+  // NEW: Performance diagnostic function
+  window.debugPerformance = function() {
+    console.log('═══════════════════════════════════════');
+    console.log('📊 PERFORMANCE DIAGNOSTICS');
+    console.log('═══════════════════════════════════════');
+    console.log('Game Loop System:');
+    console.log('  ✓ GameEngine:', !!gameEngine ? 'ACTIVE' : '❌ MISSING');
+    console.log('  ✓ RenderEngine:', !!renderEngine ? 'ACTIVE' : '❌ MISSING');
+    console.log('  ✓ PerformanceManager:', !!performanceManager ? 'ACTIVE' : '❌ MISSING');
+    console.log('');
+    
+    if (gameEngine) {
+      const stats = gameEngine.getPerformanceStats();
+      console.log('GameEngine Stats:');
+      console.log('  • Current FPS:', stats.fps);
+      console.log('  • Target FPS:', stats.targetFps);
+      console.log('  • Scheduled Events:', stats.scheduledEvents);
+      console.log('  • Queued Events:', stats.queuedEvents);
+    }
+    console.log('');
+    
+    if (renderEngine) {
+      const renderStats = renderEngine.getPerformanceStats();
+      console.log('RenderEngine Stats:');
+      console.log('  • Renders:', renderStats.renderCount);
+      console.log('  • Skipped:', renderStats.skippedRenders);
+      console.log('  • Efficiency:', renderStats.renderEfficiency.toFixed(1) + '%');
+      console.log('  • Dirty Elements:', renderStats.dirtyElements);
+      console.log('  • Registered Renderers:', renderStats.registeredRenderers);
+    }
+    console.log('');
+    
+    // Check for legacy intervals (there should be NONE!)
+    console.log('Legacy Interval Check:');
+    console.log('  • mainGameInterval:', typeof window.mainGameInterval !== 'undefined' ? '❌ FOUND (BAD!)' : '✓ Not present (good)');
+    console.log('  • eventsInterval:', typeof window.eventsInterval !== 'undefined' ? '❌ FOUND (BAD!)' : '✓ Not present (good)');
+    console.log('  • saveInterval:', typeof window.saveInterval !== 'undefined' ? '❌ FOUND (BAD!)' : '✓ Not present (good)');
+    console.log('');
+    console.log('Expected State: NO legacy intervals should exist!');
+    console.log('═══════════════════════════════════════');
   };
 
   // Mobile performance mode disabled for consistent experience
@@ -5464,16 +5392,15 @@ let isCoinFlipping = false;
   }
 
 
-  // New event-driven game loop
+  // Event-driven game loop (primary and only game loop system)
   function setupEventDrivenGameLoop() {
     if (!gameEngine) {
-      // Fallback to old system if new system not available
-      console.log('Game engine not available, using legacy game loop');
-      setupLegacyGameLoop();
+      console.error('CRITICAL: Game engine not initialized! Game may not function properly.');
+      console.error('Make sure gameEngine.js is loaded before app.js');
       return;
     }
     
-    console.log('Using event-driven game loop');
+    console.log('✓ Using event-driven game loop (60 FPS optimized)');
     
     // Register render functions with render engine
     if (renderEngine) {
@@ -5578,98 +5505,29 @@ let isCoinFlipping = false;
     }, TICK_MS);
   }
   
-  // Legacy game loop fallback
-  function setupLegacyGameLoop() {
-    const mainGameInterval = setInterval(() => {
-      try {
-        lastMainGameTick = Date.now();
-        
-        // Investment compounding: multiply per tick, boosted by upgrades
-        if (investmentAccountBalance > 0) {
-          const grown = investmentAccountBalance * getCompoundMultiplierPerTick();
-          const growth = grown - investmentAccountBalance;
-          investmentAccountBalance = Math.round((investmentAccountBalance + growth) * 100) / 100;
-        }
-
-        // Property income
-        const propertyIncome = getTotalPropertyIncome();
-        if (propertyIncome > 0) {
-          if (autoRentEnabled) {
-            investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
-          } else {
-            currentAccountBalance = Math.round((currentAccountBalance + propertyIncome) * 100) / 100;
-          }
-          // Debug logging for property income (only when there's an issue)
-          if (Math.random() < 0.01) { // 1% chance
-            console.log('Legacy: Property income added:', propertyIncome, 'Auto-rent:', autoRentEnabled);
-          }
-        }
-
-        // Dividends
-        tickDividends(TICK_MS);
-    renderBalances();
-    
-    // Only render active tab content for performance
-    switch(activeTab) {
-      case 'earn':
-    renderDividendUI(TICK_MS);
-    renderInvestmentUnlocked();
-    renderPrestigeMultipliers();
-    renderAutoInvestSection();
-        renderAutoRentSection();
-    renderClickStreak();
-            renderRentIncome();
-        break;
-      case 'upgrades':
-        renderUpgradesOwned();
-        break;
-      case 'portfolio':
-        renderAllProperties();
-        break;
-    }
-    
-    // Always update these (needed for indicators and events)
-    updateActiveEventDisplay();
-        checkExpiredEvents();
-    checkStreakTimeout();
-    updateUpgradeIndicator();
-    updatePortfolioIndicator();
-    updateProgressBars();
-        checkAchievementsOptimized();
-      } catch (error) {
-        console.error('Error in legacy game loop:', error);
-      }
-  }, TICK_MS);
-    
-    // Store reference for cleanup
-    window.mainGameInterval = mainGameInterval;
-  }
+  // REMOVED: Legacy game loop system (replaced by event-driven system)
+  // The event-driven system (GameEngine + RenderEngine) provides better performance
+  // and eliminates the need for separate setInterval loops
 
   // Net worth data collection removed for performance
   
-  // Events check - use new system if available
+  // Event-driven events system
   function setupEventDrivenEvents() {
-    if (gameEngine) {
-      gameEngine.scheduleRecurringEvent('eventsCheck', (deltaTime) => {
-        try {
-          lastEventCheck = Date.now();
-    checkEvents();
-        } catch (error) {
-          console.error('Error in event-driven events check:', error);
-        }
-      }, getIntervalConfig('EVENTS_CHECK'));
-    } else {
-      // Fallback to legacy system
-      const eventsInterval = setInterval(() => {
-        try {
-          lastEventCheck = Date.now();
-          checkEvents();
-        } catch (error) {
-          console.error('Error in legacy events check:', error);
-        }
-      }, getIntervalConfig('EVENTS_CHECK'));
-      window.eventsInterval = eventsInterval;
+    if (!gameEngine) {
+      console.error('CRITICAL: Game engine not initialized for events system!');
+      return;
     }
+    
+    gameEngine.scheduleRecurringEvent('eventsCheck', (deltaTime) => {
+      try {
+        lastEventCheck = Date.now();
+        checkEvents();
+      } catch (error) {
+        console.error('Error in event-driven events check:', error);
+      }
+    }, getIntervalConfig('EVENTS_CHECK'));
+    
+    console.log('✓ Event-driven events system initialized');
   }
 
   // Loading screen functionality
@@ -5726,10 +5584,21 @@ let isCoinFlipping = false;
   // Initialize performance systems
   initializePerformanceSystems();
   
-  // Setup new event-driven systems after performance systems are initialized
+  console.log('═══════════════════════════════════════');
+  console.log('🚀 PERFORMANCE MODE: Event-Driven Architecture');
+  console.log('═══════════════════════════════════════');
+  
+  // Setup event-driven systems (ONLY game loop system - no legacy intervals)
   setupEventDrivenGameLoop();
   setupEventDrivenEvents();
   setupEventDrivenSaving();
+  
+  console.log('═══════════════════════════════════════');
+  console.log('✅ All systems initialized successfully');
+  console.log('   • Single unified game loop at 60 FPS');
+  console.log('   • Intelligent dirty-flag rendering');
+  console.log('   • No redundant setInterval loops');
+  console.log('═══════════════════════════════════════');
   
   // Cache DOM elements for performance optimization
   cacheDOMElements();
@@ -6516,27 +6385,21 @@ window.addEventListener('beforeunload', cleanup);
   
   // Periodic saving - use new system if available
   function setupEventDrivenSaving() {
-    if (gameEngine) {
-      gameEngine.scheduleRecurringEvent('gameSave', (deltaTime) => {
-        try {
-          lastSave = Date.now();
-    saveGameState();
-        } catch (error) {
-          console.error('Error in event-driven save:', error);
-        }
-      }, getIntervalConfig('GAME_SAVE'));
-    } else {
-      // Fallback to legacy system
-      const saveInterval = setInterval(() => {
-        try {
-          lastSave = Date.now();
-          saveGameState();
-        } catch (error) {
-          console.error('Error in legacy save interval:', error);
-        }
-      }, getIntervalConfig('GAME_SAVE'));
-      window.saveInterval = saveInterval;
+    if (!gameEngine) {
+      console.error('CRITICAL: Game engine not initialized for save system!');
+      return;
     }
+    
+    gameEngine.scheduleRecurringEvent('gameSave', (deltaTime) => {
+      try {
+        lastSave = Date.now();
+        saveGameState();
+      } catch (error) {
+        console.error('Error in event-driven save:', error);
+      }
+    }, getIntervalConfig('GAME_SAVE'));
+    
+    console.log('✓ Event-driven auto-save initialized');
   }
 
   // renderInterestPerSecond function moved earlier in file
