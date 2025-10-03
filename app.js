@@ -5152,7 +5152,7 @@ let autoSubmitInterval = null;
 
   // Dividends logic: 1% every 10 seconds to current, investment unchanged
   const BASE_DIVIDEND_INTERVAL_MS = 10000;
-  const BASE_DIVIDEND_RATE = 0.002;
+  const BASE_DIVIDEND_RATE = 0.0018;
   let dividendElapsed = 0;
   let dividendAnimationId = null;
 

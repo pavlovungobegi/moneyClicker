@@ -165,7 +165,7 @@ const GAME_CONFIG = {
     u4: { cost: 2500000, name: "Better credit score", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
     u5: { cost: 200, name: "Higher Education", effect: "Adds +30 euros per click", type: "click", effects: { click_income: 30 } },
     u8: { cost: 50000000, name: "Create a network of influenced people", effect: "Increases investment interest by 5%", type: "interest", requires: "u11", effects: { interest_rate: 0.05 } },
-    u10: { cost: 750000, name: "Dividends", effect: "Generate 0,2% dividend every 10 seconds", type: "dividend", requires: "u11" },
+    u10: { cost: 750000, name: "Dividends", effect: "Generate 0,18% dividend every 10 seconds", type: "dividend", requires: "u11" },
     u11: { cost: 500000, name: "Investment", effect: "Unlocks the investment account", type: "unlock" },
     u12: { cost: 1000000, name: "Turbo Dividends", effect: "Speed up dividends by 20%", type: "dividend_speed", requires: "u10", effects: { dividend_speed: 0.20 } },
     u13: { cost: 3000000, name: "Mega Dividends", effect: "Increase dividend rate by 20%", type: "dividend_rate", requires: "u10", effects: { dividend_rate: 0.20 } },
@@ -240,8 +240,8 @@ const GAME_CONFIG = {
     // Global property income doubling upgrades
     u89: { cost: 20000000000000000000000, name: "Property Dynasty", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
     u90: { cost: 200000000000000000000000, name: "Property Dominion", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
-    u91: { cost: 2000000000000000000000000000, name: "Universal Property Authority", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
-    u92: { cost: 100000000000000000000000000000000, name: "Master Builder", effect: "Reduces the purchase price of buildings by 50%", type: "building_discount", effects: { building_discount: 0.50 } },
+    u91: { cost: 2000000000000000000000000, name: "Universal Property Authority", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
+    u92: { cost: 1000000000000000000000, name: "Master Builder", effect: "Reduces the purchase price of buildings by 50%", type: "building_discount", effects: { building_discount: 0.50 } },
   },
   
   // =============================================================================
