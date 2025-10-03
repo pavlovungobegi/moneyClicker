@@ -87,8 +87,8 @@ let isCoinFlipping = false;
                    ('ontouchstart' in window) || 
                    (navigator.maxTouchPoints > 0);
   
-  // Mobile performance mode detection
-  const mobilePerformanceMode = isMobile && GAME_CONFIG.MOBILE_PERFORMANCE.ENABLED;
+  // Mobile performance mode detection - disabled for smooth particles
+  const mobilePerformanceMode = false; // Always disabled for consistent performance
   
   // Debug log for mobile detection
   console.log('Mobile device detected:', isMobile, 'Performance mode:', mobilePerformanceMode, 'User Agent:', navigator.userAgent);

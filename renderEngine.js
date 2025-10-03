@@ -15,14 +15,13 @@
       this.renderCount = 0;
       this.skippedRenders = 0;
       
-      // Mobile optimization
+      // Use consistent 60 FPS on all devices for smooth rendering
       this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                       ('ontouchstart' in window) || 
                       (navigator.maxTouchPoints > 0);
       
-      if (this.isMobile) {
-        this.renderInterval = 33; // ~30fps on mobile
-      }
+      // Keep 60 FPS on all devices
+      this.renderInterval = 16; // ~60fps on all devices
       
       this.start();
     }
