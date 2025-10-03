@@ -36,6 +36,12 @@ let autoSubmitInterval = null;
 
   // Enhanced caching with performance manager
   function getCachedPropertyIncome() {
+    // Check if all properties are 0 - if so, never use cache to ensure 0 income
+    const hasAnyProperties = Object.values(properties).some(count => count > 0);
+    if (!hasAnyProperties) {
+      return null; // Force recalculation when no properties are owned
+    }
+    
     if (performanceManager && typeof performanceManager.getCache === 'function') {
       try {
         const cacheKey = `propertyIncome_${JSON.stringify(properties)}_${JSON.stringify(owned)}`;
@@ -1353,7 +1359,7 @@ let autoSubmitInterval = null;
         renderAutoInvestSection();
         renderAutoRentSection();
         renderClickStreak();
-        renderRentIncome(); // Update rent income display
+        renderRentIncome(); // CRITICAL: Update rent income display immediately // CRITICAL: Update rent income display immediately
         break;
       case 'upgrades':
         renderUpgradesOwned();
@@ -4890,6 +4896,20 @@ let autoSubmitInterval = null;
           properties[propertyKey] = 0;
         });
         
+        // CRITICAL: Invalidate all caches immediately after reset
+        propertyIncomeCacheValid = false;
+        cachedPropertyIncome = 0;
+        
+        // Also invalidate performance manager cache if available
+        if (performanceManager && typeof performanceManager.invalidateCache === 'function') {
+          performanceManager.invalidateCache('propertyIncome'); // Invalidate property income cache specifically
+          performanceManager.invalidateCache(); // Invalidate all caches as backup
+        }
+        
+        // Force immediate recalculation of property income to ensure it's 0
+        const immediatePropertyIncome = getTotalPropertyIncome();
+        console.log('DEBUG: Property income immediately after reset:', immediatePropertyIncome);
+        
         // Reset auto-invest toggle
         if (autoInvestToggle) {
           autoInvestToggle.checked = false;
@@ -4910,6 +4930,9 @@ let autoSubmitInterval = null;
         renderInterestPerSecond();
         renderDividendUI(0);
         renderAutoInvestSection();
+        renderAutoRentSection();
+        renderClickStreak();
+        renderRentIncome(); // CRITICAL: Update rent income display immediately
         
         // Update property UI for all properties
         Object.keys(PROPERTY_CONFIG).forEach(propertyId => {
@@ -5361,6 +5384,7 @@ let autoSubmitInterval = null;
     if (dividendInfo) dividendInfo.classList.toggle('hidden', !owned.u11 || !owned.u10);
   }
 
+
   function renderPrestigeMultipliers() {
     if (!prestigeMultipliers) return;
     // Always show multiplier in settings (never hide it)
@@ -5481,6 +5505,11 @@ let autoSubmitInterval = null;
         // Property income - always use sync calculation for now to ensure it works
     const propertyIncome = getTotalPropertyIncome();
     if (propertyIncome > 0) {
+      // Debug logging for property income after prestige reset
+      if (prestigeTier > 0) {
+        console.log('DEBUG: Property income detected after prestige reset:', propertyIncome, 'Properties:', properties);
+      }
+      
       if (autoRentEnabled) {
             investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
       } else {
@@ -6085,7 +6114,8 @@ let autoSubmitInterval = null;
       'upgrades': 1,
       'portfolio': 2,
       'achievements': 3,
-      'stats': 4
+      'stats': 4,
+      'games': 5
     };
     
     let isScrolling = false;

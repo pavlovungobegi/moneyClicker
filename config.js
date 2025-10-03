@@ -283,7 +283,7 @@ const GAME_CONFIG = {
     u128: { cost: 1006632960000000000000000000000, name: "Corporate Legend", effect: "20x the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "officeBuilding" },
     u129: { cost: 1610612736000000000000000000000, name: "Sky City Legend", effect: "20x the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "skyscraper" },
     u130: { cost: 2576980377600000000000000000000, name: "Cultural Legend", effect: "20x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "operaHouse" },
-    u131: { cost: 100000000000000000000000, name: "Click R.R. Martin", effect: "10x Click Income", type: "click_multiplier", effects: { click_multiplier: 9.0 } },
+u131: { cost: 100000000000000000000000, name: "Click R.R. Martin", effect: "10x Click Income", type: "click_multiplier", effects: { click_multiplier: 9.0 } },
   },
   
   // =============================================================================

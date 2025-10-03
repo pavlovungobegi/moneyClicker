@@ -758,6 +758,10 @@ header {
   content: '📈';
 }
 
+.nav-btn[data-panel="games"] .nav-icon.fallback::before {
+  content: '🎲';
+}
+
 .nav-btn.active .nav-icon {
   color: white;
 }
@@ -828,7 +832,7 @@ main {
 
 .panels {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
   gap: 24px;
   margin-top: 16px;
   height: 100%;
@@ -5613,7 +5617,8 @@ body.dark-mode .panel-header h2 {
 /* Green panel titles for specific panels */
 body.dark-mode #earnTitle,
 body.dark-mode #achievementsTitle,
-body.dark-mode #statsTitle {
+body.dark-mode #statsTitle,
+body.dark-mode #gamesTitle {
   color: var(--dark-accent-green) !important;
   text-shadow: 0 0 8px rgba(16, 185, 129, 0.3) !important;
 }
