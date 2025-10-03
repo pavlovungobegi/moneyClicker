@@ -577,7 +577,7 @@ const GAME_CONFIG = {
   
   LEADERBOARD_CONFIG: {
     FIREBASE_URL: 'https://moneyclicker-8a8b4-default-rtdb.europe-west1.firebasedb.app/',
-    SUBMISSION_COOLDOWN: 30000, // 30 seconds
+    SUBMISSION_COOLDOWN: 180000, // 30 seconds
     MAX_ENTRIES: 100,
     UPDATE_INTERVAL: 1000 // 1 second
   },

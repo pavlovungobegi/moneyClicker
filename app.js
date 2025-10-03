@@ -3784,10 +3784,10 @@ let autoSubmitInterval = null;
       return;
     }
 
-    // Simple 30-second cooldown between submissions
+    // Configurable cooldown between submissions
     const lastSubmission = localStorage.getItem('lastScoreSubmission');
     const now = Date.now();
-    const cooldownPeriod = 30 * 1000; // 30 seconds in milliseconds
+    const cooldownPeriod = GAME_CONFIG.LEADERBOARD_CONFIG.SUBMISSION_COOLDOWN; // Use config value
     
     if (lastSubmission && (now - parseInt(lastSubmission)) < cooldownPeriod) {
       const remainingTime = Math.ceil((cooldownPeriod - (now - parseInt(lastSubmission))) / 1000);
@@ -4016,10 +4016,6 @@ let autoSubmitInterval = null;
     const submitBtn = document.getElementById('submitScoreBtn');
     if (!submitBtn) return;
 
-    const lastSubmission = localStorage.getItem('lastScoreSubmission');
-    const now = Date.now();
-    const cooldownPeriod = 30 * 1000; // 30 seconds in milliseconds
-
     // Check if user is authenticated with Google
     if (!currentUser) {
       submitBtn.textContent = 'Sign In to Submit';
@@ -4028,19 +4024,7 @@ let autoSubmitInterval = null;
       return;
     }
 
-    // Check if user is still in cooldown period
-    if (lastSubmission && (now - parseInt(lastSubmission)) < cooldownPeriod) {
-      const remainingTime = Math.ceil((cooldownPeriod - (now - parseInt(lastSubmission))) / 1000);
-      const minutes = Math.floor(remainingTime / 60);
-      const seconds = remainingTime % 60;
-      
-      submitBtn.textContent = `Wait ${minutes}:${seconds.toString().padStart(2, '0')}`;
-      submitBtn.disabled = true;
-      submitBtn.title = `You can submit again in ${minutes}:${seconds.toString().padStart(2, '0')}`;
-      return;
-    }
-
-    // Ready to submit
+    // Always show "Submit Score" - cooldown is handled in submitScore function with alerts
     submitBtn.textContent = 'Submit Score';
     submitBtn.disabled = false;
     submitBtn.title = 'Submit your score to the leaderboard';
@@ -5659,15 +5643,15 @@ let autoSubmitInterval = null;
   // Invalidate property income cache to ensure fresh calculation
   propertyIncomeCacheValid = false;
 
-  // Start auto-submit functionality (only if user is already signed in)
-  if (currentUser) {
-    startAutoSubmit();
-  }
+  // Auto-submit functionality disabled - users must manually submit scores
+  // if (currentUser) {
+  //   startAutoSubmit();
+  // }
 
-  // Cleanup auto-submit when page is unloaded
-  window.addEventListener('beforeunload', () => {
-    stopAutoSubmit();
-  });
+  // Auto-submit disabled - no cleanup needed
+  // window.addEventListener('beforeunload', () => {
+  //   stopAutoSubmit();
+  // });
 
   // Generate upgrade HTML from configuration
   generateAllUpgradeHTML();
@@ -6614,6 +6598,9 @@ window.addEventListener('beforeunload', cleanup);
 
   // Make getCurrentGameState globally accessible
   window.getCurrentGameState = getCurrentGameState;
+  
+  // Make updateSubmissionStatus globally accessible
+  window.updateSubmissionStatus = updateSubmissionStatus;
 })();
 
 // PWA Install Prompt Functionality
@@ -7022,14 +7009,14 @@ function initFirebaseAuth() {
       console.log('User signed in:', user.displayName);
       // Load user's cloud save
       loadCloudSave();
-      // Start auto-submit when user signs in
-      startAutoSubmit();
+      // Auto-submit disabled - users must manually submit scores
+      // startAutoSubmit();
     } else {
       console.log('User signed out');
       // Switch back to local save
       loadGameState();
-      // Stop auto-submit when user signs out
-      stopAutoSubmit();
+      // Auto-submit disabled - no need to stop
+      // stopAutoSubmit();
     }
   });
   
@@ -7135,6 +7122,11 @@ function updateAuthUI() {
     // User is signed out
     loginSection.classList.remove('hidden');
     userSection.classList.add('hidden');
+  }
+  
+  // Update submit button status when auth state changes
+  if (window.updateSubmissionStatus) {
+    window.updateSubmissionStatus();
   }
 }
 
