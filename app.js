@@ -3220,7 +3220,7 @@ let autoSubmitInterval = null;
         <div class="offline-earnings-header">
           <h3>💰 Welcome Back!</h3>
           <p>You were offline for <strong>${formatOfflineTime(offlineData.secondsOffline)}</strong></p>
-          ${offlineData.wasCapped ? '<p class="capped-notice">⚠️ Earnings capped at 24 hours maximum</p>' : ''}
+          ${offlineData.wasCapped ? `<p class="capped-notice">⚠️ Earnings capped at ${GAME_CONFIG.OFFLINE_EARNINGS.MAX_OFFLINE_HOURS} hour${GAME_CONFIG.OFFLINE_EARNINGS.MAX_OFFLINE_HOURS !== 1 ? 's' : ''} maximum</p>` : ''}
         </div>
         <div class="offline-earnings-breakdown">
           <div class="earnings-item">
