@@ -129,28 +129,28 @@ const GAME_CONFIG = {
       name: "Manufacturing Plant",
       baseCost: 2500000,
       incomePerSecond: 18000,
-      priceMultiplier: 1.075,
+      priceMultiplier: 1.074,
       icon: "fas fa-industry"
     },
     officeBuilding: {
       name: "Office Building",
       baseCost: 10000000,
       incomePerSecond: 55000,
-      priceMultiplier: 1.075,
+      priceMultiplier: 1.073,
       icon: "fas fa-building"
     },
     skyscraper: {
       name: "Skyscraper",
       baseCost: 50000000,
       incomePerSecond: 175000,
-      priceMultiplier: 1.075,
+      priceMultiplier: 1.072,
       icon: "fas fa-city"
     },
     operaHouse: {
       name: "Opera House",
       baseCost: 500000000,
       incomePerSecond: 1500000,
-      priceMultiplier: 1.075,
+      priceMultiplier: 1.071,
       icon: "fas fa-theater-masks"
     }
   },
@@ -236,8 +236,12 @@ const GAME_CONFIG = {
       u85: { cost: 60750000000000000000000, name: "Quantum Manufacturing", effect: "20x the income of Manufacturing Plants", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "manufacturingPlant" },
       u86: { cost: 182250000000000000000000, name: "Interstellar Corporate Hubs", effect: "20x the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "officeBuilding" },
       u87: { cost: 546750000000000000000000, name: "Dimensional Sky Cities", effect: "20x the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "skyscraper" },
-      u88: { cost: 1640250000000000000000000, name: "Universal Arts Federation", effect: "20x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "operaHouse" },
-    },
+    u88: { cost: 1640250000000000000000000, name: "Universal Arts Federation", effect: "20x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "operaHouse" },
+    // Global property income doubling upgrades
+    u89: { cost: 10000000000000000000, name: "Real Estate Empire", effect: "Doubles all property incomes", type: "rent_boost", effects: { rent_income: 1.0 } },
+    u90: { cost: 200000000000000000000000, name: "Property Dominion", effect: "Doubles all property incomes", type: "rent_boost", effects: { rent_income: 1.0 } },
+    u91: { cost: 2000000000000000000000000000, name: "Universal Property Authority", effect: "Doubles all property incomes", type: "rent_boost", effects: { rent_income: 1.0 } },
+  },
   
   // =============================================================================
   // ACHIEVEMENT CONFIGURATION
