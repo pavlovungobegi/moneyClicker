@@ -241,7 +241,7 @@ const GAME_CONFIG = {
     u89: { cost: 20000000000000000000000, name: "Property Dynasty", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
     u90: { cost: 200000000000000000000000, name: "Property Dominion", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
     u91: { cost: 2000000000000000000000000, name: "Universal Property Authority", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
-    u92: { cost: 1000000000000000000000, name: "Master Builder", effect: "Reduces the purchase price of buildings by 50%", type: "building_discount", effects: { building_discount: 0.50 } },
+    u92: { cost: 1000000000000000000000, name: "Master Builder", effect: "Quadruples all property incomes", type: "building_discount", effects: { rent_income: 3.0 } },
   },
   
   // =============================================================================
