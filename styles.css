@@ -747,7 +747,7 @@ header {
 }
 
 .nav-btn[data-panel="portfolio"] .nav-icon.fallback::before {
-  content: '📊';
+  content: '🎰';
 }
 
 .nav-btn[data-panel="achievements"] .nav-icon.fallback::before {
@@ -6777,6 +6777,8 @@ body.dark-mode .panels::after {
   align-items: center;
   justify-content: center;
   transition: background 0.2s ease;
+  z-index: 1000;
+  pointer-events: auto;
 }
 
 .popup-close:hover {
@@ -6812,6 +6814,88 @@ body.dark-mode .panels::after {
   }
   to {
     text-shadow: 0 0 25px #9C27B0, 0 0 35px #9C27B0;
+  }
+}
+
+/* Mega Win Animations */
+.mega-win-popup .popup-title {
+  animation: mega-pulse 1.5s ease-in-out infinite alternate;
+}
+
+.mega-win-popup .multiplier-text {
+  animation: mega-amount-pulse 1.2s ease-in-out infinite alternate;
+  color: #FF6B35 !important;
+  font-size: 1.5rem !important;
+  font-weight: 900 !important;
+}
+
+@keyframes mega-pulse {
+  from {
+    transform: scale(1);
+    text-shadow: 0 0 15px #FF6B35;
+  }
+  to {
+    transform: scale(1.1);
+    text-shadow: 0 0 25px #FF6B35, 0 0 35px #FF6B35;
+  }
+}
+
+@keyframes mega-amount-pulse {
+  from {
+    transform: scale(1);
+    text-shadow: 0 0 10px #FF6B35;
+  }
+  to {
+    transform: scale(1.15);
+    text-shadow: 0 0 20px #FF6B35, 0 0 30px #FF6B35;
+  }
+}
+
+/* Divine Win Animations */
+.divine-win-popup .popup-title {
+  animation: divine-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.divine-win-popup .multiplier-text {
+  animation: divine-amount-pulse 1s ease-in-out infinite alternate;
+  color: #9C27B0 !important;
+  font-size: 1.6rem !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 15px #9C27B0;
+}
+
+.divine-win-popup .popup-description {
+  animation: divine-glow-text 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes divine-pulse {
+  from {
+    transform: scale(1);
+    text-shadow: 0 0 15px #9C27B0;
+  }
+  to {
+    transform: scale(1.15);
+    text-shadow: 0 0 30px #9C27B0, 0 0 45px #9C27B0;
+  }
+}
+
+@keyframes divine-amount-pulse {
+  from {
+    transform: scale(1);
+    text-shadow: 0 0 15px #9C27B0;
+  }
+  to {
+    transform: scale(1.2);
+    text-shadow: 0 0 25px #9C27B0, 0 0 40px #9C27B0;
+  }
+}
+
+@keyframes divine-glow-text {
+  from {
+    text-shadow: 0 0 5px rgba(156, 39, 176, 0.8);
+  }
+  to {
+    text-shadow: 0 0 15px rgba(156, 39, 176, 0.8);
   }
 }
 

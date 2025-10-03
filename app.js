@@ -7591,12 +7591,12 @@ let slotsAutoSpinInterval = null;
 // Slots Game Configuration
 const SLOTS_SYMBOLS = ['7', 'diamond', 'cherry', 'bell', 'bar', 'star'];
 const SLOTS_PAYOUTS = {
-  '7': { '5': 1000, '4': 300, '3': 50, '2': 5 },
-  'diamond': { '5': 500, '4': 200, '3': 40, '2': 4 },
-  'bar': { '5': 100, '4': 40, '3': 20, '2': 3 },
-  'bell': { '5': 75, '4': 30, '3': 15, '2': 3 },
-  'cherry': { '5': 50, '4': 25, '3': 10, '2': 2 },
-  'star': { '5': 100, '4': 40, '3': 20, '2': 3 }
+  '7': { '5': 1000, '4': 200, '3': 30 },
+  'diamond': { '5': 500, '4': 150, '3': 25 },
+  'bar': { '5': 200, '4': 80, '3': 15 },
+  'bell': { '5': 150, '4': 60, '3': 12 },
+  'cherry': { '5': 100, '4': 40, '3': 8 },
+  'star': { '5': 200, '4': 80, '3': 15 }
 };
 
 function setSlotsBetAmount(type) {
@@ -7772,7 +7772,7 @@ function getSymbolDisplay(symbol) {
     'diamond': '💎',
     'cherry': '🍒',
     'bell': '🔔',
-    'bar': '📊',
+    'bar': '🎰',
     'star': '⭐'
   };
   return symbolMap[symbol] || symbol;
@@ -7812,8 +7812,8 @@ function calculateSlotsWinnings(results, betAmount) {
     }
   }
   
-  // Calculate winnings based on consecutive symbols
-  if (maxConsecutive >= 2) {
+  // Calculate winnings based on consecutive symbols (minimum 3 for 5-reel slots)
+  if (maxConsecutive >= 3) {
     const multiplier = SLOTS_PAYOUTS[bestSymbol]?.[maxConsecutive.toString()] || 0;
     if (multiplier > 0) {
       totalWinnings = betAmount * multiplier;
@@ -8028,7 +8028,7 @@ function showWinPopup(winType, amount, multiplier, betAmount) {
   // Create popup
   const popup = document.createElement('div');
   popup.id = 'winCelebrationPopup';
-  popup.className = 'win-celebration-popup';
+  popup.className = `win-celebration-popup ${winType}-win-popup`;
   
   let titleText = '';
   let titleClass = '';
@@ -8050,7 +8050,7 @@ function showWinPopup(winType, amount, multiplier, betAmount) {
   
   popup.innerHTML = `
     <div class="popup-content">
-      <button class="popup-close" onclick="closeWinPopup()">&times;</button>
+      <button class="popup-close" id="winPopupClose">&times;</button>
       <div class="popup-title ${titleClass}">${titleText}</div>
       <div class="popup-description">
         You won <strong>€${formatNumberShort(amount)}</strong><br>
@@ -8063,6 +8063,35 @@ function showWinPopup(winType, amount, multiplier, betAmount) {
   `;
   
   document.body.appendChild(popup);
+  
+  // Add event listener for close button
+  const closeBtn = document.getElementById('winPopupClose');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Close button clicked');
+      closeWinPopup();
+    });
+  }
+  
+  // Add click outside to close (backup method)
+  popup.addEventListener('click', function(e) {
+    if (e.target === popup) {
+      console.log('Popup background clicked - closing');
+      closeWinPopup();
+    }
+  });
+  
+  // Add escape key handler
+  const escapeHandler = function(e) {
+    if (e.key === 'Escape') {
+      console.log('Escape key pressed - closing popup');
+      closeWinPopup();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
   
   // Add show animation
   setTimeout(() => {
