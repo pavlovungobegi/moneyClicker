@@ -5074,8 +5074,8 @@ let autoSubmitInterval = null;
     rows.sort((a, b) => {
       const aId = a.getAttribute('data-upgrade-id');
       const bId = b.getAttribute('data-upgrade-id');
-      const aCost = UPGRADE_CONFIG[aId]?.cost ?? Number.MAX_SAFE_INTEGER;
-      const bCost = UPGRADE_CONFIG[bId]?.cost ?? Number.MAX_SAFE_INTEGER;
+      const aCost = getUpgradeCost(aId) ?? Number.MAX_SAFE_INTEGER;
+      const bCost = getUpgradeCost(bId) ?? Number.MAX_SAFE_INTEGER;
       return aCost - bCost;
     });
     rows.forEach((row) => scrollableContent.appendChild(row));
