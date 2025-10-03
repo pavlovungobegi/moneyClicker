@@ -6517,6 +6517,7 @@ body.dark-mode .panels::after {
   transition: all 0.3s ease;
   margin: 0 auto;
   display: block;
+  width: 100%;
   box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   position: relative;
@@ -6667,13 +6668,15 @@ body.dark-mode .panels::after {
 }
 
 .dark-mode .bet-input-container input {
-  background: var(--dark-input-bg);
-  color: var(--dark-text-primary);
-  border-color: var(--dark-border-color);
+  background: var(--dark-bg-secondary);
+  color: var(--dark-text-primary) !important;
+  border-color: var(--dark-border);
 }
 
 .dark-mode .bet-input-container input:focus {
+  background: var(--dark-bg-tertiary);
   border-color: var(--dark-accent-color);
+  color: var(--dark-text-primary) !important;
 }
 
 .dark-mode .bet-quick-btn {

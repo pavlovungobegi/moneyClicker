@@ -7688,6 +7688,11 @@ function spinSlots() {
   spinBtn.disabled = true;
   spinBtn.textContent = 'SPINNING...';
   
+  // Play wheel spin sound
+  if (AudioSystem && AudioSystem.playWheelSpinSound) {
+    AudioSystem.playWheelSpinSound();
+  }
+  
   // Clear previous result
   resultDiv.textContent = '';
   resultDiv.className = 'game-result-simple';
@@ -7752,6 +7757,9 @@ function spinSlots() {
       
       // Check if it's a scatter win (triggers minigame)
       if (winnings.isScatter) {
+        // Pause auto-spin when minigame is triggered
+        pauseAutoSpin();
+        
         // Don't add winnings yet, minigame will multiply them
         currentAccountBalance -= totalWinnings; // Remove the base winnings
         // Show minigame
@@ -7973,7 +7981,7 @@ function createCoinFlowAnimation(speedMultiplier = 1) {
   
   const ctx = canvas.getContext('2d');
   const coins = [];
-  const coinCount = 50;
+  const coinCount = 30;
   
   // Create coins flowing from top to bottom
   for (let i = 0; i < coinCount; i++) {
@@ -7981,11 +7989,11 @@ function createCoinFlowAnimation(speedMultiplier = 1) {
       x: Math.random() * window.innerWidth,
       y: -50 - Math.random() * 200, // Start above screen
       vx: (Math.random() - 0.5) * 2 * speedMultiplier, // Slight horizontal movement
-      vy: (2 + Math.random() * 3) * speedMultiplier, // Downward movement
+      vy: (2 + Math.random() * 4) * speedMultiplier, // Downward movement
       size: 8 + Math.random() * 8,
       rotation: 0,
       rotationSpeed: (Math.random() - 0.5) * 0.3 * speedMultiplier,
-      life: 1.0,
+      life: 0.8,
       delay: i * (100 / speedMultiplier) // Stagger the coins
     });
   }
@@ -8343,7 +8351,7 @@ function triggerWinCelebration(totalWinnings, betAmount, source = 'general') {
   
   if (winType) {
     // Create coin flow animation - 2x faster for slots wins
-    const speedMultiplier = source === 'slots' ? 2 : 1;
+    const speedMultiplier = source === 'slots' ? 3 : 1;
     createCoinFlowAnimation(speedMultiplier);
     
     // Show popup

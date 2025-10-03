@@ -406,6 +406,42 @@
     }
   }
 
+  // Play wheel spin sound
+  function playWheelSpinSound() {
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    try {
+      const wheelSpinSound = new Audio('wheel-spin.wav');
+      wheelSpinSound.volume = 0.6; // Moderate volume for spin sound
+      wheelSpinSound.preload = 'auto'; // Preload for better mobile performance
+      
+      // Add mobile-specific audio handling
+      wheelSpinSound.addEventListener('canplaythrough', () => {
+        wheelSpinSound.play().catch(e => {
+          console.log('Wheel spin sound failed to play:', e);
+          // Try to resume audio context and retry once
+          resumeAudioContext();
+          setTimeout(() => {
+            wheelSpinSound.play().catch(e2 => {
+              console.log('Wheel spin sound retry failed:', e2);
+            });
+          }, 100);
+        });
+      });
+      
+      // Fallback: try to play immediately if already loaded
+      if (wheelSpinSound.readyState >= 3) { // HAVE_FUTURE_DATA or higher
+        wheelSpinSound.play().catch(e => {
+          console.log('Wheel spin sound immediate play failed:', e);
+        });
+      }
+      
+    } catch (e) {
+      console.log('Wheel spin sound not available:', e);
+    }
+  }
+
   // Event sound effects
   function playMarketBoomSound() {
     if (!audioContext || !soundEffectsEnabled) return;
@@ -601,6 +637,7 @@
     playTierUpgradeSound,
     playSuccessSound,
     playWinSound,
+    playWheelSpinSound,
     
     // Event sounds
     playMarketBoomSound,
