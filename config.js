@@ -650,7 +650,8 @@ const GAME_CONFIG = {
       { name: "Legendary", color: "#f59e0b", bgColor: "rgba(245, 158, 11, 0.4)", borderColor: "rgba(245, 158, 11, 0.6)", buildingsRequired: 250 },
       { name: "Transcendent", color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.4)", borderColor: "rgba(239, 68, 68, 0.6)", buildingsRequired: 275 },
       { name: "Divine", color: "#ff6b6b", bgColor: "rgba(255, 107, 107, 0.4)", borderColor: "rgba(255, 255, 255, 0.8)", buildingsRequired: 300 },
-      { name: "Cosmic", color: "#ff00ff", bgColor: "rgba(255, 0, 255, 0.5)", borderColor: "rgba(255, 0, 255, 0.8)", buildingsRequired: 500 }
+      { name: "Cosmic", color: "#ff00ff", bgColor: "rgba(255, 0, 255, 0.5)", borderColor: "rgba(255, 0, 255, 0.8)", buildingsRequired: 500 },
+      { name: "Galactic", color: "#00ffff", bgColor: "rgba(0, 255, 255, 0.6)", borderColor: "rgba(0, 255, 255, 0.9)", buildingsRequired: 600 }
     ],
     
     // Configuration

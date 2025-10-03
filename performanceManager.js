@@ -297,14 +297,16 @@
           if (propertyConfig) {
             let income = count * propertyConfig.incomePerSecond;
             
-            // Apply tier multiplier (including special 10x for 500+ buildings)
+            // Apply tier multiplier (including special multipliers for high-tier buildings)
             // Calculate tier using procedural system (simplified)
             const tier = Math.floor((count - 1) / 25) + 1;
             let tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
             
-            // Special 10x multiplier for 500+ buildings (Cosmic tier) - multiplicative
-            if (count >= 500) {
-              tierMultiplier *= 10; // Multiply existing tier multiplier by 10x
+            // Special multipliers for high-tier buildings - multiplicative
+            if (count >= 600) {
+              tierMultiplier *= 100; // Multiply existing tier multiplier by 100x (Galactic tier)
+            } else if (count >= 500) {
+              tierMultiplier *= 10; // Multiply existing tier multiplier by 10x (Cosmic tier)
             }
             
             income *= tierMultiplier;

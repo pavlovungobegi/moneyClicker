@@ -1754,9 +1754,11 @@ let autoSubmitInterval = null;
     
     let tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
     
-    // Special 10x multiplier for 500+ buildings (Cosmic tier) - multiplicative
-    if (ownedCount >= 500) {
-      tierMultiplier *= 10; // Multiply existing tier multiplier by 10x
+    // Special multipliers for high-tier buildings - multiplicative
+    if (ownedCount >= 600) {
+      tierMultiplier *= 100; // Multiply existing tier multiplier by 100x (Galactic tier)
+    } else if (ownedCount >= 500) {
+      tierMultiplier *= 10; // Multiply existing tier multiplier by 10x (Cosmic tier)
     }
     
     // All buildings get the same income multiplier based on total owned
@@ -2030,8 +2032,21 @@ let autoSubmitInterval = null;
       return GAME_CONFIG.TIER_CONFIG.default;
     }
     
-    // Special handling for Cosmic tier (tier 20 = 500 buildings)
-    if (tierNumber === 20) {
+    // Special handling for high-tier buildings
+    if (tierNumber === 25) {
+      // Galactic tier (600 buildings)
+      const galacticTier = GAME_CONFIG.TIER_CONFIG.standardTiers.find(tier => tier.buildingsRequired === 600);
+      if (galacticTier) {
+        return {
+          name: galacticTier.name,
+          color: galacticTier.color,
+          bgColor: galacticTier.bgColor,
+          borderColor: galacticTier.borderColor,
+          buildingsRequired: galacticTier.buildingsRequired
+        };
+      }
+    } else if (tierNumber === 20) {
+      // Cosmic tier (500 buildings)
       const cosmicTier = GAME_CONFIG.TIER_CONFIG.standardTiers.find(tier => tier.buildingsRequired === 500);
       if (cosmicTier) {
         return {
@@ -2053,8 +2068,10 @@ let autoSubmitInterval = null;
 
   // Calculate tier number from owned count
   function calculateTier(ownedCount) {
-    // Special handling for Cosmic tier (500+ buildings)
-    if (ownedCount >= 500) {
+    // Special handling for high-tier buildings
+    if (ownedCount >= 600) {
+      return 25; // Return tier 25 for Galactic tier
+    } else if (ownedCount >= 500) {
       return 20; // Return tier 20 for Cosmic tier
     }
     
@@ -2614,8 +2631,10 @@ let autoSubmitInterval = null;
   function getMultiplierText(tier) {
     let multiplier = Math.pow(2, tier);
     
-    // Special handling for Cosmic tier (tier 20 = 500 buildings)
-    if (tier === 20) {
+    // Special handling for high-tier buildings
+    if (tier === 25) {
+      multiplier *= 100; // Multiply by 100 for Galactic tier
+    } else if (tier === 20) {
       multiplier *= 10; // Multiply by 10 for Cosmic tier
     }
     
@@ -5003,10 +5022,10 @@ let autoSubmitInterval = null;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (getGameDifficulty()) {
-      case 'easy': return 1.0012;    // 0.5% per second (easier)
-      case 'normal': return 1.0012;  // 0.4% per second (original)
-      case 'hard': return 1.0010;   // 0.35% per second (harder)
-      case 'extreme': return 1.0008; // 0.3% per second (extreme)
+      case 'easy': return 1.001;    // 0.5% per second (easier)
+      case 'normal': return 1.001;  // 0.4% per second (original)
+      case 'hard': return 1.0008;   // 0.35% per second (harder)
+      case 'extreme': return 1.0007; // 0.3% per second (extreme)
       default: return 1.001;        // fallback to normal
     }
   }
@@ -5133,7 +5152,7 @@ let autoSubmitInterval = null;
 
   // Dividends logic: 1% every 10 seconds to current, investment unchanged
   const BASE_DIVIDEND_INTERVAL_MS = 10000;
-  const BASE_DIVIDEND_RATE = 0.004;
+  const BASE_DIVIDEND_RATE = 0.0032;
   let dividendElapsed = 0;
   let dividendAnimationId = null;
 

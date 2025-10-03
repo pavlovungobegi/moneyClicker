@@ -143,6 +143,12 @@
   box-shadow: 0 8px 32px rgba(255, 0, 255, 0.4);
 }
 
+.market-event-notification.tier-upgrade.tier-galactic {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.85) 0%, rgba(0, 255, 255, 0.7) 100%);
+  border-color: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 255, 255, 0.4);
+}
+
 .market-event-notification .event-title i {
   margin-right: 8px;
   font-size: 18px;
@@ -5273,6 +5279,22 @@ body.dark-mode .property-row.tier-4::after {
   box-shadow: 0 6px 20px rgba(255, 0, 255, 0.4);
 }
 
+/* Galactic tier (600+ buildings) - simplistic colored look */
+.property-row.tier-25 {
+  /* Galactic tier - bright cyan with simple styling */
+  background: linear-gradient(135deg, 
+    rgba(0, 255, 255, 0.6) 0%, 
+    rgba(0, 255, 255, 0.5) 50%,
+    rgba(0, 255, 255, 0.6) 100%);
+  border: 2px solid rgba(0, 255, 255, 0.9);
+  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.4);
+}
+
+.property-row.tier-25:hover {
+  border-color: rgba(0, 255, 255, 1);
+  box-shadow: 0 6px 20px rgba(0, 255, 255, 0.5);
+}
+
 /* Override tier animations in dark mode */
 body.dark-mode .property-row.tier-3::before {
   animation: none !important;
@@ -5298,6 +5320,21 @@ body.dark-mode .property-row.tier-20 {
 body.dark-mode .property-row.tier-20:hover {
   border-color: rgba(255, 0, 255, 0.8) !important;
   box-shadow: 0 6px 20px rgba(255, 0, 255, 0.3) !important;
+}
+
+/* Galactic tier dark mode styling */
+body.dark-mode .property-row.tier-25 {
+  background: linear-gradient(135deg, 
+    rgba(0, 255, 255, 0.4) 0%, 
+    var(--dark-bg-secondary) 50%,
+    rgba(0, 255, 255, 0.3) 100%) !important;
+  border: 2px solid rgba(0, 255, 255, 0.7) !important;
+  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.3) !important;
+}
+
+body.dark-mode .property-row.tier-25:hover {
+  border-color: rgba(0, 255, 255, 0.9) !important;
+  box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4) !important;
 }
 
 /* Dark mode property text elements */
