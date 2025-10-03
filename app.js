@@ -2053,6 +2053,11 @@ let autoSubmitInterval = null;
 
   // Calculate tier number from owned count
   function calculateTier(ownedCount) {
+    // Special handling for Cosmic tier (500+ buildings)
+    if (ownedCount >= 500) {
+      return 20; // Return tier 20 for Cosmic tier
+    }
+    
     // Get the tier info based on building count
     const tierInfo = getTierInfoByBuildings(ownedCount);
     
