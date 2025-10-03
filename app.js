@@ -1752,7 +1752,12 @@ let autoSubmitInterval = null;
     // Calculate tier using procedural system
     const tier = calculateTier(ownedCount);
     
-    const tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
+    let tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
+    
+    // Special 10x multiplier for 500+ buildings (Cosmic tier) - multiplicative
+    if (ownedCount >= 500) {
+      tierMultiplier *= 10; // Multiply existing tier multiplier by 10x
+    }
     
     // All buildings get the same income multiplier based on total owned
     let baseIncome = ownedCount * config.incomePerSecond * tierMultiplier;
@@ -2023,6 +2028,20 @@ let autoSubmitInterval = null;
   function getTierInfo(tierNumber) {
     if (tierNumber === 0) {
       return GAME_CONFIG.TIER_CONFIG.default;
+    }
+    
+    // Special handling for Cosmic tier (tier 20 = 500 buildings)
+    if (tierNumber === 20) {
+      const cosmicTier = GAME_CONFIG.TIER_CONFIG.standardTiers.find(tier => tier.buildingsRequired === 500);
+      if (cosmicTier) {
+        return {
+          name: cosmicTier.name,
+          color: cosmicTier.color,
+          bgColor: cosmicTier.bgColor,
+          borderColor: cosmicTier.borderColor,
+          buildingsRequired: cosmicTier.buildingsRequired
+        };
+      }
     }
     
     // Calculate buildings required for this tier
@@ -2588,7 +2607,13 @@ let autoSubmitInterval = null;
   }
   
   function getMultiplierText(tier) {
-    const multiplier = Math.pow(2, tier);
+    let multiplier = Math.pow(2, tier);
+    
+    // Special handling for Cosmic tier (tier 20 = 500 buildings)
+    if (tier === 20) {
+      multiplier *= 10; // Multiply by 10 for Cosmic tier
+    }
+    
     return `${multiplier}x`;
   }
   

@@ -296,6 +296,19 @@
           const propertyConfig = data.propertyConfigs[propertyId];
           if (propertyConfig) {
             let income = count * propertyConfig.incomePerSecond;
+            
+            // Apply tier multiplier (including special 10x for 500+ buildings)
+            // Calculate tier using procedural system (simplified)
+            const tier = Math.floor((count - 1) / 25) + 1;
+            let tierMultiplier = Math.pow(2, tier); // 2^tier (1x, 2x, 4x, 8x)
+            
+            // Special 10x multiplier for 500+ buildings (Cosmic tier) - multiplicative
+            if (count >= 500) {
+              tierMultiplier *= 10; // Multiply existing tier multiplier by 10x
+            }
+            
+            income *= tierMultiplier;
+            
             // Apply prestige multiplier to property income (twice for double effect)
             income *= prestigeInterestMultiplier * prestigeInterestMultiplier;
             totalIncome += income;
