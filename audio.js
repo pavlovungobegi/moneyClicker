@@ -353,6 +353,23 @@
     }
   }
 
+  function playWinSound() {
+    if (!soundEnabled || !soundEffectsEnabled) return;
+    
+    // Ensure audio context is resumed for iOS PWA
+    resumeAudioContext();
+    
+    try {
+      const winSound = new Audio('you-win.mp3');
+      winSound.volume = 0.3; // Set volume to 30%
+      winSound.play().catch(e => {
+        console.log('Win sound failed to play:', e);
+      });
+    } catch (e) {
+      console.log('Win sound not available:', e);
+    }
+  }
+
   // Event sound effects
   function playMarketBoomSound() {
     if (!audioContext || !soundEffectsEnabled) return;
@@ -528,6 +545,7 @@
     playAchievementSound,
     playTierUpgradeSound,
     playSuccessSound,
+    playWinSound,
     
     // Event sounds
     playMarketBoomSound,

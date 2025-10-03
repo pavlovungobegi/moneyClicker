@@ -639,6 +639,16 @@
             <h2 id="gamesTitle">Games</h2>
           </div>
           <div class="scrollable-content" style="padding-top: 0 !important;">
+            <!-- Game Switcher -->
+            <div class="game-switcher">
+              <button class="game-tab-btn active" id="coinFlipTab" onclick="switchGame('coinFlip')">
+                🪙 Coin Flip
+              </button>
+              <button class="game-tab-btn" id="slotsTab" onclick="switchGame('slots')">
+                🎰 Slots
+              </button>
+            </div>
+            
             <!-- Coin Flip Game -->
             <div class="game-section" id="coinFlipGame">
               <div class="game-header">
@@ -692,6 +702,142 @@
                   <h4>Recent Flips:</h4>
                   <div class="history-list" id="coinFlipHistory">
                     <!-- History items will be added here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Slots Game -->
+            <div class="game-section" id="slotsGame" style="display: none;">
+              <div class="game-header">
+                <h3 style="margin-top: 0 !important;">🎰 Slots<span class="game-description">3 reels • Match symbols • Win big!</span></h3>
+              </div>
+              
+              <div class="game-content">
+                <!-- Bet Amount Selection -->
+                <div class="bet-section">
+                  <div class="bet-input-container">
+                    <label for="slotsBetAmount">Bet Amount:</label>
+                    <input type="number" id="slotsBetAmount" min="1" step="1" placeholder="Enter amount">
+                  </div>
+                  <div class="bet-quick-buttons">
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('max')">Max</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('100')">€100</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('50')">€50</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('25')">€25</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('10')">€10</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('5')">€5</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('1')">€1</button>
+                  </div>
+                </div>
+                
+                <!-- Current Bet Display -->
+                <div class="current-bet" id="slotsCurrentBet">
+                  <span>Current Bet: €0</span>
+                  <span class="game-result-simple" id="slotsResultSimple"></span>
+                </div>
+                
+                <!-- Slot Machine Reels -->
+                <div class="slot-machine">
+                  <div class="reels-container">
+                    <div class="reel" id="reel1">
+                      <div class="symbol" id="reel1-symbol" data-symbol="7">7</div>
+                    </div>
+                    <div class="reel" id="reel2">
+                      <div class="symbol" id="reel2-symbol" data-symbol="7">7</div>
+                    </div>
+                    <div class="reel" id="reel3">
+                      <div class="symbol" id="reel3-symbol" data-symbol="7">7</div>
+                    </div>
+                    <div class="reel" id="reel4">
+                      <div class="symbol" id="reel4-symbol" data-symbol="7">7</div>
+                    </div>
+                    <div class="reel" id="reel5">
+                      <div class="symbol" id="reel5-symbol" data-symbol="7">7</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Payline Indicators -->
+                  <div class="paylines">
+                    <div class="payline payline-1"></div>
+                    <div class="payline payline-2"></div>
+                    <div class="payline payline-3"></div>
+                  </div>
+                </div>
+                
+                <!-- Spin Controls -->
+                <div class="spin-controls">
+                  <button class="game-action-btn" id="slotsSpinBtn" onclick="spinSlots()">
+                    🎰 SPIN
+                  </button>
+                  <label class="auto-spin-label">
+                    <input type="checkbox" id="slotsAutoSpin">
+                    <span>Auto Spin</span>
+                  </label>
+                </div>
+                
+                
+                
+                <!-- Payout Table -->
+                <div class="payout-table">
+                  <h4>Payouts:</h4>
+                  <div class="payout-grid">
+                    <div class="payout-item">
+                      <span class="payout-symbols">💎💎💎💎💎</span>
+                      <span class="payout-amount">500x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">77777</span>
+                      <span class="payout-amount">1000x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">💎💎💎💎</span>
+                      <span class="payout-amount">200x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">7777</span>
+                      <span class="payout-amount">300x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">🍒🍒🍒🍒🍒</span>
+                      <span class="payout-amount">50x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">🔔🔔🔔🔔🔔</span>
+                      <span class="payout-amount">75x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">📊📊📊📊📊</span>
+                      <span class="payout-amount">100x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">🍒🍒🍒🍒</span>
+                      <span class="payout-amount">25x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">🔔🔔🔔🔔</span>
+                      <span class="payout-amount">30x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">📊📊📊📊</span>
+                      <span class="payout-amount">40x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">🍒🍒🍒</span>
+                      <span class="payout-amount">10x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">🔔🔔🔔</span>
+                      <span class="payout-amount">15x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">⭐⭐⭐</span>
+                      <span class="payout-amount">25x</span>
+                    </div>
+                    <div class="payout-item">
+                      <span class="payout-symbols">Any 2 Match</span>
+                      <span class="payout-amount">2x</span>
+                    </div>
                   </div>
                 </div>
               </div>

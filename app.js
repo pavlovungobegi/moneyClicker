@@ -5229,7 +5229,7 @@ let isCoinFlipping = false;
         totalDividendsReceived += payout;
         
         // Create flying money particles for dividend payout
-        if (particleSystem && particleSystem.createMoneyParticles && particleEffectsEnabled) {
+        if (particleSystem && particleSystem.createMoneyGainParticles && particleEffectsEnabled) {
           const dividendProgress = document.getElementById('dividendProgressBar');
           if (dividendProgress) {
             const rect = dividendProgress.getBoundingClientRect();
@@ -7466,18 +7466,8 @@ function flipCoin() {
       resultDiv.innerHTML = `🎉 Heads! You won €${formatNumberShort(winnings)}!`;
       resultDiv.className = 'game-result win';
       
-      // Create winning particles
-      if (particleSystem && particleEffectsEnabled) {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        particleSystem.createMoneyParticles(centerX, centerY, winnings);
-        particleSystem.createGoldenParticles(centerX, centerY, 10);
-      }
-      
-      // Play win sound
-      if (AudioSystem && AudioSystem.playUpgradeSound) {
-        AudioSystem.playUpgradeSound();
-      }
+      // Trigger win celebration for big wins
+      triggerWinCelebration(winnings, betAmount);
     } else {
       resultDiv.innerHTML = `💸 Tails! You lost €${formatNumberShort(betAmount)}`;
       resultDiv.className = 'game-result lose';
@@ -7555,6 +7545,601 @@ function initCoinFlipGame() {
 window.setCoinFlipBetAmount = setCoinFlipBetAmount;
 window.flipCoin = flipCoin;
 
+// =============================================================================
+// GAME SWITCHER FUNCTIONS
+// =============================================================================
+
+function switchGame(gameType) {
+  // Hide all game sections
+  const coinFlipGame = document.getElementById('coinFlipGame');
+  const slotsGame = document.getElementById('slotsGame');
+  
+  // Remove active class from all tabs
+  const coinFlipTab = document.getElementById('coinFlipTab');
+  const slotsTab = document.getElementById('slotsTab');
+  
+  if (coinFlipGame) coinFlipGame.style.display = 'none';
+  if (slotsGame) slotsGame.style.display = 'none';
+  
+  if (coinFlipTab) coinFlipTab.classList.remove('active');
+  if (slotsTab) slotsTab.classList.remove('active');
+  
+  // Show selected game and activate its tab
+  switch(gameType) {
+    case 'coinFlip':
+      if (coinFlipGame) coinFlipGame.style.display = 'block';
+      if (coinFlipTab) coinFlipTab.classList.add('active');
+      break;
+    case 'slots':
+      if (slotsGame) slotsGame.style.display = 'block';
+      if (slotsTab) slotsTab.classList.add('active');
+      break;
+  }
+}
+
+// Make game switcher function globally accessible
+window.switchGame = switchGame;
+
+// =============================================================================
+// SLOTS GAME VARIABLES AND FUNCTIONS
+// =============================================================================
+
+// Slots Game Variables
+let isSlotsSpinning = false;
+let slotsAutoSpinInterval = null;
+
+// Slots Game Configuration
+const SLOTS_SYMBOLS = ['7', 'diamond', 'cherry', 'bell', 'bar', 'star'];
+const SLOTS_PAYOUTS = {
+  '7': { '5': 1000, '4': 300, '3': 50, '2': 5 },
+  'diamond': { '5': 500, '4': 200, '3': 40, '2': 4 },
+  'bar': { '5': 100, '4': 40, '3': 20, '2': 3 },
+  'bell': { '5': 75, '4': 30, '3': 15, '2': 3 },
+  'cherry': { '5': 50, '4': 25, '3': 10, '2': 2 },
+  'star': { '5': 100, '4': 40, '3': 20, '2': 3 }
+};
+
+function setSlotsBetAmount(type) {
+  const input = document.getElementById('slotsBetAmount');
+  if (!input) return;
+  
+  let amount = 0;
+  switch(type) {
+    case 'max':
+      amount = currentAccountBalance;
+      break;
+    case '100':
+      amount = 100;
+      break;
+    case '50':
+      amount = 50;
+      break;
+    case '25':
+      amount = 25;
+      break;
+    case '10':
+      amount = 10;
+      break;
+    case '5':
+      amount = 5;
+      break;
+    case '1':
+      amount = 1;
+      break;
+  }
+  
+  input.value = Math.min(amount, currentAccountBalance);
+  updateSlotsBetDisplay();
+}
+
+function updateSlotsBetDisplay() {
+  const input = document.getElementById('slotsBetAmount');
+  const display = document.getElementById('slotsCurrentBet');
+  
+  if (!input || !display) return;
+  
+  const amount = parseFloat(input.value) || 0;
+  const resultSpan = display.querySelector('#slotsResultSimple');
+  const resultContent = resultSpan ? resultSpan.outerHTML : '';
+  display.innerHTML = `<span>Current Bet: €${formatNumberShort(amount)}</span>${resultContent}`;
+  
+  // Update button state
+  const spinBtn = document.getElementById('slotsSpinBtn');
+  if (spinBtn) {
+    spinBtn.disabled = amount <= 0 || amount > currentAccountBalance || isSlotsSpinning;
+  }
+}
+
+function spinSlots() {
+  if (isSlotsSpinning) return;
+  
+  const input = document.getElementById('slotsBetAmount');
+  const spinBtn = document.getElementById('slotsSpinBtn');
+  const resultDiv = document.getElementById('slotsResultSimple');
+  
+  if (!input || !spinBtn || !resultDiv) return;
+  
+  const betAmount = parseFloat(input.value) || 0;
+  
+  // Validate bet
+  if (betAmount <= 0) {
+    resultDiv.textContent = 'Invalid bet';
+    resultDiv.className = 'game-result-simple lose';
+    return;
+  }
+  
+  if (betAmount > currentAccountBalance) {
+    resultDiv.textContent = 'Insufficient funds';
+    resultDiv.className = 'game-result-simple lose';
+    return;
+  }
+  
+  // Start spin
+  isSlotsSpinning = true;
+  spinBtn.disabled = true;
+  spinBtn.textContent = 'SPINNING...';
+  
+  // Clear previous result
+  resultDiv.textContent = '';
+  resultDiv.className = 'game-result-simple';
+  
+  // Clear any previous winning highlights
+  document.querySelectorAll('.symbol.winning').forEach(symbol => {
+    symbol.classList.remove('winning');
+  });
+  
+  // Deduct bet amount
+  currentAccountBalance -= betAmount;
+  renderBalances();
+  
+  // No spin sound
+  
+  // Generate results first
+  const results = [];
+  const reelElements = ['reel1', 'reel2', 'reel3', 'reel4', 'reel5'];
+  
+  // Generate random results for each reel
+  reelElements.forEach((reelId) => {
+    const randomSymbol = SLOTS_SYMBOLS[Math.floor(Math.random() * SLOTS_SYMBOLS.length)];
+    results.push(randomSymbol);
+  });
+  
+  // Show instant digital slots animation
+  const reels = ['reel1', 'reel2', 'reel3', 'reel4', 'reel5'];
+  reels.forEach((reelId, index) => {
+    const reel = document.getElementById(reelId);
+    const symbolElement = document.getElementById(`${reelId}-symbol`);
+    const finalSymbol = results[index];
+    
+    if (reel && symbolElement) {
+      // Add slight delay between reels for digital effect
+      setTimeout(() => {
+        reel.classList.add('instant-spin');
+        
+        // Update symbol immediately
+        symbolElement.textContent = getSymbolDisplay(finalSymbol);
+        symbolElement.setAttribute('data-symbol', finalSymbol);
+        
+        // Remove animation class after animation
+        setTimeout(() => {
+          reel.classList.remove('instant-spin');
+        }, 300); // Match animation duration
+      }, index * 100); // 100ms delay between reels for digital effect
+    }
+  });
+  
+  // Process results when all animations complete
+  setTimeout(() => {
+    // Check for wins immediately
+    const winnings = calculateSlotsWinnings(results, betAmount);
+    const totalWinnings = winnings.total;
+    
+    if (totalWinnings > 0) {
+      currentAccountBalance += totalWinnings;
+      resultDiv.textContent = `+€${formatNumberShort(totalWinnings)}`;
+      resultDiv.className = 'game-result-simple win';
+      
+      // Highlight winning symbols
+      highlightWinningSymbols(results, winnings.winningLines);
+      
+      // Trigger win celebration for big wins
+      triggerWinCelebration(totalWinnings, betAmount);
+    } else {
+      resultDiv.textContent = 'Lose';
+      resultDiv.className = 'game-result-simple lose';
+    }
+    
+    
+    // Update balances and UI
+    renderBalances();
+    
+    // Reset button
+    spinBtn.disabled = false;
+    spinBtn.textContent = '🎰 SPIN';
+    isSlotsSpinning = false;
+    
+    // Update bet display
+    updateSlotsBetDisplay();
+    
+    // Auto spin is now handled by the checkbox event listener
+    
+  }, 500); // Wait for last reel (2*100ms) + animation (300ms)
+}
+
+function getSymbolDisplay(symbol) {
+  const symbolMap = {
+    '7': '7',
+    'diamond': '💎',
+    'cherry': '🍒',
+    'bell': '🔔',
+    'bar': '📊',
+    'star': '⭐'
+  };
+  return symbolMap[symbol] || symbol;
+}
+
+function calculateSlotsWinnings(results, betAmount) {
+  const [reel1, reel2, reel3, reel4, reel5] = results;
+  let totalWinnings = 0;
+  let message = '';
+  let winningLines = [];
+  
+  // Count consecutive symbols from left to right
+  const symbols = [reel1, reel2, reel3, reel4, reel5];
+  let maxConsecutive = 0;
+  let bestSymbol = '';
+  let bestStartIndex = 0;
+  
+  // Find the longest consecutive sequence
+  for (let i = 0; i < symbols.length; i++) {
+    const symbol = symbols[i];
+    let consecutive = 1;
+    
+    // Count consecutive symbols starting from this position
+    for (let j = i + 1; j < symbols.length; j++) {
+      if (symbols[j] === symbol) {
+        consecutive++;
+      } else {
+        break;
+      }
+    }
+    
+    // Update best sequence if this one is longer
+    if (consecutive > maxConsecutive) {
+      maxConsecutive = consecutive;
+      bestSymbol = symbol;
+      bestStartIndex = i;
+    }
+  }
+  
+  // Calculate winnings based on consecutive symbols
+  if (maxConsecutive >= 2) {
+    const multiplier = SLOTS_PAYOUTS[bestSymbol]?.[maxConsecutive.toString()] || 0;
+    if (multiplier > 0) {
+      totalWinnings = betAmount * multiplier;
+      const symbolDisplay = getSymbolDisplay(bestSymbol);
+      message = `${maxConsecutive} ${symbolDisplay}s in a row! ${multiplier}x`;
+      
+      // Mark winning positions
+      for (let i = bestStartIndex; i < bestStartIndex + maxConsecutive; i++) {
+        winningLines.push(`reel${i + 1}`);
+      }
+    }
+  }
+  
+  return {
+    total: totalWinnings,
+    message: message,
+    winningLines: winningLines
+  };
+}
+
+function highlightWinningSymbols(results, winningLines) {
+  // Remove previous highlights
+  document.querySelectorAll('.symbol.winning').forEach(symbol => {
+    symbol.classList.remove('winning');
+  });
+  
+  // Highlight only the winning symbols based on the winning lines
+  if (winningLines.includes('all')) {
+    // Highlight all three reels
+    document.querySelectorAll('#reel1-symbol, #reel2-symbol, #reel3-symbol').forEach(symbol => {
+      symbol.classList.add('winning');
+    });
+  } else if (winningLines.includes('first-two')) {
+    // Highlight only first two reels
+    document.querySelectorAll('#reel1-symbol, #reel2-symbol').forEach(symbol => {
+      symbol.classList.add('winning');
+    });
+  } else if (winningLines.includes('last-two')) {
+    // Highlight only last two reels
+    document.querySelectorAll('#reel2-symbol, #reel3-symbol').forEach(symbol => {
+      symbol.classList.add('winning');
+    });
+  } else if (winningLines.includes('first-last')) {
+    // Highlight only first and last reels
+    document.querySelectorAll('#reel1-symbol, #reel3-symbol').forEach(symbol => {
+      symbol.classList.add('winning');
+    });
+  }
+  
+  // Remove highlights after animation
+  setTimeout(() => {
+    document.querySelectorAll('.symbol.winning').forEach(symbol => {
+      symbol.classList.remove('winning');
+    });
+  }, 2000);
+}
+
+
+// Initialize slots game
+function initSlotsGame() {
+  const betInput = document.getElementById('slotsBetAmount');
+  if (betInput) {
+    betInput.addEventListener('input', updateSlotsBetDisplay);
+    betInput.addEventListener('change', updateSlotsBetDisplay);
+  }
+  
+  // Initialize auto spin checkbox
+  const autoSpinCheckbox = document.getElementById('slotsAutoSpin');
+  if (autoSpinCheckbox) {
+    autoSpinCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        // Start auto spin
+        slotsAutoSpinInterval = setInterval(() => {
+          if (!isSlotsSpinning) {
+            spinSlots();
+          }
+        }, 1200); // 1 second interval between auto spins
+      } else {
+        // Stop auto spin
+        if (slotsAutoSpinInterval) {
+          clearInterval(slotsAutoSpinInterval);
+          slotsAutoSpinInterval = null;
+        }
+      }
+    });
+  }
+  
+  // Initialize reels with random symbols
+  initializeSlotsReels();
+  
+  // Initial display update
+  updateSlotsBetDisplay();
+}
+
+function initializeSlotsReels() {
+  const reelElements = ['reel1', 'reel2', 'reel3', 'reel4', 'reel5'];
+  
+  reelElements.forEach(reelId => {
+    const symbolElement = document.getElementById(`${reelId}-symbol`);
+    if (symbolElement) {
+      // Initialize each reel with a random symbol
+      const randomSymbol = SLOTS_SYMBOLS[Math.floor(Math.random() * SLOTS_SYMBOLS.length)];
+      symbolElement.textContent = getSymbolDisplay(randomSymbol);
+      symbolElement.setAttribute('data-symbol', randomSymbol);
+    }
+  });
+}
+
+// Win Celebration System
+function createCoinFlowAnimation() {
+  if (!particleEffectsEnabled) return;
+  
+  const canvas = document.getElementById('particleCanvas');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  const coins = [];
+  const coinCount = 50;
+  
+  // Create coins flowing from top to bottom
+  for (let i = 0; i < coinCount; i++) {
+    coins.push({
+      x: Math.random() * window.innerWidth,
+      y: -50 - Math.random() * 200, // Start above screen
+      vx: (Math.random() - 0.5) * 2, // Slight horizontal movement
+      vy: 2 + Math.random() * 3, // Downward movement
+      size: 8 + Math.random() * 8,
+      rotation: 0,
+      rotationSpeed: (Math.random() - 0.5) * 0.3,
+      life: 1.0,
+      delay: i * 100 // Stagger the coins
+    });
+  }
+  
+  // Animate coins
+  let animationId;
+  const startTime = Date.now();
+  
+  function animateCoins() {
+    const currentTime = Date.now();
+    const elapsed = currentTime - startTime;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    let activeCoins = 0;
+    
+    coins.forEach(coin => {
+      if (elapsed < coin.delay) return;
+      
+      // Update positions
+      coin.x += coin.vx;
+      coin.y += coin.vy;
+      coin.rotation += coin.rotationSpeed;
+      
+      // Update life (fade out near bottom)
+      const progress = (coin.y - window.innerHeight * 0.8) / (window.innerHeight * 0.2);
+      coin.life = Math.max(0, 1 - progress);
+      
+      // Draw coin
+      if (coin.life > 0) {
+        ctx.save();
+        ctx.globalAlpha = coin.life;
+        ctx.translate(coin.x, coin.y);
+        ctx.rotate(coin.rotation);
+        
+        // Draw gold coin
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(0, 0, coin.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Coin highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.beginPath();
+        ctx.arc(-coin.size * 0.3, -coin.size * 0.3, coin.size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Coin border
+        ctx.strokeStyle = '#FFA500';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        ctx.restore();
+        activeCoins++;
+      }
+    });
+    
+    // Continue animation if there are active coins
+    if (activeCoins > 0) {
+      animationId = requestAnimationFrame(animateCoins);
+    } else {
+      // Clear canvas when done
+      setTimeout(() => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }, 100);
+    }
+  }
+  
+  animateCoins();
+}
+
+function showWinPopup(winType, amount, multiplier, betAmount) {
+  // Remove existing popup if any
+  const existingPopup = document.getElementById('winCelebrationPopup');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  // Pause auto spin when popup is shown
+  pauseAutoSpin();
+  
+  // Create popup
+  const popup = document.createElement('div');
+  popup.id = 'winCelebrationPopup';
+  popup.className = 'win-celebration-popup';
+  
+  let titleText = '';
+  let titleClass = '';
+  
+  switch(winType) {
+    case 'super':
+      titleText = 'SUPER WIN';
+      titleClass = 'super-win';
+      break;
+    case 'mega':
+      titleText = 'MEGA WIN';
+      titleClass = 'mega-win';
+      break;
+    case 'divine':
+      titleText = 'DIVINE WIN';
+      titleClass = 'divine-win';
+      break;
+  }
+  
+  popup.innerHTML = `
+    <div class="popup-content">
+      <button class="popup-close" onclick="closeWinPopup()">&times;</button>
+      <div class="popup-title ${titleClass}">${titleText}</div>
+      <div class="popup-description">
+        You won <strong>€${formatNumberShort(amount)}</strong><br>
+        <span class="multiplier-text">${multiplier}x your bet!</span>
+      </div>
+      <div class="popup-details">
+        Bet: €${formatNumberShort(betAmount)} → Win: €${formatNumberShort(amount)}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(popup);
+  
+  // Add show animation
+  setTimeout(() => {
+    popup.classList.add('show');
+  }, 100);
+}
+
+function closeWinPopup() {
+  const popup = document.getElementById('winCelebrationPopup');
+  if (popup) {
+    popup.classList.remove('show');
+    setTimeout(() => {
+      popup.remove();
+      // Resume auto spin after popup is closed
+      resumeAutoSpin();
+    }, 300);
+  }
+}
+
+function triggerWinCelebration(totalWinnings, betAmount) {
+  const multiplier = totalWinnings / betAmount;
+  let winType = '';
+  
+  if (multiplier >= 10 && multiplier < 20) {
+    winType = 'super';
+  } else if (multiplier >= 20 && multiplier < 100) {
+    winType = 'mega';
+  } else if (multiplier >= 100) {
+    winType = 'divine';
+  }
+  
+  if (winType) {
+    // Create coin flow animation
+    createCoinFlowAnimation();
+    
+    // Show popup
+    showWinPopup(winType, totalWinnings, multiplier, betAmount);
+    
+    // Play win sound
+    if (AudioSystem && AudioSystem.playWinSound) {
+      AudioSystem.playWinSound();
+    }
+  }
+}
+
+// Auto spin pause/resume functions
+function pauseAutoSpin() {
+  if (slotsAutoSpinInterval) {
+    clearInterval(slotsAutoSpinInterval);
+    slotsAutoSpinInterval = null;
+    // Update auto spin checkbox to reflect paused state
+    const autoSpinCheckbox = document.getElementById('slotsAutoSpin');
+    if (autoSpinCheckbox) {
+      autoSpinCheckbox.checked = false;
+    }
+  }
+}
+
+function resumeAutoSpin() {
+  const autoSpinCheckbox = document.getElementById('slotsAutoSpin');
+  if (autoSpinCheckbox && autoSpinCheckbox.checked) {
+    // Restart auto spin if checkbox is still checked
+    slotsAutoSpinInterval = setInterval(() => {
+      if (!isSlotsSpinning) {
+        spinSlots();
+      }
+    }, 2000); // 2 second interval between auto spins
+  }
+}
+
+// Make win celebration functions globally accessible
+window.closeWinPopup = closeWinPopup;
+
+// Make slots functions globally accessible
+window.setSlotsBetAmount = setSlotsBetAmount;
+window.spinSlots = spinSlots;
+
 // Initialize PWA functionality when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initFirebaseAuth();
@@ -7567,6 +8152,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize coin flip game
   initCoinFlipGame();
+  
+  // Initialize slots game
+  initSlotsGame();
+  
+  // Show coin flip game by default
+  switchGame('coinFlip');
 });
 
 // Initialize help modal functionality
