@@ -290,18 +290,18 @@
     }
     
     updateParticles(deltaTime = 1) {
-      // Calculate frame rate multiplier to maintain consistent physics
-      const frameRateMultiplier = deltaTime / (1000 / 60); // Normalize to 60 FPS
+      // Use consistent physics without frame rate compensation for mobile compatibility
+      // This ensures particles move at the same speed regardless of device
       
       for (let i = this.particles.length - 1; i >= 0; i--) {
         const particle = this.particles[i];
         
-        // Update physics with frame rate compensation
-        particle.x += particle.vx * frameRateMultiplier;
-        particle.y += particle.vy * frameRateMultiplier;
-        particle.vy += particle.gravity * frameRateMultiplier;
-        particle.rotation += particle.rotationSpeed * frameRateMultiplier;
-        particle.life -= particle.decay * frameRateMultiplier;
+        // Update physics with consistent timing (no frame rate compensation)
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vy += particle.gravity;
+        particle.rotation += particle.rotationSpeed;
+        particle.life -= particle.decay;
         
         // Bounce off ground
         if (particle.y > window.innerHeight - particle.size && particle.vy > 0) {
@@ -481,13 +481,9 @@
     }
     
     animate(currentTime = 0) {
-      // Throttle animation to target FPS
-      if (currentTime - this.lastFrameTime >= this.frameInterval) {
-        const deltaTime = currentTime - this.lastFrameTime;
-        this.updateParticles(deltaTime);
-        this.drawParticles();
-        this.lastFrameTime = currentTime;
-      }
+      // Update and draw particles at full frame rate for smooth animation
+      this.updateParticles();
+      this.drawParticles();
       
       // Only continue animation if there are particles or we're actively animating
       if (this.particles.length > 0 || this.isAnimating) {
@@ -500,7 +496,6 @@
     startAnimation() {
       this.isAnimating = true;
       if (!this.animationId) {
-        this.lastFrameTime = 0; // Reset frame time to avoid frame skipping
         this.animate();
       }
     }
