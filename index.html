@@ -710,7 +710,7 @@
             <!-- Slots Game -->
             <div class="game-section" id="slotsGame" style="display: none;">
               <div class="game-header">
-                <h3 style="margin-top: 0 !important;">🎰 Slots<span class="game-description">5 reels • Match symbols • Win big!</span></h3>
+                <h3 style="margin-top: 0 !important;">🎰 Slots<span class="game-description">Match 3 • Santa mini game</span></h3>
               </div>
               
               <div class="game-content">
@@ -997,6 +997,43 @@
 
     
     <script src="config.js"></script>
+    <!-- Box Picking Minigame -->
+    <div id="boxMinigamePopup" class="box-minigame-popup">
+      <div class="box-minigame-content">
+        <button class="box-minigame-close" id="boxMinigameClose">&times;</button>
+        <div class="box-minigame-header">
+          <h2 class="box-minigame-title">🎁 BONUS ROUND! 🎁</h2>
+          <p class="box-minigame-subtitle">Pick boxes to multiply your win!</p>
+          <div class="box-minigame-stats">
+            <span>Current Multiplier: <span id="boxMinigameMultiplier">1x</span></span>
+            <span>Picks Left: <span id="boxMinigamePicksLeft">3</span></span>
+          </div>
+        </div>
+        
+        <div class="box-minigame-grid">
+          <div class="box-minigame-box" data-box="0">?</div>
+          <div class="box-minigame-box" data-box="1">?</div>
+          <div class="box-minigame-box" data-box="2">?</div>
+          <div class="box-minigame-box" data-box="3">?</div>
+          <div class="box-minigame-box" data-box="4">?</div>
+          <div class="box-minigame-box" data-box="5">?</div>
+          <div class="box-minigame-box" data-box="6">?</div>
+          <div class="box-minigame-box" data-box="7">?</div>
+          <div class="box-minigame-box" data-box="8">?</div>
+        </div>
+        
+        <div class="box-minigame-result" id="boxMinigameResult" style="display: none;">
+          <div class="box-minigame-final-multiplier">
+            Final Multiplier: <span id="boxMinigameFinalMultiplier">1x</span>
+          </div>
+          <div class="box-minigame-final-win">
+            Bonus Win: €<span id="boxMinigameFinalWin">0</span>
+          </div>
+          <button class="box-minigame-collect" id="boxMinigameCollect">Collect Win!</button>
+        </div>
+      </div>
+    </div>
+
     <script src="gameEngine.js"></script>
     <script src="renderEngine.js"></script>
     <script src="performanceManager.js"></script>

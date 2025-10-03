@@ -7589,7 +7589,7 @@ let isSlotsSpinning = false;
 let slotsAutoSpinInterval = null;
 
 // Slots Game Configuration
-const SLOTS_SYMBOLS = ['7', 'diamond', 'cherry', 'bell', 'bar', 'star'];
+const SLOTS_SYMBOLS = ['7', 'diamond', 'cherry', 'bell', 'bar', 'star', 'scatter'];
 const SLOTS_PAYOUTS = {
   '7': { '5': 1000, '4': 200, '3': 30 },
   'diamond': { '5': 500, '4': 150, '3': 25 },
@@ -7597,6 +7597,15 @@ const SLOTS_PAYOUTS = {
   'bell': { '5': 150, '4': 60, '3': 12 },
   'cherry': { '5': 100, '4': 40, '3': 8 },
   'star': { '5': 200, '4': 80, '3': 15 }
+};
+
+// Box Minigame Variables
+let boxMinigameData = {
+  boxes: [],
+  currentMultiplier: 1,
+  picksLeft: 3,
+  originalBet: 0,
+  originalWin: 0
 };
 
 function setSlotsBetAmount(type) {
@@ -7739,11 +7748,23 @@ function spinSlots() {
       resultDiv.textContent = `+€${formatNumberShort(totalWinnings)}`;
       resultDiv.className = 'game-result-simple win';
       
-      // Highlight winning symbols
-      highlightWinningSymbols(results, winnings.winningLines);
-      
-      // Trigger win celebration for big wins
-      triggerWinCelebration(totalWinnings, betAmount);
+      // Check if it's a scatter win (triggers minigame)
+      if (winnings.isScatter) {
+        // Don't add winnings yet, minigame will multiply them
+        currentAccountBalance -= totalWinnings; // Remove the base winnings
+        // Show minigame
+        setTimeout(() => {
+          showBoxMinigame(betAmount, winnings.baseWinnings);
+        }, 500);
+      } else {
+        // Highlight winning symbols for regular wins
+        highlightWinningSymbols(results, winnings.winningLines);
+        
+        // Trigger win celebration for big wins
+        if (totalWinnings >= betAmount * 10) {
+          triggerWinCelebration(totalWinnings, betAmount);
+        }
+      }
     } else {
       resultDiv.textContent = 'Lose';
       resultDiv.className = 'game-result-simple lose';
@@ -7773,7 +7794,8 @@ function getSymbolDisplay(symbol) {
     'cherry': '🍒',
     'bell': '🔔',
     'bar': '🎰',
-    'star': '⭐'
+    'star': '⭐',
+    'scatter': '🎅🏻'
   };
   return symbolMap[symbol] || symbol;
 }
@@ -7783,18 +7805,35 @@ function calculateSlotsWinnings(results, betAmount) {
   let totalWinnings = 0;
   let message = '';
   let winningLines = [];
-  
+
+  // Check for scatter symbols first (triggers minigame)
+  const scatterCount = results.filter(symbol => symbol === 'scatter').length;
+  if (scatterCount >= 3) {
+    // Calculate base winnings for scatter symbols
+    const scatterMultiplier = scatterCount * 2; // 2x per scatter
+    const baseWinnings = betAmount * scatterMultiplier;
+    
+    return {
+      total: baseWinnings,
+      message: `${scatterCount} Scatters! Bonus Round!`,
+      winningLines: [],
+      isScatter: true,
+      scatterCount: scatterCount,
+      baseWinnings: baseWinnings
+    };
+  }
+
   // Count consecutive symbols from left to right
   const symbols = [reel1, reel2, reel3, reel4, reel5];
   let maxConsecutive = 0;
   let bestSymbol = '';
   let bestStartIndex = 0;
-  
+
   // Find the longest consecutive sequence
   for (let i = 0; i < symbols.length; i++) {
     const symbol = symbols[i];
     let consecutive = 1;
-    
+
     // Count consecutive symbols starting from this position
     for (let j = i + 1; j < symbols.length; j++) {
       if (symbols[j] === symbol) {
@@ -7803,7 +7842,7 @@ function calculateSlotsWinnings(results, betAmount) {
         break;
       }
     }
-    
+
     // Update best sequence if this one is longer
     if (consecutive > maxConsecutive) {
       maxConsecutive = consecutive;
@@ -7811,7 +7850,7 @@ function calculateSlotsWinnings(results, betAmount) {
       bestStartIndex = i;
     }
   }
-  
+
   // Calculate winnings based on consecutive symbols (minimum 3 for 5-reel slots)
   if (maxConsecutive >= 3) {
     const multiplier = SLOTS_PAYOUTS[bestSymbol]?.[maxConsecutive.toString()] || 0;
@@ -7819,18 +7858,19 @@ function calculateSlotsWinnings(results, betAmount) {
       totalWinnings = betAmount * multiplier;
       const symbolDisplay = getSymbolDisplay(bestSymbol);
       message = `${maxConsecutive} ${symbolDisplay}s in a row! ${multiplier}x`;
-      
+
       // Mark winning positions
       for (let i = bestStartIndex; i < bestStartIndex + maxConsecutive; i++) {
         winningLines.push(`reel${i + 1}`);
       }
     }
   }
-  
+
   return {
     total: totalWinnings,
     message: message,
-    winningLines: winningLines
+    winningLines: winningLines,
+    isScatter: false
   };
 }
 
@@ -8097,6 +8137,182 @@ function showWinPopup(winType, amount, multiplier, betAmount) {
   setTimeout(() => {
     popup.classList.add('show');
   }, 100);
+}
+
+// Box Minigame Functions
+function generateBoxMinigameBoxes() {
+  const multipliers = [2, 3, 5, 8, 10, 15, 20, 25, 50];
+  const emptyBoxes = 3; // 3 empty boxes out of 9
+  
+  // Shuffle multipliers and add empty boxes
+  const shuffled = [...multipliers];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  // Add empty boxes
+  for (let i = 0; i < emptyBoxes; i++) {
+    shuffled.push(0); // 0 means empty
+  }
+  
+  // Shuffle again to mix empty boxes
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled;
+}
+
+function showBoxMinigame(originalBet, originalWin) {
+  // Initialize minigame data
+  boxMinigameData = {
+    boxes: generateBoxMinigameBoxes(),
+    currentMultiplier: 1,
+    picksLeft: 3,
+    originalBet: originalBet,
+    originalWin: originalWin
+  };
+  
+  // Show popup
+  const popup = document.getElementById('boxMinigamePopup');
+  if (popup) {
+    popup.classList.add('show');
+    
+    // Reset UI
+    updateBoxMinigameUI();
+    setupBoxMinigameEvents();
+  }
+}
+
+function updateBoxMinigameUI() {
+  // Reset stats
+  document.getElementById('boxMinigameMultiplier').textContent = '1x';
+  document.getElementById('boxMinigamePicksLeft').textContent = '3';
+  
+  // Reset all boxes
+  document.querySelectorAll('.box-minigame-box').forEach((box, index) => {
+    box.textContent = '?';
+    box.className = 'box-minigame-box';
+    box.style.pointerEvents = 'auto';
+    box.style.transform = 'scale(1)';
+  });
+  
+  // Hide result section
+  document.getElementById('boxMinigameResult').style.display = 'none';
+}
+
+function updateBoxMinigameStats() {
+  // Update only the stats display
+  document.getElementById('boxMinigameMultiplier').textContent = `${boxMinigameData.currentMultiplier}x`;
+  document.getElementById('boxMinigamePicksLeft').textContent = boxMinigameData.picksLeft;
+}
+
+function setupBoxMinigameEvents() {
+  // Close button
+  const closeBtn = document.getElementById('boxMinigameClose');
+  if (closeBtn) {
+    closeBtn.onclick = closeBoxMinigame;
+  }
+  
+  // Box click events
+  document.querySelectorAll('.box-minigame-box').forEach((box, index) => {
+    box.onclick = () => pickBox(index);
+  });
+  
+  // Collect button
+  const collectBtn = document.getElementById('boxMinigameCollect');
+  if (collectBtn) {
+    collectBtn.onclick = collectBoxMinigameWin;
+  }
+}
+
+function pickBox(boxIndex) {
+  if (boxMinigameData.picksLeft <= 0) return;
+  
+  const box = document.querySelector(`[data-box="${boxIndex}"]`);
+  const multiplier = boxMinigameData.boxes[boxIndex];
+  
+  // Disable clicks immediately
+  box.style.pointerEvents = 'none';
+  
+  // Add revealing animation
+  box.classList.add('revealing');
+  
+  // Reveal the box content after animation starts
+  setTimeout(() => {
+    if (multiplier === 0) {
+      box.textContent = '💀';
+      box.classList.add('empty');
+      boxMinigameData.picksLeft = 0; // Game ends on empty box
+    } else {
+      box.textContent = `${multiplier}x`;
+      box.classList.add('multiplier');
+      box.classList.add('selected');
+      boxMinigameData.currentMultiplier *= multiplier;
+      boxMinigameData.picksLeft--;
+    }
+    
+    // Remove revealing animation class
+    setTimeout(() => {
+      box.classList.remove('revealing');
+    }, 500);
+    
+    // Update stats display
+    updateBoxMinigameStats();
+    
+    // Check if game is over
+    if (boxMinigameData.picksLeft <= 0 || multiplier === 0) {
+      setTimeout(() => {
+        showBoxMinigameResult();
+      }, 1000);
+    }
+  }, 250);
+}
+
+function showBoxMinigameResult() {
+  const finalWin = boxMinigameData.originalWin * boxMinigameData.currentMultiplier;
+  
+  document.getElementById('boxMinigameFinalMultiplier').textContent = `${boxMinigameData.currentMultiplier}x`;
+  document.getElementById('boxMinigameFinalWin').textContent = formatNumberShort(finalWin);
+  document.getElementById('boxMinigameResult').style.display = 'block';
+  
+  // Disable all remaining boxes
+  document.querySelectorAll('.box-minigame-box').forEach(box => {
+    box.style.pointerEvents = 'none';
+  });
+}
+
+function collectBoxMinigameWin() {
+  const finalWin = boxMinigameData.originalWin * boxMinigameData.currentMultiplier;
+  
+  // Add winnings to account
+  currentAccountBalance += finalWin;
+  
+  // Play win sound if it's a good multiplier
+  if (boxMinigameData.currentMultiplier >= 10) {
+    AudioSystem.playWinSound();
+  }
+  
+  // Close minigame
+  closeBoxMinigame();
+  
+  // Update UI
+  renderBalances();
+  updateSlotsBetDisplay();
+  
+  // Show celebration if it's a big win
+  if (boxMinigameData.currentMultiplier >= 10) {
+    triggerWinCelebration(finalWin, boxMinigameData.originalBet);
+  }
+}
+
+function closeBoxMinigame() {
+  const popup = document.getElementById('boxMinigamePopup');
+  if (popup) {
+    popup.classList.remove('show');
+  }
 }
 
 function closeWinPopup() {
