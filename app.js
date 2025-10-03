@@ -22,6 +22,10 @@ let prestigeTier = 0;
 // Auto-submit functionality
 let autoSubmitInterval = null;
 
+// Coin Flip Game Variables
+let coinFlipHistory = [];
+let isCoinFlipping = false;
+
 (() => {
 
   // Active tab tracking for performance optimization
@@ -5506,9 +5510,11 @@ let autoSubmitInterval = null;
     const propertyIncome = getTotalPropertyIncome();
     if (propertyIncome > 0) {
       // Debug logging for property income after prestige reset
+      /*
       if (prestigeTier > 0) {
         console.log('DEBUG: Property income detected after prestige reset:', propertyIncome, 'Properties:', properties);
       }
+      */
       
       if (autoRentEnabled) {
             investmentAccountBalance = Math.round((investmentAccountBalance + propertyIncome) * 100) / 100;
@@ -7352,6 +7358,203 @@ function loadGameStateFromData(gameState) {
   console.log('Game state loaded from cloud');
 }
 
+// =============================================================================
+// COIN FLIP GAME FUNCTIONS
+// =============================================================================
+
+function setCoinFlipBetAmount(type) {
+  const input = document.getElementById('coinFlipBetAmount');
+  if (!input) return;
+  
+  let amount = 0;
+  switch(type) {
+    case 'max':
+      amount = currentAccountBalance;
+      break;
+    case 'half':
+      amount = Math.floor(currentAccountBalance / 2);
+      break;
+    case 'quarter':
+      amount = Math.floor(currentAccountBalance / 4);
+      break;
+    case 'eighth':
+      amount = Math.floor(currentAccountBalance / 8);
+      break;
+  }
+  
+  input.value = amount;
+  updateCoinFlipBetDisplay();
+}
+
+function updateCoinFlipBetDisplay() {
+  const input = document.getElementById('coinFlipBetAmount');
+  const display = document.getElementById('coinFlipCurrentBet');
+  
+  if (!input || !display) return;
+  
+  const amount = parseFloat(input.value) || 0;
+  display.innerHTML = `<span>Current Bet: €${formatNumberShort(amount)}</span>`;
+  
+  // Update button state
+  const flipBtn = document.getElementById('coinFlipBtn');
+  if (flipBtn) {
+    flipBtn.disabled = amount <= 0 || amount > currentAccountBalance || isCoinFlipping;
+  }
+}
+
+function flipCoin() {
+  if (isCoinFlipping) return;
+  
+  const input = document.getElementById('coinFlipBetAmount');
+  const coin = document.getElementById('coinFlipCoin');
+  const resultDiv = document.getElementById('coinFlipResult');
+  const flipBtn = document.getElementById('coinFlipBtn');
+  
+  if (!input || !coin || !resultDiv || !flipBtn) return;
+  
+  const betAmount = parseFloat(input.value) || 0;
+  
+  // Validate bet
+  if (betAmount <= 0) {
+    resultDiv.innerHTML = 'Please enter a valid bet amount';
+    resultDiv.className = 'game-result lose';
+    return;
+  }
+  
+  if (betAmount > currentAccountBalance) {
+    resultDiv.innerHTML = 'Insufficient funds';
+    resultDiv.className = 'game-result lose';
+    return;
+  }
+  
+  // Start flip animation
+  isCoinFlipping = true;
+  flipBtn.disabled = true;
+  flipBtn.textContent = 'Flipping...';
+  
+  // Remove previous result classes
+  resultDiv.className = 'game-result';
+  resultDiv.innerHTML = '';
+  
+  // Add flipping animation
+  coin.classList.add('flipping');
+  coin.classList.remove('show-heads', 'show-tails');
+  
+  // Deduct bet amount
+  currentAccountBalance -= betAmount;
+  renderBalances();
+  
+  // Play flip sound
+  if (AudioSystem && AudioSystem.playClickSound) {
+    AudioSystem.playClickSound();
+  }
+  
+  // Handle animation end to show result immediately when animation finishes
+  const handleAnimationEnd = () => {
+    const isHeads = Math.random() < 0.5;
+    const won = isHeads; // For simplicity, let's say heads always wins
+    
+    // Stop animation and show result
+    coin.classList.remove('flipping');
+    coin.classList.add(isHeads ? 'show-heads' : 'show-tails');
+    
+    // Calculate winnings
+    const winnings = won ? betAmount * 2 : 0;
+    
+    if (won) {
+      currentAccountBalance += winnings;
+      resultDiv.innerHTML = `🎉 Heads! You won €${formatNumberShort(winnings)}!`;
+      resultDiv.className = 'game-result win';
+      
+      // Create winning particles
+      if (particleSystem && particleEffectsEnabled) {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        particleSystem.createMoneyParticles(centerX, centerY, winnings);
+        particleSystem.createGoldenParticles(centerX, centerY, 10);
+      }
+      
+      // Play win sound
+      if (AudioSystem && AudioSystem.playUpgradeSound) {
+        AudioSystem.playUpgradeSound();
+      }
+    } else {
+      resultDiv.innerHTML = `💸 Tails! You lost €${formatNumberShort(betAmount)}`;
+      resultDiv.className = 'game-result lose';
+      
+      // Play lose sound
+      if (AudioSystem && AudioSystem.playErrorSound) {
+        AudioSystem.playErrorSound();
+      }
+    }
+    
+    // Add to history
+    coinFlipHistory.unshift({
+      result: isHeads ? 'heads' : 'tails',
+      bet: betAmount,
+      won: won,
+      winnings: winnings,
+      timestamp: Date.now()
+    });
+    
+    // Keep only last 5 results
+    if (coinFlipHistory.length > 5) {
+      coinFlipHistory = coinFlipHistory.slice(0, 5);
+    }
+    
+    // Update history display
+    updateCoinFlipHistory();
+    
+    // Update balances and UI
+    renderBalances();
+    
+    // Reset button
+    flipBtn.disabled = false;
+    flipBtn.textContent = 'Flip Coin';
+    isCoinFlipping = false;
+    
+    // Update bet display
+    updateCoinFlipBetDisplay();
+    
+    // Remove the event listener to prevent multiple calls
+    coin.removeEventListener('animationend', handleAnimationEnd);
+  };
+  
+  // Listen for animation end
+  coin.addEventListener('animationend', handleAnimationEnd);
+}
+
+function updateCoinFlipHistory() {
+  const historyContainer = document.getElementById('coinFlipHistory');
+  if (!historyContainer) return;
+  
+  historyContainer.innerHTML = '';
+  
+  coinFlipHistory.forEach(flip => {
+    const item = document.createElement('div');
+    item.className = `history-item ${flip.result}`;
+    item.textContent = flip.result.toUpperCase();
+    item.title = `${flip.result.toUpperCase()} - Bet: €${formatNumberShort(flip.bet)} - ${flip.won ? 'Won' : 'Lost'}: €${formatNumberShort(flip.winnings)}`;
+    historyContainer.appendChild(item);
+  });
+}
+
+// Initialize coin flip game
+function initCoinFlipGame() {
+  const betInput = document.getElementById('coinFlipBetAmount');
+  if (betInput) {
+    betInput.addEventListener('input', updateCoinFlipBetDisplay);
+    betInput.addEventListener('change', updateCoinFlipBetDisplay);
+  }
+  
+  // Initial display update
+  updateCoinFlipBetDisplay();
+}
+
+// Make coin flip functions globally accessible
+window.setCoinFlipBetAmount = setCoinFlipBetAmount;
+window.flipCoin = flipCoin;
+
 // Initialize PWA functionality when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initFirebaseAuth();
@@ -7361,6 +7564,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize help modal functionality after DOM is ready
   initHelpModals();
+  
+  // Initialize coin flip game
+  initCoinFlipGame();
 });
 
 // Initialize help modal functionality

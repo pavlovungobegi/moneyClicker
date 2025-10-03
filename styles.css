@@ -867,7 +867,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 2px;
 }
 
 .panel-header h2 {
@@ -5901,6 +5901,460 @@ body.dark-mode .panels::after {
 
 .dark-mode .leaderboard-name {
   color: #e2e8f0;
+}
+
+/* =============================================================================
+   COIN FLIP GAME STYLES
+   ============================================================================= */
+
+/* Coin Flip Game Styles */
+.game-section {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 6px;
+  background: var(--panel-bg);
+  border-radius: 6px;
+  border: 2px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.game-header {
+  text-align: center;
+  margin-bottom: 6px;
+  margin-top: 0;
+  padding: 0;
+}
+
+.game-header h3 {
+  color: var(--text-primary);
+  margin-bottom: 0;
+  font-size: 1.2rem;
+}
+
+.game-header .game-description {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  display: inline;
+  margin-left: 8px;
+  font-weight: 300;
+}
+
+.game-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Bet Section */
+.bet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bet-input-container {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  display: flow;
+}
+
+.bet-input-container label {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.bet-input-container input {
+  flex: 1;
+  min-width: 100px;
+  padding: 4px 6px;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  background: #2a2a2a;
+  color: #ffffff;
+  font-size: 0.85rem;
+}
+
+.bet-input-container input::placeholder {
+  color: #888;
+}
+
+.bet-input-container input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: #333;
+}
+
+/* Light mode bet input */
+:not(.dark-mode) .bet-input-container input {
+  background: #ffffff;
+  color: #333333;
+  border-color: #cccccc;
+}
+
+:not(.dark-mode) .bet-input-container input:focus {
+  background: #f8f8f8;
+  border-color: var(--accent-color);
+}
+
+.bet-quick-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.bet-quick-btn {
+  padding: 4px 6px;
+  background: #4CAF50;
+  color: white;
+  border: 2px solid #4CAF50;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 35px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.bet-quick-btn:hover {
+  background: #45a049;
+  border-color: #45a049;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.current-bet {
+  text-align: center;
+  padding: 4px;
+  background: var(--secondary-bg);
+  border-radius: 4px;
+  border: 2px solid var(--border-color);
+}
+
+.current-bet span {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+/* Coin Container */
+.coin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 8px;
+}
+
+.coin {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  cursor: pointer;
+}
+
+.coin.flipping {
+  animation: coinFlip 2s ease-in-out;
+}
+
+@keyframes coinFlip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(1800deg); }
+  100% { transform: rotateY(3600deg); }
+}
+
+.coin-side {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  backface-visibility: hidden;
+}
+
+.coin-heads {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  border: 3px solid #B8860B;
+}
+
+.coin-tails {
+  background: linear-gradient(135deg, #C0C0C0, #808080);
+  border: 3px solid #696969;
+  transform: rotateY(180deg);
+}
+
+.coin.show-heads {
+  transform: rotateY(0deg);
+}
+
+.coin.show-heads .coin-heads {
+  transform: rotateY(0deg);
+}
+
+.coin.show-tails {
+  transform: rotateY(180deg);
+}
+
+.coin.show-tails .coin-tails {
+  transform: rotateY(180deg);
+}
+
+/* Game Action Button */
+.game-action-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+  display: block;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.game-action-btn:hover {
+  background: linear-gradient(135deg, #45a049, #4CAF50);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+}
+
+.game-action-btn:hover::before {
+  left: 100%;
+}
+
+.game-action-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.game-action-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.game-action-btn:disabled::before {
+  display: none;
+}
+
+/* Dark mode game action button */
+.dark-mode .game-action-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049) !important;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.9) !important;
+  color: white !important;
+  border: 2px solid #4CAF50 !important;
+  font-weight: bold !important;
+}
+
+.dark-mode .game-action-btn:hover {
+  background: linear-gradient(135deg, #45a049, #4CAF50) !important;
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 1.0) !important;
+  border-color: #45a049 !important;
+  transform: translateY(-1px) !important;
+}
+
+.dark-mode .game-action-btn:active {
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.8) !important;
+  transform: translateY(0) !important;
+}
+
+.dark-mode .game-action-btn:disabled {
+  background: #555 !important;
+  color: #999 !important;
+  border-color: #666 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Game Result */
+.game-result {
+  text-align: center;
+  padding: 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-result.win {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 2px solid #4CAF50;
+}
+
+.game-result.lose {
+  background: rgba(244, 67, 54, 0.2);
+  color: #F44336;
+  border: 2px solid #F44336;
+}
+
+/* Game History */
+.game-history {
+  background: var(--secondary-bg);
+  border-radius: 4px;
+  padding: 6px;
+  border: 2px solid var(--border-color);
+  margin-top: 0;
+}
+
+.game-history h4 {
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  margin-top: 0;
+  font-size: 0.8rem;
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-height: 40px;
+  overflow-y: auto;
+}
+
+.history-item {
+  padding: 2px 4px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.history-item.heads {
+  background: rgba(255, 215, 0, 0.3);
+  color: #B8860B;
+}
+
+.history-item.tails {
+  background: rgba(192, 192, 192, 0.3);
+  color: #696969;
+}
+
+/* Games Panel Spacing Fix */
+.panel[aria-labelledby="gamesTitle"] .scrollable-content {
+  padding-top: 4px;
+}
+
+/* Dark Mode Adjustments for Coin Flip */
+.dark-mode .game-section {
+  background: var(--dark-panel-bg);
+  border-color: var(--dark-border-color);
+}
+
+.dark-mode .bet-input-container input {
+  background: var(--dark-input-bg);
+  color: var(--dark-text-primary);
+  border-color: var(--dark-border-color);
+}
+
+.dark-mode .bet-input-container input:focus {
+  border-color: var(--dark-accent-color);
+}
+
+.dark-mode .bet-quick-btn {
+  background: var(--dark-button-bg);
+  color: var(--dark-button-text);
+  border-color: var(--dark-border-color);
+}
+
+.dark-mode .bet-quick-btn:hover {
+  background: var(--dark-button-hover-bg);
+  border-color: var(--dark-accent-color);
+}
+
+.dark-mode .current-bet {
+  background: var(--dark-secondary-bg);
+  border-color: var(--dark-border-color);
+}
+
+.dark-mode .current-bet span {
+  color: var(--dark-text-primary);
+}
+
+.dark-mode .game-action-btn {
+  background: var(--dark-accent-color);
+}
+
+.dark-mode .game-action-btn:hover {
+  background: var(--dark-accent-hover);
+}
+
+.dark-mode .game-history {
+  background: var(--dark-secondary-bg);
+  border-color: var(--dark-border-color);
+}
+
+.dark-mode .game-history h4 {
+  color: var(--dark-text-primary);
+}
+
+/* Mobile Responsive for Coin Flip */
+@media (max-width: 768px) {
+  .game-section {
+    padding: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .coin {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .coin-side {
+    font-size: 1rem;
+  }
+  
+  .bet-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bet-input-container input {
+    min-width: auto;
+  }
+  
+  .bet-quick-btn {
+    flex: 1;
+  }
+  
+  .game-action-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .coin-container {
+    padding: 8px 4px;
+  }
 }
 
 

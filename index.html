@@ -638,8 +638,64 @@
           <div class="panel-header">
             <h2 id="gamesTitle">Games</h2>
           </div>
-          <div class="scrollable-content">
-            <!-- Games content will be added here -->
+          <div class="scrollable-content" style="padding-top: 0 !important;">
+            <!-- Coin Flip Game -->
+            <div class="game-section" id="coinFlipGame">
+              <div class="game-header">
+                <h3 style="margin-top: 0 !important;">🪙 Coin Flip<span class="game-description">50/50 odds • 2x payout</span></h3>
+              </div>
+              
+              <div class="game-content">
+                <!-- Bet Amount Input -->
+                <div class="bet-section">
+                  <div class="bet-input-container">
+                    <label for="coinFlipBetAmount">Bet Amount:</label>
+                    <input type="number" id="coinFlipBetAmount" min="1" step="1" placeholder="Enter amount">
+                  </div>
+                  <div class="bet-quick-buttons">
+                    <button class="bet-quick-btn" onclick="setCoinFlipBetAmount('max')">Max</button>
+                    <button class="bet-quick-btn" onclick="setCoinFlipBetAmount('half')">1/2</button>
+                    <button class="bet-quick-btn" onclick="setCoinFlipBetAmount('quarter')">1/4</button>
+                    <button class="bet-quick-btn" onclick="setCoinFlipBetAmount('eighth')">1/8</button>
+                  </div>
+                </div>
+                
+                <!-- Current Bet Display -->
+                <div class="current-bet" id="coinFlipCurrentBet">
+                  <span>Current Bet: €0</span>
+                </div>
+                
+                <!-- Coin Display -->
+                <div class="coin-container">
+                  <div class="coin" id="coinFlipCoin">
+                    <div class="coin-side coin-heads">
+                      <span>H</span>
+                    </div>
+                    <div class="coin-side coin-tails">
+                      <span>T</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Flip Button -->
+                <button class="game-action-btn" id="coinFlipBtn" onclick="flipCoin()">
+                  Flip Coin
+                </button>
+                
+                <!-- Result Display -->
+                <div class="game-result" id="coinFlipResult">
+                  <!-- Result will be shown here -->
+                </div>
+                
+                <!-- Game History -->
+                <div class="game-history">
+                  <h4>Recent Flips:</h4>
+                  <div class="history-list" id="coinFlipHistory">
+                    <!-- History items will be added here -->
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
