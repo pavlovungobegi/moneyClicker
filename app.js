@@ -7451,7 +7451,7 @@ function flipCoin() {
   
   // Handle animation end to show result immediately when animation finishes
   const handleAnimationEnd = () => {
-    const isHeads = Math.random() < 0.5;
+    const isHeads = Math.random() <= 0.5;
     const won = isHeads; // For simplicity, let's say heads always wins
     
     // Stop animation and show result
