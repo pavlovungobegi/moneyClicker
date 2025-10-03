@@ -97,14 +97,14 @@
         this.frameCount = 0;
         this.lastFpsTime = now;
         
-        // Adaptive performance: reduce frame rate if struggling
-        if (this.currentFps < this.targetFPS * 0.8) {
-          this.targetFPS = Math.max(15, this.targetFPS - 5);
-          this.frameInterval = 1000 / this.targetFPS;
-        } else if (this.currentFps > this.targetFPS * 1.2) {
-          this.targetFPS = Math.min(60, this.targetFPS + 5); // Cap at 60 FPS on all devices
-          this.frameInterval = 1000 / this.targetFPS;
-        }
+        // Adaptive performance: reduce frame rate if struggling (disabled for consistent particle performance)
+        // if (this.currentFps < this.targetFPS * 0.8) {
+        //   this.targetFPS = Math.max(15, this.targetFPS - 5);
+        //   this.frameInterval = 1000 / this.targetFPS;
+        // } else if (this.currentFps > this.targetFPS * 1.2) {
+        //   this.targetFPS = Math.min(60, this.targetFPS + 5); // Cap at 60 FPS on all devices
+        //   this.frameInterval = 1000 / this.targetFPS;
+        // }
       }
     }
     

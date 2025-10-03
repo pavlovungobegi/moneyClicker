@@ -81,28 +81,29 @@
       return settings[this.performanceLevel];
     }
     
-    // Adaptive performance adjustment
+    // Adaptive performance adjustment (disabled for consistent particle performance)
     adjustPerformanceLevel() {
-      const metrics = this.getPerformanceMetrics();
+      // Keep performance level fixed at 'high' for consistent particle performance
+      // const metrics = this.getPerformanceMetrics();
       
-      if (metrics.frameDrops > 10 || metrics.longTasks > 5) {
-        // Performance is poor, reduce quality
-        if (this.performanceLevel === 'high') {
-          this.performanceLevel = 'medium';
-        } else if (this.performanceLevel === 'medium') {
-          this.performanceLevel = 'low';
-        }
-      } else if (metrics.frameDrops < 2 && metrics.longTasks < 2) {
-        // Performance is good, can increase quality
-        if (this.performanceLevel === 'low') {
-          this.performanceLevel = 'medium';
-        } else if (this.performanceLevel === 'medium') {
-          this.performanceLevel = 'high';
-        }
-      }
+      // if (metrics.frameDrops > 10 || metrics.longTasks > 5) {
+      //   // Performance is poor, reduce quality
+      //   if (this.performanceLevel === 'high') {
+      //     this.performanceLevel = 'medium';
+      //   } else if (this.performanceLevel === 'medium') {
+      //     this.performanceLevel = 'low';
+      //   }
+      // } else if (metrics.frameDrops < 2 && metrics.longTasks < 2) {
+      //   // Performance is good, can increase quality
+      //   if (this.performanceLevel === 'low') {
+      //     this.performanceLevel = 'medium';
+      //   } else if (this.performanceLevel === 'medium') {
+      //     this.performanceLevel = 'high';
+      //   }
+      // }
       
-      this.adaptiveSettings = this.getAdaptiveSettings();
-      this.applyAdaptiveSettings();
+      // this.adaptiveSettings = this.getAdaptiveSettings();
+      // this.applyAdaptiveSettings();
     }
     
     applyAdaptiveSettings() {
