@@ -79,7 +79,7 @@ let isCoinFlipping = false;
     // Update old cache system
     cachedPropertyIncome = income;
     propertyIncomeCacheValid = true;
-    console.log('Updated old cache system, cachedPropertyIncome:', cachedPropertyIncome);
+    //console.log('Updated old cache system, cachedPropertyIncome:', cachedPropertyIncome);
   }
 
   // Mobile detection for particle optimization
@@ -2715,12 +2715,12 @@ let isCoinFlipping = false;
         rentReduction = 1.00; // 100% reduction
       }
       total *= (1 - rentReduction);
-      console.log(`Earthquake active, rent reduction: ${rentReduction * 100}%, final income: ${total}`);
+      //console.log(`Earthquake active, rent reduction: ${rentReduction * 100}%, final income: ${total}`);
     }
     
-    console.log('Final total before caching:', total);
+    //console.log('Final total before caching:', total);
     setCachedPropertyIncome(total);
-    console.log('Returning total:', total);
+    //console.log('Returning total:', total);
     return total;
   }
 
