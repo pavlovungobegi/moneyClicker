@@ -7723,16 +7723,18 @@ function spinSlots() {
     if (reel && symbolElement) {
       // Add slight delay between reels for digital effect
       setTimeout(() => {
-        reel.classList.add('instant-spin');
+        reel.classList.add('instant-spin', 'flipping');
         
-        // Update symbol immediately
-        symbolElement.textContent = getSymbolDisplay(finalSymbol);
-        symbolElement.setAttribute('data-symbol', finalSymbol);
+        // Update symbol at midpoint of flip (when card is sideways)
+        setTimeout(() => {
+          symbolElement.textContent = getSymbolDisplay(finalSymbol);
+          symbolElement.setAttribute('data-symbol', finalSymbol);
+        }, 300); // Halfway through 0.6s animation (300ms)
         
         // Remove animation class after animation
         setTimeout(() => {
-          reel.classList.remove('instant-spin');
-        }, 300); // Match animation duration
+          reel.classList.remove('instant-spin', 'flipping');
+        }, 600); // Match flip animation duration (0.6s)
       }, index * 100); // 100ms delay between reels for digital effect
     }
   });
@@ -7762,7 +7764,7 @@ function spinSlots() {
         
         // Trigger win celebration for big wins
         if (totalWinnings >= betAmount * 10) {
-          triggerWinCelebration(totalWinnings, betAmount);
+          triggerWinCelebration(totalWinnings, betAmount, 'slots');
         }
       }
     } else {
@@ -7784,7 +7786,7 @@ function spinSlots() {
     
     // Auto spin is now handled by the checkbox event listener
     
-  }, 500); // Wait for last reel (2*100ms) + animation (300ms)
+  }, 1000); // Wait for last reel (4*100ms) + flip animation (600ms)
 }
 
 function getSymbolDisplay(symbol) {
@@ -7963,7 +7965,7 @@ function initializeSlotsReels() {
 }
 
 // Win Celebration System
-function createCoinFlowAnimation() {
+function createCoinFlowAnimation(speedMultiplier = 1) {
   if (!particleEffectsEnabled) return;
   
   const canvas = document.getElementById('particleCanvas');
@@ -7978,13 +7980,13 @@ function createCoinFlowAnimation() {
     coins.push({
       x: Math.random() * window.innerWidth,
       y: -50 - Math.random() * 200, // Start above screen
-      vx: (Math.random() - 0.5) * 2, // Slight horizontal movement
-      vy: 2 + Math.random() * 3, // Downward movement
+      vx: (Math.random() - 0.5) * 2 * speedMultiplier, // Slight horizontal movement
+      vy: (2 + Math.random() * 3) * speedMultiplier, // Downward movement
       size: 8 + Math.random() * 8,
       rotation: 0,
-      rotationSpeed: (Math.random() - 0.5) * 0.3,
+      rotationSpeed: (Math.random() - 0.5) * 0.3 * speedMultiplier,
       life: 1.0,
-      delay: i * 100 // Stagger the coins
+      delay: i * (100 / speedMultiplier) // Stagger the coins
     });
   }
   
@@ -8304,7 +8306,7 @@ function collectBoxMinigameWin() {
   
   // Show celebration if it's a big win
   if (boxMinigameData.currentMultiplier >= 10) {
-    triggerWinCelebration(finalWin, boxMinigameData.originalBet);
+    triggerWinCelebration(finalWin, boxMinigameData.originalBet, 'slots');
   }
 }
 
@@ -8327,7 +8329,7 @@ function closeWinPopup() {
   }
 }
 
-function triggerWinCelebration(totalWinnings, betAmount) {
+function triggerWinCelebration(totalWinnings, betAmount, source = 'general') {
   const multiplier = totalWinnings / betAmount;
   let winType = '';
   
@@ -8340,8 +8342,9 @@ function triggerWinCelebration(totalWinnings, betAmount) {
   }
   
   if (winType) {
-    // Create coin flow animation
-    createCoinFlowAnimation();
+    // Create coin flow animation - 2x faster for slots wins
+    const speedMultiplier = source === 'slots' ? 2 : 1;
+    createCoinFlowAnimation(speedMultiplier);
     
     // Show popup
     showWinPopup(winType, totalWinnings, multiplier, betAmount);
