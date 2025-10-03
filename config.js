@@ -227,17 +227,17 @@ const GAME_CONFIG = {
     u77: { cost: 18225000000000000000, name: "Global Corporate Centers", effect: "Quadruples the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "officeBuilding" },
     u78: { cost: 54675000000000000000, name: "Sky City Networks", effect: "Quadruples the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "skyscraper" },
     u79: { cost: 164025000000000000000, name: "Cultural Capital Empire", effect: "Quadruples the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "operaHouse" },
-    // Third tier late-game 4x income upgrades
-    u80: { cost: 250000000000000000000, name: "Culinary Mastery Empire", effect: "Quadruples the income of Food Stands", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "foodStand" },
-    u81: { cost: 750000000000000000000, name: "Digital News Dominance", effect: "Quadruples the income of Newsstands", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "newsstand" },
-    u82: { cost: 2250000000000000000000, name: "Autonomous Parking Systems", effect: "Quadruples the income of Parking Garages", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "parkingGarage" },
-    u83: { cost: 6750000000000000000000, name: "Hypermarket Networks", effect: "Quadruples the income of Convenience Stores", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "convenienceStore" },
-    u84: { cost: 20250000000000000000000, name: "Elite Residential Complexes", effect: "Quadruples the income of Apartments", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "apartment" },
-    u85: { cost: 60750000000000000000000, name: "Quantum Manufacturing", effect: "Quadruples the income of Manufacturing Plants", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "manufacturingPlant" },
-    u86: { cost: 182250000000000000000000, name: "Interstellar Corporate Hubs", effect: "Quadruples the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "officeBuilding" },
-    u87: { cost: 546750000000000000000000, name: "Dimensional Sky Cities", effect: "Quadruples the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "skyscraper" },
-    u88: { cost: 1640250000000000000000000, name: "Universal Arts Federation", effect: "Quadruples the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 3.0 }, property: "operaHouse" },
-  },
+    // Third tier late-game 10x income upgrades
+    u80: { cost: 250000000000000000000, name: "Culinary Mastery Empire", effect: "10x the income of Food Stands", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "foodStand" },
+    u81: { cost: 750000000000000000000, name: "Digital News Dominance", effect: "10x the income of Newsstands", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "newsstand" },
+      u82: { cost: 2250000000000000000000, name: "Autonomous Parking Systems", effect: "10x the income of Parking Garages", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "parkingGarage" },
+      u83: { cost: 6750000000000000000000, name: "Hypermarket Networks", effect: "10x the income of Convenience Stores", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "convenienceStore" },
+      u84: { cost: 20250000000000000000000, name: "Elite Residential Complexes", effect: "10x the income of Apartments", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "apartment" },
+      u85: { cost: 60750000000000000000000, name: "Quantum Manufacturing", effect: "10x the income of Manufacturing Plants", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "manufacturingPlant" },
+      u86: { cost: 182250000000000000000000, name: "Interstellar Corporate Hubs", effect: "10x the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "officeBuilding" },
+      u87: { cost: 546750000000000000000000, name: "Dimensional Sky Cities", effect: "10x the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "skyscraper" },
+      u88: { cost: 1640250000000000000000000, name: "Universal Arts Federation", effect: "10x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "operaHouse" },
+    },
   
   // =============================================================================
   // ACHIEVEMENT CONFIGURATION
