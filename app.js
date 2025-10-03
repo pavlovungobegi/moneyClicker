@@ -247,10 +247,10 @@ let isCoinFlipping = false;
     console.log('============================');
   };
 
-  // Apply mobile performance mode CSS class
-  if (mobilePerformanceMode) {
-    document.body.classList.add('mobile-performance-mode');
-  }
+  // Mobile performance mode disabled for consistent experience
+  // if (mobilePerformanceMode) {
+  //   document.body.classList.add('mobile-performance-mode');
+  // }
 
   // Initialize new performance systems
   let gameEngine, renderEngine, performanceManager;
@@ -1534,10 +1534,10 @@ let isCoinFlipping = false;
         }
         screenShake(8, 300);
       } else {
-        // Normal click: regular particles based on income (mobile gets even fewer particles)
-        const particleMultiplier = isMobile ? 0.5 : 1; // Mobile gets 50% fewer particles
+        // Normal click: regular particles based on income (same for all devices)
+        const particleMultiplier = 1; // Same particle count for all devices
         const baseCoinCount = Math.min(Math.max(Math.floor(income * 0.15 * particleMultiplier), 1), 1);
-        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.25 * particleMultiplier), 1), isMobile ? 1 : 2);
+        const baseSparkleCount = Math.min(Math.max(Math.floor(income * 0.25 * particleMultiplier), 1), 2);
         
         // Debug log for mobile particles
         /*
@@ -5049,8 +5049,8 @@ let isCoinFlipping = false;
     });
   }
 
-  // Game loop timing - now using config with mobile optimization
-  const TICK_MS = mobilePerformanceMode ? getIntervalConfig('INVESTMENT_COMPOUNDING') : GAME_CONFIG.TICK_MS;
+  // Game loop timing - consistent across all devices
+  const TICK_MS = GAME_CONFIG.TICK_MS;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (getGameDifficulty()) {
@@ -6254,8 +6254,8 @@ function handleVisibilityChange() {
     localStorage.setItem('moneyClicker_tabBackgroundedAt', window.tabBackgroundedAt.toString());
     console.log('🔍 [VISIBILITY DEBUG] Tab went to background at:', new Date(window.tabBackgroundedAt));
     
-    // Mobile performance optimization: pause heavy operations when backgrounded
-    if (mobilePerformanceMode && GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
+    // Pause heavy operations when backgrounded (all devices)
+    if (GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
       // Pause particle animations to reduce CPU usage
       if (particleSystem) {
         particleSystem.stopAnimation();
@@ -6308,8 +6308,8 @@ function handleVisibilityChange() {
       localStorage.removeItem('moneyClicker_tabBackgroundedAt');
     }
     
-    // Mobile performance optimization: resume animations when foregrounded
-    if (mobilePerformanceMode && GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
+    // Resume animations when foregrounded (all devices)
+    if (GAME_CONFIG.MOBILE_PERFORMANCE.PAUSE_BACKGROUND) {
       // Resume particle animations
       if (particleSystem && particleEffectsEnabled) {
         particleSystem.startAnimation();

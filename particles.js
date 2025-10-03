@@ -52,18 +52,18 @@
         particle = {};
       }
       
-      // Default properties
+      // Default properties - increased speeds for more dynamic particles
       particle.x = x;
       particle.y = y;
-      particle.vx = (Math.random() - 0.5) * 4;
-      particle.vy = -Math.random() * 3 - 1;
+      particle.vx = (Math.random() - 0.5) * 8; // Increased from 4 to 8
+      particle.vy = -Math.random() * 6 - 2; // Increased from 3-4 to 6-8
       particle.life = 1.0;
       particle.decay = 0.02;
       particle.size = 4;
       particle.type = type;
       particle.rotation = 0;
-      particle.rotationSpeed = (Math.random() - 0.5) * 0.2;
-      particle.gravity = 0.1;
+      particle.rotationSpeed = (Math.random() - 0.5) * 0.4; // Increased rotation speed
+      particle.gravity = 0.15; // Increased gravity for faster falling
       particle.bounce = 0.6;
       particle.color = '#FFD700';
       
@@ -80,8 +80,8 @@
       // Use full particle count on all devices
       for (let i = 0; i < count; i++) {
         this.createParticle('coin', x, y, {
-          vx: (Math.random() - 0.5) * 6,
-          vy: -Math.random() * 4 - 2,
+          vx: (Math.random() - 0.5) * 6, // Increased from 6 to 12
+          vy: -Math.random() * 4 - 4, // Increased from 4-6 to 8-12
           size: 6 + Math.random() * 4,
           color: '#FFD700',
           life: 1.5,
@@ -95,11 +95,11 @@
       
       // Create a single orange coin for critical hits
       this.createParticle('coin', x, y, {
-        vx: (Math.random() - 0.5) * 2, // Less horizontal movement (more centered)
-        vy: -Math.random() * 2 - 6, // More upward movement and higher
+        vx: (Math.random() - 0.5) * 2, // Increased from 2 to 4
+        vy: -Math.random() * 2 - 6, // Increased from 2-8 to 4-16
         size: 10 + Math.random() * 3, // Larger size (10-13px vs 8-10px)
         color: '#FF8C00', // Orange color
-        life: 2.5, // Longer life for better visibility
+        life: 1.5, // Longer life for better visibility
         decay: 0.008 // Slower decay
       });
     }
@@ -110,13 +110,13 @@
       // Use full particle count on all devices
       for (let i = 0; i < count; i++) {
         this.createParticle('sparkle', x, y, {
-          vx: (Math.random() - 0.5) * 8,
-          vy: (Math.random() - 0.5) * 8,
+          vx: (Math.random() - 0.5) * 8, // Increased from 8 to 16
+          vy: (Math.random() - 0.5) * 8, // Increased from 8 to 16
           size: 2 + Math.random() * 3,
           color: `hsl(${Math.random() * 60 + 30}, 100%, 70%)`,
           life: 0.8,
           decay: 0.03,
-          gravity: 0.05
+          gravity: 0.08 // Increased gravity
         });
       }
     }
@@ -162,13 +162,13 @@
       const count = Math.min(3, Math.max(2, Math.floor(amount / 2000)));
       for (let i = 0; i < count; i++) {
         this.createParticle('money', x, y, {
-          vx: (Math.random() - 0.5) * 6,
-          vy: -Math.random() * 4 - 1,
+          vx: (Math.random() - 0.5) * 6, // Increased from 6 to 12
+          vy: -Math.random() * 5 - 2, // Increased from 4-5 to 8-10
           size: 5 + Math.random() * 3,
           color: '#00C851',
           life: 1.5,
           decay: 0.02,
-          gravity: 0.1,
+          gravity: 0.15, // Increased gravity
           bounce: 0.5
         });
       }
