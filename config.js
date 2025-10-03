@@ -252,7 +252,7 @@ const GAME_CONFIG = {
     u99: { cost: 68024448000000000000000000, name: "Corporate Empire", effect: "20x the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "officeBuilding" },
     u100: { cost: 122444006400000000000000000, name: "Sky City Dynasty", effect: "20x the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "skyscraper" },
     u101: { cost: 220399211520000000000000000, name: "Cultural Empire", effect: "20x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "operaHouse" },
-    u102: { cost: 5000000000000, name: "It is just a click, bro!", effect: "Adds +25 billion euros per click", type: "click", effects: { click_income: 25000000000 } },
+    u102: { cost: 5000000000000, name: "Clickers, Clickers Everywhere!", effect: "Adds +25 billion euros per click", type: "click", effects: { click_income: 25000000000 } },
     // Building-specific 20x income upgrades (second tier)
     u103: { cost: 400000000000000000000000000, name: "Gourmet Dynasty", effect: "20x the income of Food Stands", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "foodStand" },
     u104: { cost: 720000000000000000000000000, name: "Media Empire", effect: "20x the income of Newsstands", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "newsstand" },
@@ -263,6 +263,7 @@ const GAME_CONFIG = {
     u109: { cost: 13604889600000000000000000000, name: "Corporate Dynasty", effect: "20x the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "officeBuilding" },
     u110: { cost: 24488801280000000000000000000, name: "Sky City Empire", effect: "20x the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "skyscraper" },
     u111: { cost: 44079842304000000000000000000, name: "Cultural Dynasty", effect: "20x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 19.0 }, property: "operaHouse" },
+    u112: { cost: 500000000000000, name: "Click Amplifier", effect: "Triples click income", type: "click_multiplier", effects: { click_multiplier: 2.0 } },
   },
   
   // =============================================================================

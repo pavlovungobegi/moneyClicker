@@ -1478,6 +1478,10 @@ let autoSubmitInterval = null;
     
     let totalIncome = (base + bonus) * prestigeClickMultiplier;
     
+    // Apply click multipliers
+    let clickMultiplier = getUpgradeEffectMultiplier('click_multiplier');
+    totalIncome *= clickMultiplier;
+    
     // Apply Fast Fingers 3x boost
     if (fastFingersActive()) {
       totalIncome *= 3;
@@ -4706,6 +4710,7 @@ let autoSubmitInterval = null;
     
     const iconMap = {
       'click': 'fas fa-money-bill-wave upgrade-icon click-icon',
+      'click_multiplier': 'fas fa-mouse-pointer upgrade-icon click-icon',
       'interest': 'fas fa-percentage upgrade-icon interest-icon',
       'dividend': 'fas fa-coins upgrade-icon dividend-icon',
       'dividend_speed': 'fas fa-coins upgrade-icon dividend-icon',

@@ -121,6 +121,9 @@ function calculateUpgradeEffects(data) {
       if (upgradeConfig.effects.click_income) {
         effects.clickMultiplier += upgradeConfig.effects.click_income;
       }
+      if (upgradeConfig.effects.click_multiplier) {
+        effects.clickMultiplier *= (1 + upgradeConfig.effects.click_multiplier);
+      }
       if (upgradeConfig.effects.rent_income) {
         effects.rentMultiplier *= (1 + upgradeConfig.effects.rent_income);
       }
