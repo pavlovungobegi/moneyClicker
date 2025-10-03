@@ -3069,15 +3069,18 @@ let autoSubmitInterval = null;
     let totalInvestmentIncome = 0;
     console.log('🔍 [OFFLINE DEBUG] investmentAccountBalance:', investmentAccountBalance);
     if (investmentAccountBalance > 0) {
-      // Calculate compound interest using the same per-tick logic as online
-      const perTickMultiplier = getCompoundMultiplierPerTick();
-      const ticksOffline = Math.floor(secondsOffline * 1000 / TICK_MS); // Number of ticks that would occur offline
-      const compoundMultiplier = Math.pow(perTickMultiplier, ticksOffline);
-      const newBalance = investmentAccountBalance * compoundMultiplier;
+      // Calculate compound interest using simple multiplication instead of exponential
+      // Online: investmentAccountBalance *= getCompoundMultiplierPerTick() every second
+      // Offline: apply growth rate directly without compounding to prevent exponential explosion
+      const perSecondMultiplier = getCompoundMultiplierPerTick();
+      const growthRate = perSecondMultiplier - 1; // Convert multiplier to growth rate
+      const totalGrowth = growthRate * secondsOffline; // Linear growth over time
+      const newBalance = investmentAccountBalance * (1 + totalGrowth);
       totalInvestmentIncome = newBalance - investmentAccountBalance;
-      console.log('🔍 [OFFLINE DEBUG] perTickMultiplier:', perTickMultiplier);
-      console.log('🔍 [OFFLINE DEBUG] ticksOffline:', ticksOffline);
-      console.log('🔍 [OFFLINE DEBUG] compoundMultiplier:', compoundMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] perSecondMultiplier:', perSecondMultiplier);
+      console.log('🔍 [OFFLINE DEBUG] growthRate:', growthRate);
+      console.log('🔍 [OFFLINE DEBUG] secondsOffline:', secondsOffline);
+      console.log('🔍 [OFFLINE DEBUG] totalGrowth:', totalGrowth);
       console.log('🔍 [OFFLINE DEBUG] newBalance:', newBalance);
       console.log('🔍 [OFFLINE DEBUG] totalInvestmentIncome:', totalInvestmentIncome);
     }
