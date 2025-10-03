@@ -7614,8 +7614,9 @@ function setSlotsBetAmount(type) {
   
   let amount = 0;
   switch(type) {
-    case 'max':
-      amount = currentAccountBalance;
+    case '10x':
+      const currentBet = parseFloat(document.getElementById('slotsBetAmount').value) || 0;
+      amount = currentBet * 10;
       break;
     case '100':
       amount = 100;
