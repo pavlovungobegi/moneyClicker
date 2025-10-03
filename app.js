@@ -5022,11 +5022,11 @@ let autoSubmitInterval = null;
   // Base compound multiplier per tick - varies by difficulty
   function getBaseCompoundMultiplierPerTick() {
     switch (getGameDifficulty()) {
-      case 'easy': return 1.0005;    // 0.5% per second (easier)
-      case 'normal': return 1.0005;  // 0.4% per second (original)
-      case 'hard': return 1.0003;   // 0.35% per second (harder)
-      case 'extreme': return 1.0002; // 0.3% per second (extreme)
-      default: return 1.001;        // fallback to normal
+      case 'easy': return 1.00044;    // 0.5% per second (easier)
+      case 'normal': return 1.00044;  // 0.4% per second (original)
+      case 'hard': return 1.00024;   // 0.35% per second (harder)
+      case 'extreme': return 1.00014; // 0.3% per second (extreme)
+      default: return 1.0001;        // fallback to normal
     }
   }
   function getCompoundMultiplierPerTick() {
@@ -5152,7 +5152,7 @@ let autoSubmitInterval = null;
 
   // Dividends logic: 1% every 10 seconds to current, investment unchanged
   const BASE_DIVIDEND_INTERVAL_MS = 10000;
-  const BASE_DIVIDEND_RATE = 0.0018;
+  const BASE_DIVIDEND_RATE = 0.0015;
   let dividendElapsed = 0;
   let dividendAnimationId = null;
 

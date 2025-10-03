@@ -242,6 +242,16 @@ const GAME_CONFIG = {
     u90: { cost: 200000000000000000000000, name: "Property Dominion", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
     u91: { cost: 2000000000000000000000000, name: "Universal Property Authority", effect: "Triples all property incomes", type: "rent_boost", effects: { rent_income: 2.0 } },
     u92: { cost: 1000000000000000000000, name: "Master Builder", effect: "Quadruples all property incomes", type: "building_discount", effects: { rent_income: 3.0 } },
+    // Building-specific 10x income upgrades
+    u93: { cost: 2000000000000000000000000, name: "Gourmet Empire", effect: "10x the income of Food Stands", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "foodStand" },
+    u94: { cost: 3600000000000000000000000, name: "Media Conglomerate", effect: "10x the income of Newsstands", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "newsstand" },
+    u95: { cost: 6480000000000000000000000, name: "Parking Dynasty", effect: "10x the income of Parking Garages", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "parkingGarage" },
+    u96: { cost: 11664000000000000000000000, name: "Retail Monopoly", effect: "10x the income of Convenience Stores", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "convenienceStore" },
+    u97: { cost: 20995200000000000000000000, name: "Housing Empire", effect: "10x the income of Apartments", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "apartment" },
+    u98: { cost: 37791360000000000000000000, name: "Industrial Titan", effect: "10x the income of Manufacturing Plants", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "manufacturingPlant" },
+    u99: { cost: 68024448000000000000000000, name: "Corporate Empire", effect: "10x the income of Office Buildings", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "officeBuilding" },
+    u100: { cost: 122444006400000000000000000, name: "Sky City Dynasty", effect: "10x the income of Skyscrapers", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "skyscraper" },
+    u101: { cost: 220399211520000000000000000, name: "Cultural Empire", effect: "10x the income of Opera Houses", type: "property_rent_boost", effects: { property_rent_income: 9.0 }, property: "operaHouse" },
   },
   
   // =============================================================================
