@@ -21,8 +21,8 @@
                       ('ontouchstart' in window) || 
                       (navigator.maxTouchPoints > 0);
       
-      // Adaptive frame rate based on device
-      this.targetFPS = this.isMobile ? 30 : 60;
+      // Use consistent 60 FPS on all devices for smooth particles
+      this.targetFPS = 60;
       this.frameInterval = 1000 / this.targetFPS;
       
       this.start();
@@ -102,7 +102,7 @@
           this.targetFPS = Math.max(15, this.targetFPS - 5);
           this.frameInterval = 1000 / this.targetFPS;
         } else if (this.currentFps > this.targetFPS * 1.2) {
-          this.targetFPS = Math.min(this.isMobile ? 30 : 60, this.targetFPS + 5);
+          this.targetFPS = Math.min(60, this.targetFPS + 5); // Cap at 60 FPS on all devices
           this.frameInterval = 1000 / this.targetFPS;
         }
       }

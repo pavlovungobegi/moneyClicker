@@ -24,8 +24,8 @@
                       ('ontouchstart' in window) || 
                       (navigator.maxTouchPoints > 0);
       
-      // Adaptive performance settings
-      this.performanceLevel = this.isMobile ? 'low' : 'high';
+      // Use high performance on all devices for smooth particles
+      this.performanceLevel = 'high';
       this.adaptiveSettings = this.getAdaptiveSettings();
       
       this.initialize();
