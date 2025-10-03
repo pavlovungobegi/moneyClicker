@@ -8392,6 +8392,19 @@ document.addEventListener('DOMContentLoaded', () => {
   initPWAInstallPrompt();
   initPWASpecificFeatures();
   
+  // Initialize mobile audio on first user interaction
+  const initMobileAudioOnInteraction = () => {
+    if (AudioSystem && AudioSystem.initMobileAudio) {
+      AudioSystem.initMobileAudio();
+    }
+    document.removeEventListener('touchstart', initMobileAudioOnInteraction);
+    document.removeEventListener('click', initMobileAudioOnInteraction);
+  };
+  
+  // Listen for first touch or click to unlock mobile audio
+  document.addEventListener('touchstart', initMobileAudioOnInteraction, { once: true });
+  document.addEventListener('click', initMobileAudioOnInteraction, { once: true });
+  
   // Initialize help modal functionality after DOM is ready
   initHelpModals();
   

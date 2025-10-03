@@ -34,6 +34,22 @@
         console.log('Failed to resume audio context:', e);
       });
     }
+    
+    // Additional mobile audio context handling
+    if (audioContext && audioContext.state === 'running') {
+      // Audio context is already running, ensure it stays active
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.001);
+      } catch (e) {
+        // Silent fail - this is just to keep context active
+      }
+    }
   }
 
   // Initialize background music
@@ -361,10 +377,30 @@
     
     try {
       const winSound = new Audio('you-win.mp3');
-      winSound.volume = 0.3; // Set volume to 30%
-      winSound.play().catch(e => {
-        console.log('Win sound failed to play:', e);
+      winSound.volume = 0.7; // Increase volume to 70% for better audibility
+      winSound.preload = 'auto'; // Preload for better mobile performance
+      
+      // Add mobile-specific audio handling
+      winSound.addEventListener('canplaythrough', () => {
+        winSound.play().catch(e => {
+          console.log('Win sound failed to play:', e);
+          // Try to resume audio context and retry once
+          resumeAudioContext();
+          setTimeout(() => {
+            winSound.play().catch(e2 => {
+              console.log('Win sound retry failed:', e2);
+            });
+          }, 100);
+        });
       });
+      
+      // Fallback: try to play immediately if already loaded
+      if (winSound.readyState >= 3) { // HAVE_FUTURE_DATA or higher
+        winSound.play().catch(e => {
+          console.log('Win sound immediate play failed:', e);
+        });
+      }
+      
     } catch (e) {
       console.log('Win sound not available:', e);
     }
@@ -523,6 +559,25 @@
     }
   }
 
+  // Initialize mobile audio (call on first user interaction)
+  function initMobileAudio() {
+    if (!audioContext) return;
+    
+    // Resume audio context
+    resumeAudioContext();
+    
+    // Create a silent buffer to unlock audio on mobile
+    try {
+      const buffer = audioContext.createBuffer(1, 1, 22050);
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.log('Mobile audio init failed:', e);
+    }
+  }
+
   // Make functions globally available
   window.AudioSystem = {
     // Initialization
@@ -560,7 +615,8 @@
     getAudioSettings,
     
     // Utility
-    resumeAudioContext
+    resumeAudioContext,
+    initMobileAudio
   };
 
 })();
