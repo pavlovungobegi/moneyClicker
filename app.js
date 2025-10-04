@@ -8540,6 +8540,8 @@ function collectBoxMinigameWin() {
   } else {
     // For small wins (< 10x), still play a win sound
     AudioSystem.playWinSound();
+    // Resume auto spin since no win celebration popup will be shown
+    resumeAutoSpin();
   }
 }
 
@@ -8590,27 +8592,37 @@ function triggerWinCelebration(totalWinnings, betAmount, source = 'general') {
 }
 
 // Auto spin pause/resume functions
+let wasAutoSpinActive = false; // Track if auto spin was active before pause
+
 function pauseAutoSpin() {
   if (slotsAutoSpinInterval) {
     clearInterval(slotsAutoSpinInterval);
     slotsAutoSpinInterval = null;
-    // Update auto spin checkbox to reflect paused state
+    // Remember that auto spin was active before pause
     const autoSpinCheckbox = document.getElementById('slotsAutoSpin');
     if (autoSpinCheckbox) {
-      autoSpinCheckbox.checked = false;
+      wasAutoSpinActive = autoSpinCheckbox.checked;
     }
   }
 }
 
 function resumeAutoSpin() {
-  const autoSpinCheckbox = document.getElementById('slotsAutoSpin');
-  if (autoSpinCheckbox && autoSpinCheckbox.checked) {
-    // Restart auto spin if checkbox is still checked
+  // Resume auto spin if it was active before pause
+  if (wasAutoSpinActive) {
+    // Start auto spin immediately
     slotsAutoSpinInterval = setInterval(() => {
       if (!isSlotsSpinning) {
         spinSlots();
       }
-    }, 2000); // 2 second interval between auto spins
+    }, 1200); // 1 second interval between auto spins (same as original)
+    
+    // Trigger first spin immediately instead of waiting for the interval
+    if (!isSlotsSpinning) {
+      spinSlots();
+    }
+    
+    // Reset the flag
+    wasAutoSpinActive = false;
   }
 }
 
