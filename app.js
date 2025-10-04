@@ -7683,9 +7683,9 @@ function calculateSlotsWinnings(results, betAmount) {
   // Check for scatter symbols first (triggers minigame)
   const scatterCount = results.filter(symbol => symbol === 'scatter').length;
   if (scatterCount >= 3) {
-    // Calculate base winnings for scatter symbols
-    const scatterMultiplier = scatterCount * 2; // 2x per scatter
-    const baseWinnings = betAmount * scatterMultiplier;
+    // For minigame, use betAmount as base (minigame multiplier is the ONLY multiplier)
+    // Don't pre-multiply by scatter count - that was causing the 600x bug
+    const baseWinnings = betAmount; // Fixed: use betAmount directly
     
     return {
       total: baseWinnings,
@@ -7693,7 +7693,7 @@ function calculateSlotsWinnings(results, betAmount) {
       winningLines: [],
       isScatter: true,
       scatterCount: scatterCount,
-      baseWinnings: baseWinnings
+      baseWinnings: baseWinnings // This will be multiplied ONLY by minigame result
     };
   }
 
@@ -8164,10 +8164,8 @@ function collectBoxMinigameWin() {
   // Add winnings to account
   currentAccountBalance += finalWin;
   
-  // Play win sound if it's a good multiplier
-  if (boxMinigameData.currentMultiplier >= 10) {
-    AudioSystem.playWinSound();
-  }
+  // REMOVED: Don't play win sound here - triggerWinCelebration will play it
+  // This was causing the double sound bug
   
   // Close minigame
   closeBoxMinigame();
@@ -8176,9 +8174,12 @@ function collectBoxMinigameWin() {
   renderBalances();
   updateSlotsBetDisplay();
   
-  // Show celebration if it's a big win
+  // Show celebration if it's a big win (this will play the win sound)
   if (boxMinigameData.currentMultiplier >= 10) {
     triggerWinCelebration(finalWin, boxMinigameData.originalBet, 'slots');
+  } else {
+    // For small wins (< 10x), still play a win sound
+    AudioSystem.playWinSound();
   }
 }
 
