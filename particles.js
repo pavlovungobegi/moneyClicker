@@ -36,7 +36,8 @@
     }
 
     ensureAnimationRunning() {
-      if (!document.hidden && this.hasParticles()) {
+      // Only start animation if we have particles and it's not already running
+      if (!document.hidden && this.hasParticles() && !this.animationId) {
         this.startAnimation();
       }
     }
@@ -492,11 +493,15 @@
       this.updateParticles(deltaTime);
       this.drawParticles();
       
-      // Only continue animation if there are particles or we're actively animating
-      if (this.particles.length > 0 || this.isAnimating) {
+      // FIXED: Only continue if there are actual particles
+      // Stop the loop when particles reach zero to save CPU
+      if (this.particles.length > 0) {
         this.animationId = requestAnimationFrame((time) => this.animate(time));
       } else {
+        // No particles left - stop the animation loop completely
         this.animationId = null;
+        this.isAnimating = false;
+        this.lastFrameTime = 0; // Reset for next animation start
       }
     }
     
@@ -532,5 +537,46 @@
 
   // Make ParticleSystem globally available
   window.ParticleSystem = ParticleSystem;
+  
+  // Diagnostic function to monitor particle system performance
+  window.debugParticleSystem = function() {
+    if (!window.particleSystem) {
+      console.log('⚠️ Particle system not initialized yet');
+      return;
+    }
+    
+    const ps = window.particleSystem;
+    
+    console.log('═══════════════════════════════════════');
+    console.log('✨ PARTICLE SYSTEM DIAGNOSTICS');
+    console.log('═══════════════════════════════════════');
+    console.log('Current State:');
+    console.log('  • Active particles:', ps.particles.length);
+    console.log('  • Pooled particles:', ps.particlePool.length);
+    console.log('  • Animation running:', !!ps.animationId);
+    console.log('  • Is animating flag:', ps.isAnimating);
+    console.log('  • Animation ID:', ps.animationId || 'null (stopped)');
+    console.log('');
+    
+    if (ps.particles.length === 0 && ps.animationId !== null) {
+      console.log('⚠️ WARNING: Animation loop running with 0 particles!');
+      console.log('   This is a performance bug - loop should be stopped.');
+    } else if (ps.particles.length === 0 && ps.animationId === null) {
+      console.log('✅ GOOD: No particles and animation loop is stopped.');
+      console.log('   This is the optimal idle state.');
+    } else if (ps.particles.length > 0 && ps.animationId !== null) {
+      console.log('✅ GOOD: Particles active and animation loop running.');
+    } else if (ps.particles.length > 0 && ps.animationId === null) {
+      console.log('⚠️ WARNING: Particles exist but animation loop stopped!');
+      console.log('   Particles won\'t be visible. This shouldn\'t happen.');
+    }
+    
+    console.log('');
+    console.log('Performance Tips:');
+    console.log('  • When idle: 0 particles, loop stopped = 0% CPU');
+    console.log('  • When active: particles shown, loop runs = normal CPU');
+    console.log('  • Pool reuse: reduces GC pressure');
+    console.log('═══════════════════════════════════════');
+  };
 
 })();
