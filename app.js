@@ -5167,6 +5167,7 @@ let isCoinFlipping = false;
         investmentAccountBalance = 0;
         dividendElapsed = 0;
         autoInvestEnabled = false;
+        autoRentEnabled = false;
         
         // Reset all upgrades
         Object.keys(owned).forEach(upgradeKey => {
