@@ -6183,20 +6183,12 @@ let isCoinFlipping = false;
     });
   }
 
-  // Cheat system variables
-  let cheatToggleCount = 0;
-  let lastToggleTime = 0;
-  const cheatSection = document.getElementById('cheatSection');
-  const addMoneyBtn = document.getElementById('addMoneyBtn');
 
   // Sound effects toggle functionality
   if (soundEffectsToggle) {
     soundEffectsToggle.addEventListener('change', (e) => {
       AudioSystem.setSoundEffectsEnabled(e.target.checked);
       saveAudioSettings();
-      
-      // Handle cheat activation
-      handleCheatToggle();
     });
   }
 
@@ -6232,79 +6224,6 @@ let isCoinFlipping = false;
     });
   }
 
-  // Cheat system functions
-  function handleCheatToggle() {
-    const currentTime = Date.now();
-    
-    // Reset counter if more than 5 seconds have passed since last toggle
-    if (currentTime - lastToggleTime > 5000) {
-      cheatToggleCount = 0;
-    }
-    
-    // Increment counter and update last toggle time
-    cheatToggleCount++;
-    lastToggleTime = currentTime;
-    
-    // Show cheat button after 3 consecutive toggles
-    if (cheatToggleCount >= 8) {
-      showCheatButton();
-    }
-  }
-  
-  function showCheatButton() {
-    if (cheatSection) {
-      cheatSection.classList.remove('hidden');
-    }
-  }
-  
-  function hideCheatButton() {
-    if (cheatSection) {
-      cheatSection.classList.add('hidden');
-    }
-    cheatToggleCount = 0; // Reset counter
-  }
-  
-  function addCheatMoney() {
-    // Apply 10x multiplier to both click and interest income
-    console.log('Before 10x multiplier button - multipliers:', {
-      click: prestigeClickMultiplier,
-      interest: prestigeInterestMultiplier
-    });
-    prestigeClickMultiplier *= 10;
-    prestigeInterestMultiplier *= 10;
-    console.log('After 10x multiplier button - multipliers:', {
-      click: prestigeClickMultiplier,
-      interest: prestigeInterestMultiplier
-    });
-    
-    // Create celebration particles
-    if (particleSystem) {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      
-      // Create golden money particles
-      if (particleEffectsEnabled) {
-      particleSystem.createGoldenParticles(centerX, centerY, 30);
-      particleSystem.createMilestoneParticles(centerX, centerY, 20);
-      }
-      
-      // Screen effects
-      screenFlash('#ffd700', 600); // Golden flash
-      screenShake(8, 400); // Gentle shake
-    }
-    
-    // Play success sound
-    if (AudioSystem.getAudioSettings().soundEnabled && AudioSystem.getAudioSettings().soundEffectsEnabled) {
-      AudioSystem.playSuccessSound();
-    }
-    
-    // Update UI
-    window.renderBalances();
-    
-    // Hide the cheat button after use
-    hideCheatButton();
-  }
-
   // Difficulty selector functionality
   const difficultySelect = document.getElementById('difficultySelect');
   if (difficultySelect) {
@@ -6313,16 +6232,6 @@ let isCoinFlipping = false;
       saveGameState();
       console.log('Game difficulty changed to:', getGameDifficulty());
     });
-  }
-
-  // Cheat button event listener
-  if (addMoneyBtn) {
-    addMoneyBtn.addEventListener('click', addCheatMoney);
-  }
-
-  // Initialize cheat system - hide button on load
-  if (cheatSection) {
-    cheatSection.classList.add('hidden');
   }
 
   // Simple event listeners for hard reset
@@ -6636,57 +6545,6 @@ function cleanup() {
 window.addEventListener('beforeunload', cleanup);
 
   
-  // Console debugging functions
-  function addMoney(amount) {
-    if (typeof amount !== 'number' || amount <= 0) {
-      console.log('❌ Invalid amount. Please provide a positive number.');
-      return;
-    }
-    
-    currentAccountBalance += amount;
-    
-    // Force immediate UI update
-    renderBalances();
-    
-    console.log(`💰 Added €${formatNumberShort(amount)} to current account!`);
-    console.log(`💳 New balance: €${formatNumberShort(currentAccountBalance)}`);
-    
-    // Save game state
-    saveGameState();
-  }
-  
-  function setBalance(amount) {
-    if (typeof amount !== 'number' || amount < 0) {
-      console.log('❌ Invalid amount. Please provide a non-negative number.');
-      return;
-    }
-    
-    const oldBalance = currentAccountBalance;
-    // Set balance directly (no money cap)
-    currentAccountBalance = amount;
-    
-    // Force immediate UI update
-    renderBalances();
-    
-    console.log(`💳 Balance set to €${formatNumberShort(amount)}!`);
-    if (oldBalance !== amount) {
-      const difference = amount - oldBalance;
-      if (difference > 0) {
-        console.log(`📈 Increased by €${formatNumberShort(difference)}`);
-      } else {
-        console.log(`📉 Decreased by €${formatNumberShort(Math.abs(difference))}`);
-      }
-    }
-    
-    // Save game state
-    saveGameState();
-  }
-  
-  // Console function to check upgrade statistics
-  
-  // Make functions globally available
-  window.addMoney = addMoney;
-  window.setBalance = setBalance;
 
   // Register Service Worker for PWA functionality
   if ('serviceWorker' in navigator) {

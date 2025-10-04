@@ -1048,38 +1048,6 @@ main {
   border-radius: 0 0 8px 8px;
 }
 
-/* Cheat System Styles */
-.cheat-section {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.cheat-btn {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: #1f2937;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
-  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
-}
-
-.cheat-btn:hover {
-  background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.4);
-}
-
-.cheat-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
-}
-
 .upgrade-actions, .building-actions {
   display: flex;
   align-items: center;
