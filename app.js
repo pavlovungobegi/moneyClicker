@@ -3713,9 +3713,23 @@ let isCoinFlipping = false;
           before_interest: prestigeInterestMultiplier,
           before_tier: prestigeTier
         });
-        prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
-        prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
+        
+        // Restore prestige tier first
         prestigeTier = gameState.prestigeTier || 0;
+        
+        // RECALCULATION: Use new exponential formula for fairness
+        // Old system: linear +0.25 per tier
+        // New system: exponential *1.15 per tier
+        if (prestigeTier > 0) {
+          // Recalculate using new formula: 1.15^tier
+          prestigeClickMultiplier = Math.pow(1.15, prestigeTier);
+          prestigeInterestMultiplier = Math.pow(1.15, prestigeTier);
+          console.log(`🔄 Recalculated multipliers for T${prestigeTier}: ${prestigeClickMultiplier.toFixed(2)}x (was ${gameState.prestigeClickMultiplier?.toFixed(2) || 1}x)`);
+        } else {
+          prestigeClickMultiplier = 1;
+          prestigeInterestMultiplier = 1;
+        }
+        
         console.log('After loading - prestige multipliers:', {
           click: prestigeClickMultiplier,
           interest: prestigeInterestMultiplier
@@ -5121,13 +5135,14 @@ let isCoinFlipping = false;
         return;
       }
       
-      if (confirm("Are you sure you want to reset everything? This will give you permanent +25% multipliers but reset all money and upgrades.")) {
+      if (confirm("Are you sure you want to reset everything? This will give you permanent +15% multipliers (1.15x) but reset all money and upgrades.")) {
         // Increment prestige tier
         prestigeTier++;
         
-        // Apply permanent multipliers (linear growth: +0.25 each time)
-        prestigeClickMultiplier += 0.25;
-        prestigeInterestMultiplier += 0.25;
+        // Apply permanent multipliers (exponential growth: *1.15 each time)
+        // T1: 1.15x, T5: 2.01x, T10: 4.05x, T20: 16.37x, T30: 66.21x
+        prestigeClickMultiplier *= 1.15;
+        prestigeInterestMultiplier *= 1.15;
         
         // Create prestige reset particle effects
         if (particleSystem) {
@@ -7494,12 +7509,21 @@ function loadGameStateFromData(gameState) {
   streakMultiplier = 1;
   lastClickTime = 0;
   
-  // Restore prestige multipliers
-  prestigeClickMultiplier = gameState.prestigeClickMultiplier || 1;
-  prestigeInterestMultiplier = gameState.prestigeInterestMultiplier || 1;
-  
-  // Restore prestige tier
+  // Restore prestige tier first
   prestigeTier = gameState.prestigeTier || 0;
+  
+  // RECALCULATION: Use new exponential formula for fairness
+  // Old system: linear +0.25 per tier
+  // New system: exponential *1.15 per tier
+  if (prestigeTier > 0) {
+    // Recalculate using new formula: 1.15^tier
+    prestigeClickMultiplier = Math.pow(1.15, prestigeTier);
+    prestigeInterestMultiplier = Math.pow(1.15, prestigeTier);
+    console.log(`🔄 Cloud save: Recalculated multipliers for T${prestigeTier}: ${prestigeClickMultiplier.toFixed(2)}x`);
+  } else {
+    prestigeClickMultiplier = 1;
+    prestigeInterestMultiplier = 1;
+  }
   
   // Restore buy multiplier
   buyMultiplier = gameState.buyMultiplier || 1;
