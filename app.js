@@ -7770,6 +7770,8 @@ function switchGame(gameType) {
     case 'slots':
       if (slotsGame) slotsGame.style.display = 'block';
       if (slotsTab) slotsTab.classList.add('active');
+      // Initialize scale display
+      updateScaleDisplay();
       break;
   }
 }
@@ -7805,39 +7807,63 @@ let boxMinigameData = {
   originalWin: 0
 };
 
-function setSlotsBetAmount(type) {
+// Money scale system for bet controls
+const MONEY_SCALES = ['€', 'k', 'm', 'b', 't', 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg', 'hh', 'ii', 'jj', 'kk', 'll', 'mm', 'nn', 'oo', 'pp', 'qq', 'rr', 'ss', 'tt', 'uu', 'vv', 'ww', 'xx', 'yy', 'zz'];
+let currentScaleIndex = 0;
+
+function setSlotsBetAmount(amount) {
   const input = document.getElementById('slotsBetAmount');
   if (!input) return;
   
-  let amount = 0;
-  switch(type) {
-    case '10x':
-      const currentBet = parseFloat(document.getElementById('slotsBetAmount').value) || 0;
-      amount = currentBet * 10;
-      break;
-    case '100':
-      amount = 100;
-      break;
-    case '50':
-      amount = 50;
-      break;
-    case '25':
-      amount = 25;
-      break;
-    case '10':
-      amount = 10;
-      break;
-    case '5':
-      amount = 5;
-      break;
-    case '1':
-      amount = 1;
-      break;
-  }
-  
-  input.value = Math.min(amount, currentAccountBalance);
+  input.value = amount;
   updateSlotsBetDisplay();
 }
+
+function increaseBetScale() {
+  if (currentScaleIndex < MONEY_SCALES.length - 1) {
+    currentScaleIndex++;
+    updateScaleDisplay();
+    updateSlotsBetDisplay(); // Update the bet display when scale changes
+  }
+}
+
+function decreaseBetScale() {
+  if (currentScaleIndex > 0) {
+    currentScaleIndex--;
+    updateScaleDisplay();
+    updateSlotsBetDisplay(); // Update the bet display when scale changes
+  }
+}
+
+function updateScaleDisplay() {
+  const scaleDisplay = document.getElementById('betScaleDisplay');
+  if (scaleDisplay) {
+    scaleDisplay.textContent = MONEY_SCALES[currentScaleIndex];
+  }
+}
+
+function getCurrentBetAmount() {
+  const input = document.getElementById('slotsBetAmount');
+  const amount = parseFloat(input.value) || 1;
+  const scale = MONEY_SCALES[currentScaleIndex];
+  
+  if (scale === '€') {
+    return amount;
+  }
+  
+  // Convert scale to multiplier
+  const scaleIndex = MONEY_SCALES.indexOf(scale);
+  const multiplier = Math.pow(1000, scaleIndex);
+  
+  return amount * multiplier;
+}
+
+// Make functions globally accessible
+window.increaseBetScale = increaseBetScale;
+window.decreaseBetScale = decreaseBetScale;
+window.setSlotsBetAmount = setSlotsBetAmount;
+window.updateScaleDisplay = updateScaleDisplay;
+window.getCurrentBetAmount = getCurrentBetAmount;
 
 function updateSlotsBetDisplay() {
   const input = document.getElementById('slotsBetAmount');
@@ -7845,15 +7871,15 @@ function updateSlotsBetDisplay() {
   
   if (!input || !display) return;
   
-  const amount = parseFloat(input.value) || 0;
+  const actualAmount = getCurrentBetAmount();
   const resultSpan = display.querySelector('#slotsResultSimple');
   const resultContent = resultSpan ? resultSpan.outerHTML : '';
-  display.innerHTML = `<span>Current Bet: €${formatNumberShort(amount)}</span>${resultContent}`;
+  display.innerHTML = `<span>Current Bet: €${formatNumberShort(actualAmount)}</span>${resultContent}`;
   
   // Update button state
   const spinBtn = document.getElementById('slotsSpinBtn');
   if (spinBtn) {
-    spinBtn.disabled = amount <= 0 || amount > currentAccountBalance || isSlotsSpinning;
+    spinBtn.disabled = actualAmount <= 0 || actualAmount > currentAccountBalance || isSlotsSpinning;
   }
 }
 
@@ -7866,7 +7892,7 @@ function spinSlots() {
   
   if (!input || !spinBtn || !resultDiv) return;
   
-  const betAmount = parseFloat(input.value) || 0;
+  const betAmount = getCurrentBetAmount();
   
   // Validate bet
   if (betAmount <= 0) {

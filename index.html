@@ -714,16 +714,21 @@
                 <div class="bet-section">
                   <div class="bet-input-container">
                     <label for="slotsBetAmount">Bet Amount:</label>
-                    <input type="number" id="slotsBetAmount" min="1" step="1" placeholder="Enter amount">
+                    <div class="bet-scale-controls">
+                      <input type="number" id="slotsBetAmount" min="1" step="1" value="1">
+                      <button class="scale-btn" id="scaleDownBtn" onclick="decreaseBetScale()">◀</button>
+                      <span class="bet-scale" id="betScaleDisplay">€</span>
+                      <button class="scale-btn" id="scaleUpBtn" onclick="increaseBetScale()">▶</button>
+                    </div>
                   </div>
                   <div class="bet-quick-buttons">
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('10x')">10x</button>
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('100')">€100</button>
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('50')">€50</button>
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('25')">€25</button>
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('10')">€10</button>
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('5')">€5</button>
-                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('1')">€1</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('1')">1</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('2')">2</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('5')">5</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('10')">10</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('25')">25</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('50')">50</button>
+                    <button class="bet-quick-btn" onclick="setSlotsBetAmount('100')">100</button>
                   </div>
                 </div>
                 
