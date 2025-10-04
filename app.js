@@ -8165,7 +8165,7 @@ function initSlotsGame() {
           if (!isSlotsSpinning) {
             spinSlots();
           }
-        }, 1200); // 1 second interval between auto spins
+        }, 1100); // 1 second interval between auto spins
       } else {
         // Stop auto spin
         if (slotsAutoSpinInterval) {
@@ -8615,7 +8615,7 @@ function resumeAutoSpin() {
       if (!isSlotsSpinning) {
         spinSlots();
       }
-    }, 1200); // 1 second interval between auto spins (same as original)
+    }, 1100); // 1 second interval between auto spins (same as original)
     
     // Trigger first spin immediately instead of waiting for the interval
     if (!isSlotsSpinning) {
