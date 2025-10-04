@@ -7496,12 +7496,27 @@ async function loadCloudSave() {
     if (userDoc.exists()) {
       const userData = userDoc.data();
       if (userData.gameState) {
-        console.log('✅ Loading cloud save for user:', currentUser.displayName);
+        // CLOUD IS SOURCE OF TRUTH: Always use cloud save when it exists
+        const cloudTimestamp = userData.lastSaved || 0;
+        console.log('☁️ Cloud save found:', new Date(cloudTimestamp).toLocaleString());
+        console.log('✅ Loading from CLOUD (source of truth)');
+        
         loadGameStateFromData(userData.gameState);
+        
+        // Update local storage to match cloud
+        localStorage.setItem('moneyClicker_gameState', JSON.stringify(userData.gameState));
+        console.log('💾 Local storage synced with cloud');
+      } else {
+        console.log('📝 No game state in cloud save, using local save');
+        loadGameState();
+        // Upload local save to cloud if it exists
+        setTimeout(() => saveToCloud(), 1000);
       }
     } else {
       console.log('📝 No cloud save found, using local save');
       loadGameState();
+      // Upload local save to cloud if it exists
+      setTimeout(() => saveToCloud(), 1000);
     }
   } catch (error) {
     console.error('❌ Error loading cloud save:', error);
@@ -7520,6 +7535,79 @@ async function loadCloudSave() {
   }
 }
 
+
+// Helper function to force update cloud save (useful for admin/debugging)
+async function forceCloudReset() {
+  if (!currentUser || !isFirebaseReady) {
+    console.error('❌ Cannot reset cloud: user not authenticated');
+    return;
+  }
+  
+  console.log('🔄 Forcing cloud data reset...');
+  
+  try {
+    const userDocRef = window.firebaseDoc(window.firebaseDb, 'users', currentUser.uid);
+    const userDoc = await window.firebaseGetDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      console.log('📊 Current cloud save timestamp:', new Date(userData.lastSaved || 0).toLocaleString());
+      
+      const confirm = window.confirm(
+        '⚠️ WARNING: This will DELETE your cloud save and replace it with your current game state.\n\n' +
+        'Are you sure you want to continue?'
+      );
+      
+      if (!confirm) {
+        console.log('❌ Cloud reset cancelled');
+        return;
+      }
+      
+      // Save current game state to cloud with current timestamp
+      await saveToCloud();
+      console.log('✅ Cloud save has been reset with your current game state!');
+      console.log('💾 Your local save is now the source of truth.');
+    } else {
+      console.log('📝 No cloud save exists yet, creating one...');
+      await saveToCloud();
+      console.log('✅ Cloud save created!');
+    }
+  } catch (error) {
+    console.error('❌ Error resetting cloud save:', error);
+  }
+}
+
+// Helper function to completely delete cloud save
+async function deleteCloudSave() {
+  if (!currentUser || !isFirebaseReady) {
+    console.error('❌ Cannot delete cloud: user not authenticated');
+    return;
+  }
+  
+  const confirm = window.confirm(
+    '🗑️ WARNING: This will PERMANENTLY DELETE your cloud save!\n\n' +
+    'Your local save will NOT be affected.\n\n' +
+    'Are you sure?'
+  );
+  
+  if (!confirm) {
+    console.log('❌ Cloud deletion cancelled');
+    return;
+  }
+  
+  try {
+    const userDocRef = window.firebaseDoc(window.firebaseDb, 'users', currentUser.uid);
+    await window.firebaseDeleteDoc(userDocRef);
+    console.log('✅ Cloud save deleted successfully!');
+    console.log('💾 Your local save remains intact.');
+  } catch (error) {
+    console.error('❌ Error deleting cloud save:', error);
+  }
+}
+
+// Make functions available globally for console access
+window.forceCloudReset = forceCloudReset;
+window.deleteCloudSave = deleteCloudSave;
 
 function loadGameStateFromData(gameState) {
   // Restore core balances
