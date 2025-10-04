@@ -48,10 +48,10 @@ let isCoinFlipping = false;
   
   // Update throttling (in milliseconds)
   const UPDATE_THROTTLE = {
-    progressBars: 2000,      // Update progress bars every 2 seconds
-    upgradeIndicator: 1500,  // Check upgrades every 1.5 seconds
-    portfolioIndicator: 1500, // Check portfolio every 1.5 seconds
-    achievements: 4000       // Check achievements every 4 seconds
+    progressBars: 1000,      // Update progress bars every 2 seconds
+    upgradeIndicator: 2000,  // Check upgrades every 1.5 seconds
+    portfolioIndicator: 2000, // Check portfolio every 1.5 seconds
+    achievements: 5000       // Check achievements every 4 seconds
   };
   
   let lastUpdateTimestamps = {
