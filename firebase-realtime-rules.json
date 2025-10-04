@@ -1,0 +1,41 @@
+{
+  "rules": {
+    // Default: deny all access unless explicitly allowed below
+    ".read": false,
+    ".write": false,
+    
+    // User game saves: only accessible by the user who owns it
+    "users": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId",
+        ".validate": "newData.hasChildren(['gameState', 'lastSaved'])"
+      }
+    },
+    
+    // Leaderboard: everyone can read, but users can only write their own entry
+    "leaderboard": {
+      ".read": true,  // Anyone can view leaderboard
+      ".indexOn": ["score", "uid", "timestamp"],
+      
+      "$entryId": {
+        // Users can only write entries where the uid matches their auth uid
+        ".write": "auth != null && (
+          !data.exists() || 
+          data.child('uid').val() === auth.uid
+        ) && newData.child('uid').val() === auth.uid",
+        
+        // Validate the structure and data
+        ".validate": "
+          newData.hasChildren(['name', 'score', 'uid', 'timestamp']) && 
+          newData.child('score').isNumber() && 
+          newData.child('score').val() >= 0 && 
+          newData.child('score').val() <= 1e90 &&
+          newData.child('uid').val() === auth.uid &&
+          newData.child('timestamp').isNumber()
+        "
+      }
+    }
+  }
+}
+

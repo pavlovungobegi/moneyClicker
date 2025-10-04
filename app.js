@@ -4133,8 +4133,11 @@ let isCoinFlipping = false;
     submitBtn.textContent = 'Submitting...';
 
     try {
+      // Get authentication token for secure Firebase requests
+      const idToken = await currentUser.getIdToken();
+      
       // Check if this user already has a score in leaderboard
-      const existingResponse = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json`);
+      const existingResponse = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard.json?auth=${idToken}`);
       let existingEntryKey = null;
       if (existingResponse.ok) {
         const existingData = await existingResponse.json();
@@ -4166,8 +4169,8 @@ let isCoinFlipping = false;
       // Use existing key if updating, or create new key if inserting
       const playerKey = existingEntryKey || `${currentUser.uid}_${now}`;
 
-      // Submit to Firebase (PUT will update existing or create new)
-      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard/${playerKey}.json`, {
+      // Submit to Firebase with authentication token (PUT will update existing or create new)
+      const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/leaderboard/${playerKey}.json?auth=${idToken}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
