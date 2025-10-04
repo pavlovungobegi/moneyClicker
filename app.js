@@ -8662,8 +8662,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize slots game
   initSlotsGame();
   
-  // Show coin flip game by default
-  switchGame('coinFlip');
+  // Show slots game by default
+  switchGame('slots');
 });
 
 // Initialize help modal functionality
