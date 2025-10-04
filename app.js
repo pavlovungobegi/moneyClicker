@@ -8633,6 +8633,25 @@ window.closeWinPopup = closeWinPopup;
 window.setSlotsBetAmount = setSlotsBetAmount;
 window.spinSlots = spinSlots;
 
+// Slots Rewards Popup Functions
+function showSlotsRewards() {
+  const popup = document.getElementById('slotsRewardsPopup');
+  if (popup) {
+    popup.classList.remove('hidden');
+  }
+}
+
+function closeSlotsRewards() {
+  const popup = document.getElementById('slotsRewardsPopup');
+  if (popup) {
+    popup.classList.add('hidden');
+  }
+}
+
+// Make rewards functions globally accessible
+window.showSlotsRewards = showSlotsRewards;
+window.closeSlotsRewards = closeSlotsRewards;
+
 // Initialize PWA functionality when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initFirebaseAuth();

@@ -72,7 +72,7 @@
     GAME_CONFIG.EVENT_CONFIG.eventCooldowns.marketCrash = Date.now() + getEventCooldown('marketCrash');
     
     // Calculate loss based on difficulty
-    const lossRate = gameDifficulty === 'extreme' ? 0.4 : 0.03; // 40% for extreme, 20% for others
+    const lossRate = gameDifficulty === 'extreme' ? 0.4 : 0.01; // 40% for extreme, 20% for others
     const lossAmount = investmentAccountBalance * lossRate;
     investmentAccountBalance -= lossAmount;
     

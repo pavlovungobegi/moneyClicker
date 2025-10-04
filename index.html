@@ -707,13 +707,15 @@
             <div class="game-section" id="slotsGame" style="display: none;">
               <div class="game-header">
                 <h3 style="margin-top: 0 !important;"><span class="game-description">Match 3 • Santa mini game</span></h3>
+                <button class="rewards-btn" onclick="showSlotsRewards()">
+                  🎁
+                </button>
               </div>
               
               <div class="game-content">
                 <!-- Bet Amount Selection -->
                 <div class="bet-section">
                   <div class="bet-input-container">
-                    <label for="slotsBetAmount">Bet Amount:</label>
                     <div class="bet-scale-controls">
                       <input type="number" id="slotsBetAmount" min="1" step="1" value="1">
                       <button class="scale-btn" id="scaleDownBtn" onclick="decreaseBetScale()">◀</button>
@@ -1031,6 +1033,100 @@
             Bonus Win: €<span id="boxMinigameFinalWin">0</span>
           </div>
           <button class="box-minigame-collect" id="boxMinigameCollect">Collect Win!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slots Rewards Popup -->
+    <div class="modal-overlay hidden" id="slotsRewardsPopup">
+      <div class="popup-content rewards-popup">
+        <div class="popup-header">
+          <h3>Rewards</h3>
+          <button class="popup-close" onclick="closeSlotsRewards()">&times;</button>
+        </div>
+        <div class="popup-body">
+          <!-- Regular Payouts -->
+          <div class="rewards-section">
+            <div class="payouts-grid">
+              <div class="payout-item">
+                <span class="payout-symbols">3x 🎅🏻</span>
+                <span class="payout-amount">Mini Game</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">7️⃣7️⃣7️⃣7️⃣7️⃣</span>
+                <span class="payout-amount">1000x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">7️⃣7️⃣7️⃣7️⃣</span>
+                <span class="payout-amount">200x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">7️⃣7️⃣7️⃣</span>
+                <span class="payout-amount">30x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">💎💎💎💎💎</span>
+                <span class="payout-amount">500x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">💎💎💎💎</span>
+                <span class="payout-amount">150x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">💎💎💎</span>
+                <span class="payout-amount">25x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🎰🎰🎰🎰🎰</span>
+                <span class="payout-amount">200x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🎰🎰🎰🎰</span>
+                <span class="payout-amount">80x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🎰🎰🎰</span>
+                <span class="payout-amount">15x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">⭐⭐⭐⭐⭐</span>
+                <span class="payout-amount">200x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">⭐⭐⭐⭐</span>
+                <span class="payout-amount">80x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">⭐⭐⭐</span>
+                <span class="payout-amount">15x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🔔🔔🔔🔔🔔</span>
+                <span class="payout-amount">150x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🔔🔔🔔🔔</span>
+                <span class="payout-amount">60x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🔔🔔🔔</span>
+                <span class="payout-amount">12x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🍒🍒🍒🍒🍒</span>
+                <span class="payout-amount">100x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🍒🍒🍒🍒</span>
+                <span class="payout-amount">40x</span>
+              </div>
+              <div class="payout-item">
+                <span class="payout-symbols">🍒🍒🍒</span>
+                <span class="payout-amount">8x</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

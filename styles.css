@@ -6160,6 +6160,94 @@ body.dark-mode .panels::after {
   cursor: pointer;
 }
 
+/* Rewards Button */
+.rewards-btn {
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  color: white;
+  border: none;
+  
+  border-radius: 6px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+  margin-left: auto;
+}
+
+.rewards-btn:hover {
+  background: linear-gradient(135deg, #FF5252, #FF7043);
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Rewards Popup */
+.rewards-popup {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.rewards-section {
+  margin-bottom: 24px;
+}
+
+.rewards-section h4 {
+  color: var(--accent-color);
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.payouts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.payout-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.payout-symbols {
+  font-size: 1.2rem;
+}
+
+.payout-amount {
+  font-weight: 600;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+}
+
+.minigame-explanation p {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.minigame-explanation ul {
+  margin-left: 16px;
+  margin-bottom: 12px;
+}
+
+.minigame-explanation li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.tips-list {
+  margin-left: 16px;
+}
+
+.tips-list li {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
 .payout-table {
   margin-top: 12px;
   background: var(--card-bg);
@@ -6273,7 +6361,9 @@ body.dark-mode .panels::after {
 }
 
 .game-header {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 6px;
   margin-top: 0;
   padding: 0;

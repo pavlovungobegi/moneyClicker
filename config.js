@@ -417,19 +417,19 @@ u131: { cost: 100000000000000000000000, name: "Click R.R. Martin", effect: "10x 
       },
       taxCollection: {
         easy: 0.01,     // 1% chance (easier)
-        normal: 0.01,   // 2% chance (original)
+        normal: 0.005,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
         extreme: 0.08   // 4% chance (extreme)
       },
       robbery: {
         easy: 0.01,     // 1% chance (easier)
-        normal: 0.01,   // 2% chance (original)
+        normal: 0.005,   // 2% chance (original)
         hard: 0.03,     // 3% chance (harder)
         extreme: 0.08   // 4% chance (extreme)
       },
       divorce: {
-        easy: 0.001,    // 0.5% chance (easier)
-        normal: 0.0025,   // 1% chance (original)
+        easy: 0.0001,    // 0.5% chance (easier)
+        normal: 0.0001,   // 1% chance (original)
         hard: 0.015,    // 1.5% chance (harder)
         extreme: 0.05   // 2% chance (extreme)
       },
@@ -497,7 +497,7 @@ u131: { cost: 100000000000000000000000, name: "Click R.R. Martin", effect: "10x 
       },
       divorce: {
         easy: 900000,     // 2 minutes (easier)
-        normal: 600000,    // 1.5 minutes (original)
+        normal: 900000,    // 1.5 minutes (original)
         hard: 60000,      // 1 minute (harder)
         extreme: 30000    // 45 seconds (extreme)
       }
