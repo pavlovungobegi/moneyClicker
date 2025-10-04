@@ -8011,7 +8011,7 @@ function spinSlots() {
     
     // Reset button
     spinBtn.disabled = false;
-    spinBtn.textContent = '🎰 SPIN';
+    spinBtn.textContent = 'SPIN';
     isSlotsSpinning = false;
     
     // Update bet display
@@ -8028,7 +8028,7 @@ function getSymbolDisplay(symbol) {
     'diamond': '💎',
     'cherry': '🍒',
     'bell': '🔔',
-    'bar': '🎰',
+    'bar': '🍇',
     'star': '⭐',
     'scatter': '🎅🏻'
   };

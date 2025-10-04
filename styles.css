@@ -747,7 +747,7 @@ header {
 }
 
 .nav-btn[data-panel="portfolio"] .nav-icon.fallback::before {
-  content: '🎰';
+  content: '🍇';
 }
 
 .nav-btn[data-panel="achievements"] .nav-icon.fallback::before {
